@@ -24,7 +24,19 @@ void SetArcadeRaceMultiplierPointer(float* values) {
 	}
 }
 
-PlayerScoreDerby* pPlayerScoreDerby = nullptr;
+PlayerScoreDerby* GetPlayerScoreDerby(int playerId) {
+	if (!pScoreManager) return nullptr;
+
+	auto score = (PlayerScoreDerby**)pScoreManager->pScoresStart;
+	auto end = (PlayerScoreDerby**)pScoreManager->pScoresEnd;
+	while (score < end) {
+		if ((*score)->nPlayerId + 1 == playerId) {
+			return *score;
+		}
+		score++;
+	}
+	return nullptr;
+}
 
 void AddFragDerbyScore(int amount) {
 	if (!nFragDerbyCrashRewards) return;
@@ -32,9 +44,9 @@ void AddFragDerbyScore(int amount) {
 	if (pGame->nGameRules != GR_DERBY) return;
 	if (pGame->nDerbyType != DERBY_FRAG) return;
 
-	auto score = pPlayerScoreDerby;
+	auto score = GetPlayerScoreDerby(1);
 	if (!score) return;
-	score->nScore += amount;
+	score->nScore1 += amount;
 
 	int eventData[9] = {};
 	eventData[0] = 6060;
@@ -75,13 +87,6 @@ float __attribute__((naked)) MoreFragDerbyRewardsASM() {
 	);
 }
 
-auto MoreFragDerbyRewardsGetScoreManager_call = (void*(__thiscall*)(void*, int))0x48FF80;
-void* __fastcall MoreFragDerbyRewardsGetScoreManager(void* a1, void*, int a2) {
-	auto ret = MoreFragDerbyRewardsGetScoreManager_call(a1, a2);
-	if (a2 == 0) pPlayerScoreDerby = (PlayerScoreDerby*)ret;
-	return ret;
-}
-
 void ReadFragDerbyRewardConfig() {
 	auto config = toml::parse_file("Config/FragDerbyRewards.toml");
 	nFragDerbyRewardSlam = config["main"]["Slam"].value_or(nFragDerbyRewardSlam);
@@ -112,6 +117,5 @@ void ApplyArcadeScoringPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4E8506, &MoreFragDerbyRewardsASM);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4E8517, &MoreFragDerbyRewardsASM);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4E8528, &MoreFragDerbyRewardsASM);
-	NyaHookLib::Patch(0x6E2BEC, &MoreFragDerbyRewardsGetScoreManager);
 	NyaHookLib::Fill(0x476DE4, 0x90, 0x476DEA - 0x476DE4); // disable reading of showbonus
 }

@@ -47,6 +47,8 @@ enum eDerbyType {
 
 class Player {
 public:
+	uint8_t _4[0x2C0];
+	uint32_t nPlayerId; // +2C4
 	
 	virtual void _vf0() = 0;
 	virtual void _vf1() = 0;
@@ -72,10 +74,26 @@ public:
 class PlayerScoreDerby {
 public:
 	uint8_t _0[0x4];
-	uint32_t nPlayerId;
-	uint8_t _8[0x4C];
-	uint32_t nScore;
+	uint32_t nPlayerId; // 4
+	uint8_t _8[0x31];
+	uint8_t bKnockedOut; // 39 can be both wrecked or out of time, not set in dm derby
+	uint8_t _3A[0x2];
+	uint32_t nContactTimerCurrentTick; // 3C
+	uint32_t nContactTimerLastHit; // 40
+	uint8_t _44[0x10];
+	uint32_t nScore1; // 54
+	uint32_t nScore2; // 58
+	uint8_t _5C[0x10];
+	uint32_t nLives; // 6C
 };
+
+class ScoreManager {
+public:
+	uint8_t _0[0x8];
+	void** pScoresStart;
+	void** pScoresEnd;
+};
+auto& pScoreManager = *(ScoreManager**)0x846514;
 
 class Game {
 public:
