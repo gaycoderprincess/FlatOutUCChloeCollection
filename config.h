@@ -4,6 +4,7 @@ uint32_t nOpponentCountType = 2;
 uint32_t nPlayerModel = 0;
 uint32_t nPlayerModelSkinID = 0;
 uint32_t nAvatarID = 12;
+uint32_t nArrowColor = 0;
 uint32_t nHUDType = 0;
 uint32_t nAIFudgeDisabled = 0;
 uint32_t nFragDerbyCrashRewards = 1;

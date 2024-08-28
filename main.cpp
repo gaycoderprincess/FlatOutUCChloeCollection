@@ -36,12 +36,26 @@ void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
 	);
 }
 
+void SetArrowColor() {
+	static int nLastArrowColor = -1;
+	if (nLastArrowColor != nArrowColor) {
+		int colorId = nArrowColor;
+		if (colorId <= 0) colorId = -1; // player color is stored 1 space behind ai colors for some reason
+		NyaHookLib::Patch(0x469835, colorId + 65);
+		NyaHookLib::Patch(0x46983B, 0x9298C74 + (colorId * 4));
+		NyaHookLib::Patch(0x469875, colorId + 65);
+		NyaHookLib::Patch(0x46987B, 0x9298C74 + (colorId * 4));
+		nLastArrowColor = nArrowColor;
+	}
+}
+
 void CustomSetterThread() {
 	while (true) {
 		SetSoundtrack();
 		SetPlayerModel();
 		SetHUDType();
 		SetAIFudgeFactor();
+		SetArrowColor();
 		Sleep(500);
 	}
 }
