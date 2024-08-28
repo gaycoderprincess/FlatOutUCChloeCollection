@@ -39,7 +39,7 @@ PlayerScoreDerby* GetPlayerScoreDerby(int playerId) {
 }
 
 void AddFragDerbyScore(int amount) {
-	if (!nFragDerbyCrashRewards) return;
+	//if (!nFragDerbyCrashRewards) return;
 	if (amount <= 0) return;
 	if (pGame->nGameRules != GR_DERBY) return;
 	if (pGame->nDerbyType != DERBY_FRAG) return;
