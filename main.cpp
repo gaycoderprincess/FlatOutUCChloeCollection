@@ -119,6 +119,12 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// 00488451
 			// events are unlocked at 0046504A
 			InitCustomSave();
+
+			// crash exiting an fo1 level at 60d294
+			// d3ddevice+0x7F8 seems to be the end of a fixed size array
+			// maybe this'll help? increased texture & vertex/index buffer max count
+			NyaHookLib::Patch(0x60D3D2 + 1, 8192);
+			NyaHookLib::Patch(0x70E224, 8192);
 		} break;
 		default:
 			break;

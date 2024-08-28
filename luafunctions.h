@@ -247,6 +247,29 @@ int GetCustomPlayerModelSkinID(void* a1) {
 	return 1;
 }
 
+int GetFragDerbyRewardAmount(void* a1) {
+	int type = luaL_checknumber(a1, 1);
+	switch (type) {
+		case 1:
+			lua_pushnumber(a1, nFragDerbyRewardSlam);
+			break;
+		case 2:
+			lua_pushnumber(a1, nFragDerbyRewardSuperFlip);
+			break;
+		case 3:
+			lua_pushnumber(a1, nFragDerbyRewardPowerHit);
+			break;
+		case 4:
+			lua_pushnumber(a1, nFragDerbyRewardBlastOut);
+			break;
+		default:
+			MessageBoxA(nullptr, std::format("LUA error: Invalid parameter given to GetFragDerbyRewardAmount ({})", type).c_str(), "nya?!~", MB_ICONERROR);
+			exit(0);
+			break;
+	}
+	return 1;
+}
+
 auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_pushcfunction(a1, (void*)&GetNumSkinsForCurrentCar, 0);
@@ -273,6 +296,8 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "GetCustomPlayerModelType");
 	lua_pushcfunction(a1, (void*)&GetCustomPlayerModelSkinID, 0);
 	lua_setfield(a1, -10002, "GetCustomPlayerModelSkinID");
+	lua_pushcfunction(a1, (void*)&GetFragDerbyRewardAmount, 0);
+	lua_setfield(a1, -10002, "GetFragDerbyRewardAmount");
 	return lua_pushcfunction_hooked(a1, a2, a3);
 }
 
