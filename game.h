@@ -138,6 +138,29 @@ struct tGameSetting {
 	float maxValue;
 };
 
+uintptr_t SetTextureFolder_call = 0x5A6E20;
+void __attribute__((naked)) __fastcall SetTextureFolder(const char* path) {
+	__asm__ (
+		"mov eax, ecx\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (SetTextureFolder_call)
+	);
+}
+
+uintptr_t SetSharedTextureFolder_call = 0x5A6E90;
+void __attribute__((naked)) __fastcall SetSharedTextureFolder(const char* path) {
+	__asm__ (
+		"mov eax, ecx\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (SetSharedTextureFolder_call)
+	);
+}
+
+auto sTextureFolder = (const char*)0x845B78;
+auto sSharedTextureFolder = (const char*)0x845C80;
+
 auto luaL_checktype = (void(*)(void*, int, int))0x634C70;
 auto luaL_checkudata = (void*(*)(void*, int, const char*))0x634BB0;
 auto luaL_typerror = (void(*)(void*, int, const char*))0x634900;

@@ -49,6 +49,45 @@ void SetArrowColor() {
 	}
 }
 
+uintptr_t NoSlideControlASM_jmp = 0x42B4AE;
+void __attribute__((naked)) __fastcall NoSlideControlASM() {
+	__asm__ (
+		"push ebp\n\t"
+		"mov ebp, esp\n\t"
+		"and esp, 0xFFFFFFF8\n\t"
+		"sub esp, 0x98\n\t"
+		"fldz\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (NoSlideControlASM_jmp)
+	);
+}
+
+void SetSlideControl(bool disabled) {
+	if (disabled) {
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x42F9CE, &NoSlideControlASM);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480D2C, &NoSlideControlASM);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x51460E, &NoSlideControlASM);
+
+		// disable slidecontrol stuff in the fouc code
+		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x42B6B6, 0x42BCF7);
+		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x42C02C, 0x42C26D);
+	}
+	else {
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x42F9CE, 0x42B4A0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480D2C, 0x42B4A0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x51460E, 0x42B4A0);
+	}
+}
+
+void SetSlideControl() {
+	static int nLastSlideControl = -1;
+	if (nLastSlideControl != nSlideControlDisabled) {
+		SetSlideControl(nSlideControlDisabled);
+		nLastSlideControl = nSlideControlDisabled;
+	}
+}
+
 void CustomSetterThread() {
 	while (true) {
 		SetSoundtrack();
@@ -56,16 +95,30 @@ void CustomSetterThread() {
 		SetHUDType();
 		SetAIFudgeFactor();
 		SetArrowColor();
+		SetSlideControl();
 		Sleep(500);
 	}
 }
 
 auto LoadMapIconsTGA_call = (void*(__stdcall*)(void*, const char*, int, int))0x5A6F00;
 void* __stdcall LoadMapIconsTGA(void* a1, const char* a2, int a3, int a4) {
-	SetTextureFolderASM("data/global/overlay/");
+	SetTextureFolder("data/global/overlay/");
 	auto ret = LoadMapIconsTGA_call(a1, a2, a3, a4);
-	SetTextureFolderASM("data/global/map/");
+	SetTextureFolder("data/global/map/");
 	return ret;
+}
+
+void __stdcall TextureErrorHooked(const char* message, const char* path) {
+	std::string err;
+	if (sTextureFolder[0] && sSharedTextureFolder[0]) {
+		err = std::format("Cannot find texture {} in either {} or {}", path, sTextureFolder, sSharedTextureFolder);
+	}
+	else if (sTextureFolder[0] || sSharedTextureFolder[0]) {
+		err = std::format("Cannot find texture {} in {}{}", path, sTextureFolder, sSharedTextureFolder);
+	}
+	else err = std::format("Cannot find texture {}", path);
+	MessageBoxA(nullptr, err.c_str(), "Fatal error", 0x10);
+	exit(0);
 }
 
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
@@ -139,6 +192,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// maybe this'll help? increased texture & vertex/index buffer max count
 			NyaHookLib::Patch(0x60D3D2 + 1, 8192);
 			NyaHookLib::Patch(0x70E224, 8192);
+
+			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5A71FD, &TextureErrorHooked);
 		} break;
 		default:
 			break;

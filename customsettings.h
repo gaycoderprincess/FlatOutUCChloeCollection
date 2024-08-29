@@ -18,6 +18,7 @@ tGameSetting aGameSettings[] = {
 		{ "Game", "OpponentStrength", &nAIFudgeDisabled, 0, 0, 2 },
 		{ "Game", "HUDType", &nHUDType, 0, 0, 1 },
 		//{ "Game", "FragDerbyCrashRewards", &nFragDerbyCrashRewards, 1, 0, 0 },
+		{ "Game", "SlideControlDisabled", &nSlideControlDisabled, 1, 0, 0 },
 		{ "Control", "ControllerGuid", (void*)0x845D98, 3, 0, 0 },
 		{ "Control", "Controller", (void*)0x845DBC, 0, 0, 2 },
 		{ "Control", "ForceFeedback", (void*)0x845DC0, 1, 0, 0 },

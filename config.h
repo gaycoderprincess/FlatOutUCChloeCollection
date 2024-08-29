@@ -12,6 +12,7 @@ uint32_t nNumAIProfiles = 11;
 uint32_t nMPExtrapolation = 1;
 uint32_t nMPInterpolation = 1;
 uint32_t nInterpMinRange = 50;
+uint32_t nSlideControlDisabled = 0;
 int nFragDerbyRewardSlam = 100;
 int nFragDerbyRewardSuperFlip = 250;
 int nFragDerbyRewardPowerHit = 250;

@@ -1,29 +1,9 @@
-uintptr_t SetSharedTextureFolder_call = 0x5A6E90;
-void __attribute__((naked)) __fastcall SetSharedTextureFolderASM(const char* path) {
-	__asm__ (
-		"mov eax, ecx\n\t"
-		"jmp %0\n\t"
-			:
-			: "m" (SetSharedTextureFolder_call)
-	);
-}
-
-uintptr_t SetTextureFolder_call = 0x5A6E20;
-void __attribute__((naked)) __fastcall SetTextureFolderASM(const char* path) {
-	__asm__ (
-		"mov eax, ecx\n\t"
-		"jmp %0\n\t"
-			:
-			: "m" (SetTextureFolder_call)
-	);
-}
-
 void HUDTexturePathHook() {
 	if (nHUDType == 1) {
-		SetTextureFolderASM("data/global/overlay/fo2hud");
+		SetTextureFolder("data/global/overlay/fo2hud");
 	}
-	else SetTextureFolderASM("data/global/overlay");
-	SetSharedTextureFolderASM("data/global/overlay");
+	else SetTextureFolder("data/global/overlay");
+	SetSharedTextureFolder("data/global/overlay");
 }
 
 auto LoadHUDTexturesHooked_call = (void*(__stdcall*)(void*, const char*, const char*, void*, int, int, float))0x4DBA90;
