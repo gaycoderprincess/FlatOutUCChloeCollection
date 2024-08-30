@@ -41,6 +41,14 @@ int GetNumSkinsForCurrentCar(void* a1) {
 	return 1;
 }
 
+int GetCarSkinAuthor(void* a1) {
+	static auto config = toml::parse_file("Config/CarSkins.toml");
+	std::wstring author = config["car" + std::to_string((int)luaL_checknumber(a1, 1))]["skin" + std::to_string((int)luaL_checknumber(a1, 2))].value_or(L"");
+	if (!author.empty()) author = L"Skin Author: " + author;
+	lua_pushlstring(a1, author.c_str(), (author.length() + 1) * 2);
+	return 1;
+}
+
 int GetOpponentCount() {
 	int count = 11;
 	switch (nOpponentCountType) {
@@ -85,7 +93,7 @@ float UpdateMenuCar(void* a1, int a2) {
 }
 
 int GetUnlockIDForCustomCar(int id, bool warn) {
-	auto config = toml::parse_file("Config/CarUnlocks.toml");
+	static auto config = toml::parse_file("Config/CarUnlocks.toml");
 	int replacementId = config["main"]["car" + std::to_string(id)].value_or(-1);
 	if (replacementId < 0) {
 		if (warn) MessageBoxA(nullptr, ("Failed to find unlock data for car " + std::to_string(id) + "!").c_str(), "nya?!~", MB_ICONERROR);
@@ -97,7 +105,7 @@ int GetUnlockIDForCustomCar(int id, bool warn) {
 void GenerateUnlockList() {
 	aCustomCarUnlockList.clear();
 
-	auto config = toml::parse_file("Config/CarUnlocks.toml");
+	static auto config = toml::parse_file("Config/CarUnlocks.toml");
 	for (int i = 0; i < pGame->NumUnlockCar; i++) {
 		for (int j = 0; j < 255; j++) {
 			if (j == pGame->UnlockCar[i]) continue; // don't duplicate
@@ -280,6 +288,8 @@ auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_pushcfunction(a1, (void*)&GetNumSkinsForCurrentCar, 0);
 	lua_setfield(a1, -10002, "GetNumSkinsForCurrentCar");
+	lua_pushcfunction(a1, (void*)&GetCarSkinAuthor, 0);
+	lua_setfield(a1, -10002, "GetCarSkinAuthor");
 	lua_pushcfunction(a1, (void*)&HasCCWelcomeScreenDisplayed, 0);
 	lua_setfield(a1, -10002, "HasCCWelcomeScreenDisplayed");
 	lua_pushcfunction(a1, (void*)&SetCCWelcomeScreenDisplayed, 0);

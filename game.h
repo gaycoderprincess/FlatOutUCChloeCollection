@@ -169,4 +169,5 @@ auto luaL_checknumber = (float(*)(void*, int))0x634DD0;
 auto lua_setfield = (void(*)(void*, int, const char*))0x633D20;
 auto lua_pushcfunction = (void(*)(void*, void*, int))0x633750;
 auto lua_pushboolean = (int(*)(void*, int))0x633870;
+auto lua_pushlstring = (int(*)(void*, const wchar_t*, size_t))0x6335D0;
 auto BFSManager_DoesFileExist = (bool(__stdcall*)(void*, const char*, int*))0x5B7170;
