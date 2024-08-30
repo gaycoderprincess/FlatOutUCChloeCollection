@@ -13,14 +13,16 @@ float __attribute__((naked)) MoreAIProfilesASM() {
 
 auto InitAIHooked_call = (void(__stdcall*)(void*, int))0x4693F0;
 void __stdcall InitAIHooked(void* a1, int count) {
-	count = GetOpponentCount();
-	if (pGame->nGameRules == GR_STUNT) count = 7;
-	if (nForceAICountNextRace >= 0) {
-		count = nForceAICountNextRace;
-		nForceAICountNextRace = -1;
-	}
-	if (pGame->nGameMode == GM_CAREER && count > 11) {
-		count = 11;
+	if (count >= 7) {
+		count = GetOpponentCount();
+		if (pGame->nGameRules == GR_STUNT) count = 7;
+		if (nForceAICountNextRace >= 0) {
+			count = nForceAICountNextRace;
+			nForceAICountNextRace = -1;
+		}
+		if (pGame->nGameMode == GM_CAREER && count > 11) {
+			count = 11;
+		}
 	}
 	return InitAIHooked_call(a1, count);
 }

@@ -281,7 +281,13 @@ int GetFragDerbyRewardAmount(void* a1) {
 void SetSlideControl(bool disabled);
 int SetHandlingMode(void* a1) {
 	SetSlideControl(luaL_checknumber(a1, 1));
-	return 1;
+	return 0;
+}
+
+void ApplyAIExtenderPatches();
+int ReinitChloeCollectionHooks(void* a1) {
+	ApplyAIExtenderPatches();
+	return 0;
 }
 
 auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
@@ -316,6 +322,8 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "GetFragDerbyRewardAmount");
 	lua_pushcfunction(a1, (void*)&SetHandlingMode, 0);
 	lua_setfield(a1, -10002, "SetHandlingMode");
+	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
+	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
 	return lua_pushcfunction_hooked(a1, a2, a3);
 }
 
