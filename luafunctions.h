@@ -4,6 +4,16 @@ int nForceAICountNextRace = -1;
 uint32_t nCurrentMenuCar = 0;
 std::vector<int> aCustomCarUnlockList;
 
+auto GetStringWide(const std::string& string) {
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.from_bytes(string);
+}
+
+auto GetStringNarrow(const std::wstring& string) {
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.to_bytes(string);
+}
+
 uintptr_t GetCarDataPath_call = 0x4C6340;
 int __attribute__((naked)) __fastcall GetCarDataPath(int dbCar, bool isMenuCar) {
 	__asm__ (
@@ -284,6 +294,34 @@ int SetHandlingMode(void* a1) {
 	return 0;
 }
 
+int OpenChloeInputWindow(void* a1) {
+	sInputWindowTitle = GetStringNarrow(lua_tolstring(a1, 1, nullptr));
+	nInputEntryLength = luaL_checknumber(a1, 2);
+	if (nInputEntryLength < 1) nInputEntryLength = 1;
+	if (nInputEntryLength > nMaxInputEntry) nInputEntryLength = nMaxInputEntry;
+	SetInputWindowOpen(true);
+	return 0;
+}
+
+int CloseChloeInputWindow(void* a1) {
+	SetInputWindowOpen(false);
+	return 0;
+}
+
+int GetChloeInputWindowText(void* a1) {
+	if (sInputWindowLastEntry.empty()) return 0;
+
+	auto str = GetStringWide(sInputWindowLastEntry);
+	lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	sInputWindowLastEntry = "";
+	return 1;
+}
+
+int IsChloeInputWindowCanceled(void* a1) {
+	lua_pushboolean(a1, !bInputWindowOpen && sInputWindowLastEntry.empty());
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ReinitChloeCollectionHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -322,6 +360,14 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "GetFragDerbyRewardAmount");
 	lua_pushcfunction(a1, (void*)&SetHandlingMode, 0);
 	lua_setfield(a1, -10002, "SetHandlingMode");
+	lua_pushcfunction(a1, (void*)&OpenChloeInputWindow, 0);
+	lua_setfield(a1, -10002, "OpenChloeInputWindow");
+	lua_pushcfunction(a1, (void*)&CloseChloeInputWindow, 0);
+	lua_setfield(a1, -10002, "CloseChloeInputWindow");
+	lua_pushcfunction(a1, (void*)&GetChloeInputWindowText, 0);
+	lua_setfield(a1, -10002, "GetChloeInputWindowText");
+	lua_pushcfunction(a1, (void*)&IsChloeInputWindowCanceled, 0);
+	lua_setfield(a1, -10002, "IsChloeInputWindowCanceled");
 	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
 	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
 	return lua_pushcfunction_hooked(a1, a2, a3);

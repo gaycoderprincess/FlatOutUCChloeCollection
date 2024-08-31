@@ -4,7 +4,6 @@ void SavePlayerName(const wchar_t* name) {
 	gCustomSave.Save();
 }
 
-auto lua_tolstring = (const wchar_t*(*)(void*, int, void*))0x6332B0;
 const wchar_t* SaveNameHook(void* a1, int a2, void* a3) {
 	auto name = lua_tolstring(a1, a2, a3);
 	SavePlayerName(name);

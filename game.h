@@ -138,6 +138,46 @@ struct tGameSetting {
 	float maxValue;
 };
 
+class Font {
+public:
+	uint8_t _0[0xC];
+	NyaDrawing::CNyaRGBA32 nColor; // +C
+	uint8_t _10[0x2C];
+	struct
+	{
+		bool bXCenterAlign : 1;
+		bool bXRightAlign : 1;
+	}; // +34
+	uint8_t _38[0x14];
+	float fScaleX; // +4C
+	float fScaleY; // +50
+
+	static inline auto GetFont = (Font*(__stdcall*)(void*, const char*))0x457D00;
+	static inline auto Display = (void(*)(Font*, float, float, const wchar_t*, ...))0x5A8BE0;
+};
+
+void DrawStringFO2(tNyaStringData data, const wchar_t* string, const char* font) {
+	auto pFont = Font::GetFont(*(void**)(0x9298FD8), font);
+	pFont->fScaleX = data.size * nResX / 20.0;
+	pFont->fScaleY = data.size * nResY / 20.0;
+	pFont->bXRightAlign = data.XRightAlign;
+	pFont->bXCenterAlign = data.XCenterAlign;
+	pFont->nColor.r = data.b;
+	pFont->nColor.g = data.g;
+	pFont->nColor.b = data.r;
+	pFont->nColor.a = data.a;
+	pFont->fScaleX *= GetAspectRatioInv();
+	if (data.YCenterAlign) {
+		data.y -= data.size * 0.5;
+	}
+	Font::Display(pFont, data.x * nResX, data.y * nResY, string);
+}
+
+void DrawStringFO2(const tNyaStringData& data, const std::string& name) {
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	DrawStringFO2(data, converter.from_bytes(name).c_str(), "FontLarge");
+}
+
 uintptr_t SetTextureFolder_call = 0x5A6E20;
 void __attribute__((naked)) __fastcall SetTextureFolder(const char* path) {
 	__asm__ (
@@ -165,6 +205,7 @@ auto luaL_checktype = (void(*)(void*, int, int))0x634C70;
 auto luaL_checkudata = (void*(*)(void*, int, const char*))0x634BB0;
 auto luaL_typerror = (void(*)(void*, int, const char*))0x634900;
 auto lua_pushnumber = (int(*)(void*, float))0x633550;
+auto lua_tolstring = (const wchar_t*(*)(void*, int, void*))0x6332B0;
 auto luaL_checknumber = (float(*)(void*, int))0x634DD0;
 auto lua_setfield = (void(*)(void*, int, const char*))0x633D20;
 auto lua_pushcfunction = (void(*)(void*, void*, int))0x633750;
