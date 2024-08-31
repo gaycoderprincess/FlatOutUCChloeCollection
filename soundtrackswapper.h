@@ -10,6 +10,7 @@ void SetSoundtrack() {
 	const char *suffix = "";
 	if (nSoundtrack == 1) suffix = "fo2";
 	if (nSoundtrack == 2) suffix = "fouc";
+	if (nSoundtrack == 3) suffix = "fo1";
 
 	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, suffix);
 	snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, suffix);

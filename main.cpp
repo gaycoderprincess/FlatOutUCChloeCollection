@@ -20,6 +20,7 @@
 #include "aiextender.h"
 #include "aiupgrades.h"
 #include "ailuahacks.h"
+#include "handlingmode.h"
 #include "skindbextender.h"
 #include "instantaction.h"
 #include "customhud.h"
@@ -36,6 +37,35 @@ void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
 	);
 }
 
+uint32_t bSetupDialogRan = 0;
+uintptr_t SkipSetupASM_jmpSetup = 0x457252;
+uintptr_t SkipSetupASM_jmpNoSetup = 0x4572B7;
+void __attribute__((naked)) __fastcall SkipSetupASM() {
+	__asm__ (
+		// show setup with the -setup parameter
+		"mov edx, 0x8465EC\n\t"
+		"cmp dword ptr [edx], 0\n\t"
+		"je noSetup\n\t"
+
+		"mov edx, 1\n\t"
+		"mov %2, edx\n\t"
+		"xor edx, edx\n\t"
+		"push ebx\n\t"
+		"push ebx\n\t"
+		"push ebx\n\t"
+		"push ebx\n\t"
+		"push 0x82\n\t"
+		"push edi\n\t"
+		"jmp %0\n\t"
+
+		"noSetup:\n\t"
+		"xor edx, edx\n\t"
+		"jmp %1\n\t"
+			:
+			: "m" (SkipSetupASM_jmpSetup), "m" (SkipSetupASM_jmpNoSetup), "m" (bSetupDialogRan)
+	);
+}
+
 void SetArrowColor() {
 	static int nLastArrowColor = -1;
 	if (nLastArrowColor != nArrowColor) {
@@ -49,55 +79,55 @@ void SetArrowColor() {
 	}
 }
 
-uintptr_t NoSlideControlASM_jmp = 0x42B4AE;
-void __attribute__((naked)) __fastcall NoSlideControlASM() {
-	__asm__ (
-		"push ebp\n\t"
-		"mov ebp, esp\n\t"
-		"and esp, 0xFFFFFFF8\n\t"
-		"sub esp, 0x98\n\t"
-		"fldz\n\t"
-		"jmp %0\n\t"
-			:
-			: "m" (NoSlideControlASM_jmp)
-	);
+RECT GetMonitorRect(HWND hwnd) {
+	RECT rect;
+	auto monitor = MonitorFromWindow(hwnd, 0);
+	MONITORINFO mi;
+	memset(&mi, 0, sizeof(mi));
+	mi.cbSize = sizeof(mi);
+	if (monitor && GetMonitorInfoA(monitor, &mi)) rect = mi.rcWork;
+	else SystemParametersInfoA(0x30u, 0, &rect, 0);
+	return rect;
 }
 
-void SetSlideControl(bool disabled) {
-	if (disabled) {
-		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x42F9CE, &NoSlideControlASM);
-		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480D2C, &NoSlideControlASM);
-		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x51460E, &NoSlideControlASM);
+void SetWindowedMode() {
+	static int nLastWindowed = -1;
+	if (nLastWindowed != nWindowedMode) {
+		auto hwnd = *(HWND*)(0x7242B0 + 0x7C);
+		auto resX = *(int*)0x764A84;
+		auto resY = *(int*)0x764A88;
+		auto rect = GetMonitorRect(hwnd);
 
-		// disable slidecontrol stuff in the fouc code
-		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x42B6B6, 0x42BCF7);
-		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x42C02C, 0x42C26D);
-	}
-	else {
-		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x42F9CE, 0x42B4A0);
-		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480D2C, 0x42B4A0);
-		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x51460E, 0x42B4A0);
-	}
-}
-
-void SetSlideControl() {
-	static int nLastSlideControl = -1;
-	if (nLastSlideControl != nSlideControlDisabled) {
-		SetSlideControl(nSlideControlDisabled);
-		nLastSlideControl = nSlideControlDisabled;
+		auto style = GetWindowLongA(hwnd, GWL_STYLE);
+		uint32_t targetStyle = (WS_CAPTION | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+		if (nWindowedMode) style |= targetStyle;
+		else style &= ~targetStyle;
+		SetWindowLongA(hwnd, GWL_STYLE, style);
+		SetWindowPos(hwnd, nullptr, rect.left, rect.top, resX, resY, SWP_NOZORDER | SWP_FRAMECHANGED);
+		SetFocus(hwnd);
+		nLastWindowed = nWindowedMode;
 	}
 }
 
 void CustomSetterThread() {
-	while (true) {
-		SetSoundtrack();
-		SetPlayerModel();
-		SetHUDType();
-		SetAIFudgeFactor();
-		SetArrowColor();
-		SetSlideControl();
-		Sleep(500);
+	// set windowed mode to the desired option if the setup dialog is used
+	if (bSetupDialogRan) {
+		nWindowedMode = *(int*)0x764AAC;
 	}
+
+	SetSoundtrack();
+	SetPlayerModel();
+	SetHUDType();
+	SetAIFudgeFactor();
+	SetArrowColor();
+	SetSlideControl();
+	SetWindowedMode();
+}
+
+auto EndSceneOrig = (HRESULT(__thiscall*)(void*))nullptr;
+HRESULT __fastcall EndSceneHook(void* a1) {
+	CustomSetterThread();
+	return EndSceneOrig(a1);
 }
 
 auto LoadMapIconsTGA_call = (void*(__stdcall*)(void*, const char*, int, int))0x5A6F00;
@@ -130,6 +160,19 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 				return TRUE;
 			}
 
+			// don't show cursor
+			NyaHookLib::Patch(0x60F23B, 0x9090D231);
+
+			// always run in windowed - this'll be borderless
+			static uint32_t bWindowedTmp = 1;
+			NyaHookLib::Patch(0x4572DA, &bWindowedTmp);
+
+			// skip setup window if already configured
+			if (std::filesystem::exists("Savegame/device.cfg")) {
+				NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x457248, &SkipSetupASM);
+			}
+			else bSetupDialogRan = true;
+
 			// there's a check against car count at 46B440
 			// seems to check if the current car was a bonus car?
 
@@ -159,7 +202,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x465F46, 0x467312); // disable video recording
 
-			std::thread(CustomSetterThread).detach();
+			EndSceneOrig = (HRESULT(__thiscall*)(void*))(*(uintptr_t*)0x677448);
+			NyaHookLib::Patch(0x677448, &EndSceneHook);
 			HookMalloc();
 			ApplyCustomSettingsPatches();
 			ApplySoundtrackPatches();
