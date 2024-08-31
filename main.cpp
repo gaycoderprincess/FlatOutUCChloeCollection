@@ -30,6 +30,7 @@
 #include "setupskip.h"
 #include "windowedmode.h"
 #include "d3dhook.h"
+#include "ultrawide.h"
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
 void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
@@ -168,6 +169,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyPlayerModelPatches();
 			ApplySetupSkipPatches();
 			ApplyWindowedModePatches();
+			ApplyUltrawidePatches();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 

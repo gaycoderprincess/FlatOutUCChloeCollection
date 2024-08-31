@@ -21,6 +21,7 @@ void SetWindowedMode() {
 		auto resX = *(int*)0x764A84;
 		auto resY = *(int*)0x764A88;
 		auto rect = GetMonitorRect(hwnd);
+		if (!nWindowedMode && rect.right - rect.left > resX) resX = rect.right - rect.left;
 
 		auto style = GetWindowLongA(hwnd, GWL_STYLE);
 		uint32_t targetStyle = (WS_CAPTION | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
