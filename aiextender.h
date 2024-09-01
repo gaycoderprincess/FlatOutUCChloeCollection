@@ -77,7 +77,7 @@ void __attribute__((naked)) __fastcall GetAINameASM() {
 }
 
 void __fastcall GhostForMoreOpponents(Player* pPlayer) {
-	if (GetOpponentCount() > 11) {
+	if (GetOpponentCount() > 7) {
 		int eventProperties[] = {6040, 0, 0, 0, 500};
 		pPlayer->TriggerEvent(eventProperties);
 	}
