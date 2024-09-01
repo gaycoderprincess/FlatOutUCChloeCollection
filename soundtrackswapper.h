@@ -12,7 +12,13 @@ void SetSoundtrack() {
 	if (nSoundtrack == 2) suffix = "fouc";
 	if (nSoundtrack == 3) suffix = "fo1";
 
-	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, suffix);
+	// no fo1 menu music because we can't have nice things
+	if (nSoundtrack == 3) {
+		snprintf(aPlaylistTitlePath, 64, "%s.bed", aPlaylistTitleBasePath);
+	}
+	else {
+		snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, suffix);
+	}
 	snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, suffix);
 
 	if (nLastSoundtrack != nSoundtrack) {

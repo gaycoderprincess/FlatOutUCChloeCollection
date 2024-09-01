@@ -6,6 +6,7 @@ void SetAIFudgeFactor() {
 		static float fFudgeNone = 1.0;
 		static float fFudgeHard = 0.75;
 		NyaHookLib::Patch(0x480ACF + 2, nAIFudgeDisabled == 2 ? &fFudgeHard : &fFudgeNone);
+		NyaHookLib::Patch<uint8_t>(0x481894, nAIFudgeDisabled > 1 ? 0xEB : 0x74); // disable catchup and velocity limits
 		nLastAIFudgeDisabled = nAIFudgeDisabled;
 	}
 }
