@@ -13,6 +13,7 @@ uint32_t nMPExtrapolation = 1;
 uint32_t nMPInterpolation = 1;
 uint32_t nInterpMinRange = 50;
 uint32_t nSlideControlDisabled = 0;
+uint32_t nPlayerFlag = 0;
 uint32_t nWindowedMode = 0;
 int nFragDerbyRewardSlam = 100;
 int nFragDerbyRewardSuperFlip = 250;
