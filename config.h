@@ -9,7 +9,6 @@ uint32_t nHUDType = 0;
 uint32_t nAIFudgeDisabled = 0;
 //uint32_t nFragDerbyCrashRewards = 1;
 uint32_t nNumAIProfiles = 11;
-uint32_t nMPExtrapolation = 1;
 uint32_t nMPInterpolation = 1;
 uint32_t nInterpMinRange = 50;
 uint32_t nSlideControlDisabled = 0;
