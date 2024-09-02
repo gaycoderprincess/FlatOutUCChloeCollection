@@ -9,8 +9,8 @@ void __fastcall SetAIUpgradeCarTarget(int carId) {
 	// insetta for race cars
 	if (carId >= 9 && carId < 19) nAIUpgradeCarTargetReturn = 19;
 
-	// bullet gt for street cars
-	if (carId >= 20 && carId < 33) nAIUpgradeCarTargetReturn = 33;
+	// road king for street cars
+	if (carId >= 20 && carId < 33) nAIUpgradeCarTargetReturn = 32;
 
 	// 0 for chili
 	// 45 46 for bonecracker grinder
