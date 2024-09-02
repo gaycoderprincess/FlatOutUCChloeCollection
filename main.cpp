@@ -43,6 +43,17 @@ void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
 	);
 }
 
+uintptr_t NoDebugQuitASM_jmp = 0x55AAB9;
+void __attribute__((naked)) __fastcall NoDebugQuitASM() {
+	__asm__ (
+		"mov eax, 0x80004004\n\t"
+		"cmp eax, 0x80004004\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (NoDebugQuitASM_jmp)
+	);
+}
+
 void SetArrowColor() {
 	static int nLastArrowColor = -1;
 	if (nLastArrowColor != nArrowColor) {
@@ -191,6 +202,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			NyaHookLib::Patch(0x70E224, 8192);
 
 			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5A71FD, &TextureErrorHooked);
+
+			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55AAB4, &NoDebugQuitASM);
 		} break;
 		default:
 			break;
