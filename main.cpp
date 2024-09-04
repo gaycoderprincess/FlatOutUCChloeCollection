@@ -16,6 +16,7 @@
 #include "arcadescoring.h"
 #include "playermodels.h"
 #include "custominput.h"
+#include "profiles.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"
@@ -181,6 +182,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplySetupSkipPatches();
 			ApplyWindowedModePatches();
 			ApplyUltrawidePatches();
+			ApplyProfilePatches();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 

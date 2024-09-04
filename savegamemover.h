@@ -1,6 +1,7 @@
 void SavePlayerName(const wchar_t* name) {
 	if (wcslen(name) >= 32) return;
 	wcscpy_s(gCustomSave.playerName, 32, name);
+	if (!gCustomSave.playerName[0]) wcscpy_s(gCustomSave.playerName, 32, L"PLAYER");
 	gCustomSave.Save();
 }
 
@@ -33,7 +34,7 @@ void __attribute__((naked)) SaveFolderOverride() {
 }
 
 void __stdcall SavegamePlayerID(int id, uint64_t* out) {
-	*out = 1;
+	*out = nSaveSlot;
 }
 
 void ApplySavegameMoverPatches() {

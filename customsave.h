@@ -1,6 +1,8 @@
 const int nNumArcadeRacesX = 6;
 const int nNumArcadeRacesY = 6;
 
+int nSaveSlot = 1;
+
 class ArcadeRaceStats {
 public:
 	uint32_t score;
@@ -20,6 +22,10 @@ public:
 	} aArcadeClasses[0];
 };
 
+std::string GetCustomSavePath(int id) {
+	return std::format("Savegame/customsave{:03}.sav", id);
+}
+
 struct tCustomSaveStructure {
 	wchar_t playerName[32];
 	bool bWelcomeScreenDisplayed;
@@ -27,20 +33,30 @@ struct tCustomSaveStructure {
 		uint32_t score;
 		uint32_t placement;
 	} aArcadeRaces[nNumArcadeRacesX][nNumArcadeRacesY];
+	uint32_t numCarsUnlocked;
+	uint32_t numCupsPassed;
+	uint32_t gameProgress;
+	uint8_t playerPortrait;
+
+	static inline bool bOverrideAllArcadeScores = false;
 
 	tCustomSaveStructure() {
 		memset(this,0,sizeof(*this));
 	}
-	void Load() {
-		auto file = std::ifstream("Savegame/customsave.sav", std::ios::in | std::ios::binary);
+	void Load(int saveSlot, bool overrideArcadeScores) {
+		// override all scores on the first load since swapping profiles doesn't properly clear it
+		if (overrideArcadeScores) bOverrideAllArcadeScores = true;
+
+		memset(this,0,sizeof(*this));
+
+		auto file = std::ifstream(GetCustomSavePath(saveSlot), std::ios::in | std::ios::binary);
 		if (!file.is_open()) return;
 
 		file.read((char*)this, sizeof(*this));
 		if (playerName[31]) playerName[31] = 0;
 	}
 	void Save() {
-		auto savePath = (char*)0x8255B0;
-		auto file = std::ofstream(savePath + (std::string)"/Savegame/customsave.sav", std::ios::out | std::ios::binary);
+		auto file = std::ofstream(GetCustomSavePath(nSaveSlot), std::ios::out | std::ios::binary);
 		if (!file.is_open()) return;
 
 		file.write((char*)this, sizeof(*this));
@@ -58,11 +74,11 @@ struct tCustomSaveStructure {
 			for (int y = 0; y < numRaces; y++) {
 				auto vanillaSave = &profile->aArcadeClasses[x].races[y];
 				auto customSave = GetArcadeRace(x, y);
-				if (customSave->score > vanillaSave->score) {
+				if (customSave->score > vanillaSave->score || bOverrideAllArcadeScores) {
 					vanillaSave->score = customSave->score;
 					vanillaSave->placement = customSave->placement;
 				}
-				if (vanillaSave->score > customSave->score) {
+				else if (vanillaSave->score > customSave->score) {
 					customSave->score = vanillaSave->score;
 					customSave->placement = vanillaSave->placement;
 					customSaveModified = true;
@@ -73,11 +89,13 @@ struct tCustomSaveStructure {
 		if (customSaveModified) {
 			Save();
 		}
+
+		bOverrideAllArcadeScores = false;
 	}
 } gCustomSave;
 
 void InitCustomSave() {
-	gCustomSave.Load();
+	gCustomSave.Load(nSaveSlot, true);
 	// always set playername, required for some mp stuff
 	NyaHookLib::Patch<uint8_t>(0x4879E7, 0xEB);
 	NyaHookLib::Patch(0x487A2B + 1, &gCustomSave.playerName);

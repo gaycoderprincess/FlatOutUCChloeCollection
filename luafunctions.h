@@ -322,6 +322,145 @@ int IsChloeInputWindowCanceled(void* a1) {
 	return 1;
 }
 
+int ChloeProfiles_DoesProfileExist(void* a1) {
+	lua_pushboolean(a1, std::filesystem::exists(GetProfilePath((luaL_checknumber(a1, 1)))));
+	return 1;
+}
+
+int ChloeProfiles_IsProfileValid(void* a1) {
+	lua_pushboolean(a1, IsProfileValid(luaL_checknumber(a1, 1)));
+	return 1;
+}
+
+int ChloeProfiles_GetProfileName(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	auto str = (std::wstring)GetProfileName(id);
+	lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	return 1;
+}
+
+int ChloeProfiles_GetProfileCar(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileCar(id));
+	return 1;
+}
+
+int ChloeProfiles_GetProfileClass(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileClass(id));
+	return 1;
+}
+
+int ChloeProfiles_GetProfileCupsCompleted(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileCupsCompleted(id));
+	return 1;
+}
+
+int ChloeProfiles_GetProfileCarsUnlocked(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileCarsUnlocked(id));
+	return 1;
+}
+
+int ChloeProfiles_GetProfileProgress(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileProgress(id));
+	return 1;
+}
+
+int ChloeProfiles_GetProfilePortrait(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfilePortrait(id));
+	return 1;
+}
+
+int ChloeProfiles_GetProfileMoney(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileMoney(id));
+	return 1;
+}
+
+int ChloeProfiles_SetProfileSlot(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (id < 1) return 0;
+	nSaveSlot = id;
+	return 0;
+}
+
+int ChloeProfiles_HasLoaded(void* a1) {
+	lua_pushboolean(a1, bHasProfileLoaded);
+	bHasProfileLoaded = false;
+	return 1;
+}
+
+int ChloeProfiles_WasLoadSuccessful(void* a1) {
+	lua_pushboolean(a1, bWasProfileLoadSuccessful);
+	return 1;
+}
+
+int ChloeProfiles_DeleteProfile(void* a1) {
+	DeleteProfile(luaL_checknumber(a1, 1));
+	return 0;
+}
+
+int ChloeProfiles_LoadPlayerNameFromProfile(void* a1) {
+	gCustomSave.Load(nSaveSlot, true);
+	wcscpy_s(gCustomSave.playerName, 32, GetProfileName(nSaveSlot));
+	if (!gCustomSave.playerName[0]) wcscpy_s(gCustomSave.playerName, 32, L"PLAYER");
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeProfiles_SetNumCupsPassed(void* a1) {
+	gCustomSave.numCupsPassed = luaL_checknumber(a1, 1);
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeProfiles_SetNumCarsUnlocked(void* a1) {
+	gCustomSave.numCarsUnlocked = luaL_checknumber(a1, 1);
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeProfiles_SetGameProgress(void* a1) {
+	gCustomSave.gameProgress = luaL_checknumber(a1, 1);
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeProfiles_SetProfilePortrait(void* a1) {
+	gCustomSave.playerPortrait = luaL_checknumber(a1, 1);
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeProfiles_GetNumArcadeEventsPassed(void* a1) {
+	int numRacesPassed = 0;
+	for (int x = 0; x < nNumArcadeRacesX; x++) {
+		for (int y = 0; y < nNumArcadeRacesY; y++) {
+			auto pos = gCustomSave.aArcadeRaces[x][y].placement;
+			if (pos > 0 && pos <= 3) numRacesPassed++;
+		}
+	}
+	lua_pushnumber(a1, numRacesPassed);
+	return 1;
+}
+
+int ChloeProfiles_GetNumArcadeEvents(void* a1) {
+	lua_pushnumber(a1, nNumArcadeRacesX * nNumArcadeRacesY);
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ReinitChloeCollectionHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -368,6 +507,48 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "GetChloeInputWindowText");
 	lua_pushcfunction(a1, (void*)&IsChloeInputWindowCanceled, 0);
 	lua_setfield(a1, -10002, "IsChloeInputWindowCanceled");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_DoesProfileExist, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_DoesProfileExist");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_IsProfileValid, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_IsProfileValid");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileName, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileName");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileCar, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileCar");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileClass, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileClass");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileCupsCompleted, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileCupsCompleted");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileCarsUnlocked, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileCarsUnlocked");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileProgress, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileProgress");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfilePortrait, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfilePortrait");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileMoney, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileMoney");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetProfileSlot, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_SetProfileSlot");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_HasLoaded, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_HasLoaded");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_WasLoadSuccessful, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_WasLoadSuccessful");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_DeleteProfile, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_DeleteProfile");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_LoadPlayerNameFromProfile, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_LoadPlayerNameFromProfile");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetNumCupsPassed, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_SetNumCupsPassed");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetNumCarsUnlocked, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_SetNumCarsUnlocked");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetGameProgress, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_SetGameProgress");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetProfilePortrait, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_SetProfilePortrait");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetNumArcadeEventsPassed, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetNumArcadeEventsPassed");
+	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetNumArcadeEvents, 0);
+	lua_setfield(a1, -10002, "ChloeProfiles_GetNumArcadeEvents");
 	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
 	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
 	return lua_pushcfunction_hooked(a1, a2, a3);
