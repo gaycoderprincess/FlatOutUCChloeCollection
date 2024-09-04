@@ -48,6 +48,7 @@ struct tCustomSaveStructure {
 		if (overrideArcadeScores) bOverrideAllArcadeScores = true;
 
 		memset(this,0,sizeof(*this));
+		playerPortrait = 12; // none
 
 		auto file = std::ifstream(GetCustomSavePath(saveSlot), std::ios::in | std::ios::binary);
 		if (!file.is_open()) return;

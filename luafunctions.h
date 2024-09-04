@@ -449,7 +449,7 @@ int ChloeProfiles_GetNumArcadeEventsPassed(void* a1) {
 	for (int x = 0; x < nNumArcadeRacesX; x++) {
 		for (int y = 0; y < nNumArcadeRacesY; y++) {
 			auto pos = gCustomSave.aArcadeRaces[x][y].placement;
-			if (pos > 0 && pos <= 3) numRacesPassed++;
+			if (pos == 1) numRacesPassed++; // arcade events should only count if golded
 		}
 	}
 	lua_pushnumber(a1, numRacesPassed);
@@ -554,6 +554,14 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	return lua_pushcfunction_hooked(a1, a2, a3);
 }
 
+int DebugConsolePrint(void* a1) {
+	static auto file = std::ofstream("scriptlog.txt");
+	file << (const char*)lua_tolstring(a1, 1, nullptr);
+	file << "\n";
+	file.flush();
+	return 0;
+}
+
 void ApplyLUAPatches() {
 	luaL_checknumber = (float(*)(void*, int))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D653A, &UpdateMenuCar);
 	lua_pushcfunction_hooked = (void(*)(void*, void*, int))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4C9829, &CustomLUAFunctions);
@@ -562,4 +570,5 @@ void ApplyLUAPatches() {
 	NyaHookLib::Patch(0x715B24, &IsArcadeLevelLocked);
 	NyaHookLib::Patch(0x715B3C, &GetArcadeLevelScore);
 	NyaHookLib::Patch(0x715B54, &GetArcadeTotalScore);
+	//NyaHookLib::Patch(0x462615 + 1, &DebugConsolePrint);
 }
