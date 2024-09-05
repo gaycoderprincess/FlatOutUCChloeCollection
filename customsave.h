@@ -1,7 +1,7 @@
 const int nNumArcadeRacesX = 6;
 const int nNumArcadeRacesY = 6;
 
-int nSaveSlot = 1;
+int nSaveSlot = 999;
 
 class ArcadeRaceStats {
 public:
@@ -15,7 +15,7 @@ static_assert(sizeof(ArcadeRaceStats) == 0x70);
 
 class PlayerProfile {
 public:
-	uint8_t _0[0x3C8];
+	uint8_t _0[0x3D0];
 	struct {
 		ArcadeRaceStats* races;
 		uint32_t _4;
@@ -63,18 +63,15 @@ struct tCustomSaveStructure {
 		file.write((char*)this, sizeof(*this));
 	}
 
-	auto GetArcadeRace(int x, int y) {
-		return &aArcadeRaces[x-1][y];
-	}
 	void UpdateArcadeRace(PlayerProfile* profile) {
 		bool customSaveModified = false;
 
 		int numClasses = nNumArcadeRacesX;
 		int numRaces = nNumArcadeRacesY;
-		for (int x = 1; x < numClasses + 1; x++) {
+		for (int x = 0; x < numClasses; x++) {
 			for (int y = 0; y < numRaces; y++) {
 				auto vanillaSave = &profile->aArcadeClasses[x].races[y];
-				auto customSave = GetArcadeRace(x, y);
+				auto customSave = &aArcadeRaces[x][y];
 				if (customSave->score > vanillaSave->score || bOverrideAllArcadeScores) {
 					vanillaSave->score = customSave->score;
 					vanillaSave->placement = customSave->placement;
@@ -96,14 +93,8 @@ struct tCustomSaveStructure {
 } gCustomSave;
 
 void InitCustomSave() {
-	gCustomSave.Load(nSaveSlot, true);
 	// always set playername, required for some mp stuff
 	NyaHookLib::Patch<uint8_t>(0x4879E7, 0xEB);
 	NyaHookLib::Patch(0x487A2B + 1, &gCustomSave.playerName);
 	NyaHookLib::Patch(0x48767E + 1, &gCustomSave.playerName);
-	// set default name
-	if (!gCustomSave.playerName[0] || !wcscmp(gCustomSave.playerName, L"PLAYER")) {
-		wcscpy_s(gCustomSave.playerName, 32, L"PLAYER");
-		gCustomSave.bWelcomeScreenDisplayed = false;
-	}
 }

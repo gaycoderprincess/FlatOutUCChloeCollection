@@ -122,6 +122,23 @@ void __stdcall TextureErrorHooked(const char* message, const char* path) {
 	exit(0);
 }
 
+void __stdcall OutOfBoundsAccessHooked(const char* message, const char* propertyName, int num) {
+	MessageBoxA(nullptr, std::format("PropertyDb: out-of-bounds access of property '{}' (offset {})", propertyName, num).c_str(), "Fatal error", 0x10);
+	exit(0);
+}
+
+void __attribute__((naked)) __fastcall OutOfBoundsAccessErrorASM() {
+	__asm__ (
+		"mov edx, [eax]\n"
+		"push esi\n\t"
+		"push edx\n\t"
+		"push 0x6F3AA4\n\t"
+		"call %0\n\t"
+			:
+			: "i" (OutOfBoundsAccessHooked)
+	);
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -206,6 +223,15 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5A71FD, &TextureErrorHooked);
 
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55AAB4, &NoDebugQuitASM);
+
+			// road king gives out of bounds when reading the Car[%d] db
+			// value is set to 255 by 00487953 (profile reset) and is then read as 255 by 4C7EB7
+			// was 32 on game startup, inited by sub_45EBE0
+			// removing this for now, it resets arcade scores seemingly, so useless here cuz of the new arcade save system
+			NyaHookLib::Patch<uint8_t>(0x48794C, 0xEB);
+			NyaHookLib::Patch<uint8_t>(0x48796F, 0xEB);
+
+			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5B2635, &OutOfBoundsAccessErrorASM);
 		} break;
 		default:
 			break;
