@@ -32,6 +32,7 @@
 #include "windowedmode.h"
 #include "d3dhook.h"
 #include "ultrawide.h"
+#include "verboseerrors.h"
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
 void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
@@ -109,36 +110,6 @@ void* __stdcall LoadMapIconsTGA(void* a1, const char* a2, int a3, int a4) {
 	return ret;
 }
 
-void __stdcall TextureErrorHooked(const char* message, const char* path) {
-	std::string err;
-	if (sTextureFolder[0] && sSharedTextureFolder[0]) {
-		err = std::format("Cannot find texture {} in either {} or {}", path, sTextureFolder, sSharedTextureFolder);
-	}
-	else if (sTextureFolder[0] || sSharedTextureFolder[0]) {
-		err = std::format("Cannot find texture {} in {}{}", path, sTextureFolder, sSharedTextureFolder);
-	}
-	else err = std::format("Cannot find texture {}", path);
-	MessageBoxA(nullptr, err.c_str(), "Fatal error", 0x10);
-	exit(0);
-}
-
-void __stdcall OutOfBoundsAccessHooked(const char* message, const char* propertyName, int num) {
-	MessageBoxA(nullptr, std::format("PropertyDb: out-of-bounds access of property '{}' (offset {})", propertyName, num).c_str(), "Fatal error", 0x10);
-	exit(0);
-}
-
-void __attribute__((naked)) __fastcall OutOfBoundsAccessErrorASM() {
-	__asm__ (
-		"mov edx, [eax]\n"
-		"push esi\n\t"
-		"push edx\n\t"
-		"push 0x6F3AA4\n\t"
-		"call %0\n\t"
-			:
-			: "i" (OutOfBoundsAccessHooked)
-	);
-}
-
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -200,6 +171,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyWindowedModePatches();
 			ApplyUltrawidePatches();
 			ApplyProfilePatches();
+			ApplyVerboseErrorsPatches();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
@@ -220,8 +192,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			NyaHookLib::Patch(0x60D3D2 + 1, 8192);
 			NyaHookLib::Patch(0x70E224, 8192);
 
-			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5A71FD, &TextureErrorHooked);
-
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55AAB4, &NoDebugQuitASM);
 
 			// road king gives out of bounds when reading the Car[%d] db
@@ -230,8 +200,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// removing this for now, it resets arcade scores seemingly, so useless here cuz of the new arcade save system
 			NyaHookLib::Patch<uint8_t>(0x48794C, 0xEB);
 			NyaHookLib::Patch<uint8_t>(0x48796F, 0xEB);
-
-			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5B2635, &OutOfBoundsAccessErrorASM);
 		} break;
 		default:
 			break;

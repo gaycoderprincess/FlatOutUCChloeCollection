@@ -41,7 +41,7 @@ PlayerScoreDerby* GetPlayerScoreDerby(int playerId) {
 void AddFragDerbyScore(int amount) {
 	//if (!nFragDerbyCrashRewards) return;
 	if (amount <= 0) return;
-	if (pGame->nGameRules != GR_DERBY) return;
+	if (pGame->nGameRules != GR_DEFAULT && pGame->nGameRules != GR_DERBY) return;
 	if (pGame->nDerbyType != DERBY_FRAG) return;
 
 	auto score = GetPlayerScoreDerby(1);

@@ -5,11 +5,13 @@ int nSaveSlot = 999;
 
 class ArcadeRaceStats {
 public:
-	uint32_t score;
-	uint32_t placement; // 255 if locked, 254 if unlocked, 1, 2, 3 otherwise
+	uint32_t score; // +0
+	uint32_t placement; // +4, 255 if locked, 254 if unlocked, 1, 2, 3 otherwise
 	uint8_t _8[0xC];
-	uint32_t unlockScore;
-	uint8_t _18[0x58];
+	uint32_t unlockScore; // +14
+	uint8_t _18[0x8];
+	uint32_t targetScores[3]; // +20
+	uint8_t _2C[0x44];
 };
 static_assert(sizeof(ArcadeRaceStats) == 0x70);
 
@@ -63,6 +65,16 @@ struct tCustomSaveStructure {
 		file.write((char*)this, sizeof(*this));
 	}
 
+	void CalculateArcadePlacement(PlayerProfile* profile, int x, int y) {
+		auto pRace = &profile->aArcadeClasses[x].races[y];
+		auto score = pRace->score;
+		int placement = 255;
+		if (score > pRace->targetScores[2]) placement = 3;
+		if (score > pRace->targetScores[1]) placement = 2;
+		if (score > pRace->targetScores[0]) placement = 1;
+		pRace->placement = aArcadeRaces[x][y].placement = placement;
+	}
+
 	void UpdateArcadeRace(PlayerProfile* profile) {
 		bool customSaveModified = false;
 
@@ -74,13 +86,12 @@ struct tCustomSaveStructure {
 				auto customSave = &aArcadeRaces[x][y];
 				if (customSave->score > vanillaSave->score || bOverrideAllArcadeScores) {
 					vanillaSave->score = customSave->score;
-					vanillaSave->placement = customSave->placement;
 				}
 				else if (vanillaSave->score > customSave->score) {
 					customSave->score = vanillaSave->score;
-					customSave->placement = vanillaSave->placement;
 					customSaveModified = true;
 				}
+				CalculateArcadePlacement(profile, x, y);
 			}
 		}
 

@@ -224,8 +224,7 @@ int GetArcadeLevelPosition(void* a1) {
 	gCustomSave.UpdateArcadeRace(pProfile);
 	auto cls = (int)luaL_checknumber(a1, 2);
 	auto race = (int)luaL_checknumber(a1, 3);
-	auto placement = pProfile->aArcadeClasses[cls - 1].races[race - 1].placement;
-	lua_pushnumber(a1, placement > 32 ? 255 : placement);
+	lua_pushnumber(a1, pProfile->aArcadeClasses[cls - 1].races[race - 1].placement);
 	return 1;
 }
 
