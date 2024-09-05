@@ -145,6 +145,12 @@ public:
 	CarUnlockState* aCarUnlocks;
 };
 
+class HUDElement {
+public:
+	uint8_t _0[0xE8];
+	bool bVisible;
+};
+
 struct tGameSetting {
 	enum eValueType {
 		VALUE_TYPE_INT,
@@ -221,8 +227,39 @@ void __attribute__((naked)) __fastcall SetSharedTextureFolder(const char* path) 
 	);
 }
 
+uintptr_t PostEvent_call = 0x4611D0;
+float __attribute__((naked)) __fastcall PostEvent(int* eventData) {
+	__asm__ (
+		"pushad\n\t"
+		"mov edx, 0x9298FB4\n\t"
+		"mov edx, [edx]\n\t"
+		"mov eax, ecx\n\t"
+		"call %0\n\t"
+		"popad\n\t"
+		"ret\n\t"
+			:
+			:  "m" (PostEvent_call)
+	);
+}
+
+uintptr_t SendEvent_call = 0x461250;
+int __attribute__((naked)) __fastcall SendEvent(void* a1, int* eventData) {
+	__asm__ (
+		"pushad\n\t"
+		"mov eax, edx\n\t"
+		"push ecx\n\t"
+		"call %0\n\t"
+		"popad\n\t"
+		"ret\n\t"
+			:
+			:  "m" (SendEvent_call)
+	);
+}
+
 auto sTextureFolder = (const char*)0x845B78;
 auto sSharedTextureFolder = (const char*)0x845C80;
+
+auto AddHUDKeyword = (void(*)(const char*, void*, void*))0x4ECB20;
 
 auto luaL_checktype = (void(*)(void*, int, int))0x634C70;
 auto luaL_checkudata = (void*(*)(void*, int, const char*))0x634BB0;

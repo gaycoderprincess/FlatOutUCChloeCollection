@@ -1,18 +1,3 @@
-uintptr_t PostEvent_call = 0x4611D0;
-float __attribute__((naked)) __fastcall PostEvent(int* eventData) {
-	__asm__ (
-		"pushad\n\t"
-		"mov edx, 0x9298FB4\n\t"
-		"mov edx, [edx]\n\t"
-		"mov eax, ecx\n\t"
-		"call %0\n\t"
-		"popad\n\t"
-		"ret\n\t"
-			:
-			:  "m" (PostEvent_call)
-	);
-}
-
 void SetArcadeRaceMultiplierPointer(float* values) {
 	uintptr_t addresses[] = {
 			0x46F590,
@@ -111,6 +96,9 @@ float __attribute__((naked)) __fastcall CreatePopup(void* a2, void* a3) {
 	);
 }
 
+HUDElement* pArcadePlatinumImage = nullptr;
+HUDElement* pArcadeGoldImage = nullptr;
+
 bool bArcadePlatinumEnabled = false;
 int nArcadePlatinumCurrentLevelX = 0;
 int nArcadePlatinumCurrentLevelY = 0;
@@ -118,14 +106,28 @@ bool bAchievedPlatinumThisRace = false;
 void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 	if (!bArcadePlatinumEnabled) return;
 
-	auto target = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
-	if (!target) return;
+	auto silverTarget = nArcadeSilverTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
+	auto goldTarget = nArcadeGoldTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
+	auto platTarget = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
+	if (!platTarget) return;
+
+	pArcadeGoldImage->bVisible = numPoints >= silverTarget;
+	if (pArcadePlatinumImage) {
+		pArcadePlatinumImage->bVisible = false;
+		if (numPoints >= goldTarget) {
+			pArcadeGoldImage->bVisible = false;
+			pArcadePlatinumImage->bVisible = true;
+		}
+	}
 
 	// reset platinum status if we restarted
 	if (numPoints <= 0) bAchievedPlatinumThisRace = false;
 	// otherwise check for platinum score
-	else if (numPoints > target && !bAchievedPlatinumThisRace) {
+	else if (numPoints >= platTarget && !bAchievedPlatinumThisRace) {
 		CreatePopup(a1[2686], a3);
+		// sfx
+		int eventData[9] = {4033, 0, 0, 0xFFFF, 0};
+		SendEvent(*(void**)0x9298FB4, eventData);
 		bAchievedPlatinumThisRace = true;
 	}
 }
@@ -148,6 +150,45 @@ float __attribute__((naked)) ArcadePlatinumsASM() {
 			:
 			:  "m" (ArcadePlatinumsASM_jmp), "i" (ArcadePlatinums)
 	);
+}
+
+void FormatPoints(int a1, wchar_t* str, size_t len) {
+	if (a1 < 1000) _snwprintf(str, len, L"%d", a1);
+
+	if (a1 >= 1000000) {
+		_snwprintf(str, len, L"%d,%03d,%03d", a1 / 1000000, (a1 / 1000) % 1000, a1 % 1000);
+	}
+	else {
+		_snwprintf(str, len, L"%d,%03d", a1 / 1000, a1 % 1000);
+	}
+}
+
+void DrawArcadePlatinums(wchar_t* str, size_t len) {
+	auto target = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
+	FormatPoints(target, str, len);
+}
+
+void __fastcall ArcadePlatinumKeyword(void* a3) {
+	AddHUDKeyword("PLATINUM", (void*)&DrawArcadePlatinums, a3);
+}
+
+uintptr_t ArcadePlatinumKeywordASM_jmp = 0x4ECB20;
+float __attribute__((naked)) ArcadePlatinumKeywordASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov ecx, esi\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"jmp %0\n\t"
+			:
+			:  "m" (ArcadePlatinumKeywordASM_jmp), "i" (ArcadePlatinumKeyword)
+	);
+}
+
+auto GetArcadePlatinumTexture_call = (HUDElement*(__thiscall*)(HUDElement*, const char*))0x4ECA60;
+HUDElement* __fastcall GetArcadePlatinumTexture(HUDElement* pThis, void*, const char* name) {
+	pArcadePlatinumImage = GetArcadePlatinumTexture_call(pThis, "MedalPlatinum");
+	return pArcadeGoldImage = GetArcadePlatinumTexture_call(pThis, name);
 }
 
 void ApplyArcadeScoringPatches() {
@@ -175,4 +216,9 @@ void ApplyArcadeScoringPatches() {
 	NyaHookLib::Fill(0x476DE4, 0x90, 0x476DEA - 0x476DE4); // disable reading of showbonus
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4EA18A, &ArcadePlatinumsASM);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4EA07E, &GetArcadePlatinumTexture);
+	ArcadePlatinumKeywordASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4F24FF, &ArcadePlatinumKeywordASM);
+
+	// arcade targets are drawn in the hud at 004F2D14
+	// arcade hud elements are drawn at 4EC4A2
 }
