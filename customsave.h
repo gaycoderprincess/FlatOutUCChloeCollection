@@ -100,6 +100,7 @@ void InitCustomSave() {
 	// always set playername, required for some mp stuff
 	NyaHookLib::Patch<uint8_t>(0x4879E7, 0xEB);
 	NyaHookLib::Patch(0x487A2B + 1, &gCustomSave.playerName);
+	NyaHookLib::Patch(0x48767E + 1, &gCustomSave.playerName);
 	// set default name
 	if (!gCustomSave.playerName[0] || !wcscmp(gCustomSave.playerName, L"PLAYER")) {
 		wcscpy_s(gCustomSave.playerName, 32, L"PLAYER");
