@@ -8,8 +8,6 @@ std::string GetCustomSavePath(int id) {
 }
 
 int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
-int nArcadeGoldTargets[nNumArcadeRacesX][nNumArcadeRacesY];
-int nArcadeSilverTargets[nNumArcadeRacesX][nNumArcadeRacesY];
 
 struct tCustomSaveStructure {
 	wchar_t playerName[32];
