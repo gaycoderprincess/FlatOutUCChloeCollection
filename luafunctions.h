@@ -460,6 +460,36 @@ int ChloeProfiles_GetNumArcadeEvents(void* a1) {
 	return 1;
 }
 
+int ChloeArcade_EnablePlatinumGoal(void* a1) {
+	bArcadePlatinumEnabled = true;
+	return 0;
+}
+
+int ChloeArcade_DisablePlatinumGoal(void* a1) {
+	bArcadePlatinumEnabled = false;
+	return 0;
+}
+
+int ChloeArcade_SetCurrentEventId(void* a1) {
+	nArcadePlatinumCurrentLevelX = luaL_checknumber(a1, 1) - 1;
+	nArcadePlatinumCurrentLevelY = luaL_checknumber(a1, 2) - 1;
+	return 0;
+}
+
+int ChloeArcade_HasPlatinumOnEvent(void* a1) {
+	int x = luaL_checknumber(a1, 1) - 1;
+	int y = luaL_checknumber(a1, 2) - 1;
+	lua_pushboolean(a1, gCustomSave.bArcadePlatinums[x][y]);
+	return 1;
+}
+
+int ChloeArcade_SetPlatinumTargetForLevel(void* a1) {
+	int x = luaL_checknumber(a1, 1) - 1;
+	int y = luaL_checknumber(a1, 2) - 1;
+	nArcadePlatinumTargets[x][y] = luaL_checknumber(a1, 3);
+	return 0;
+}
+
 void ApplyAIExtenderPatches();
 int ReinitChloeCollectionHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -468,6 +498,16 @@ int ReinitChloeCollectionHooks(void* a1) {
 
 auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
+	lua_pushcfunction(a1, (void*)&ChloeArcade_EnablePlatinumGoal, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_EnablePlatinumGoal");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_DisablePlatinumGoal, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_DisablePlatinumGoal");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_SetCurrentEventId, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_SetCurrentEventId");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_HasPlatinumOnEvent, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_HasPlatinumOnEvent");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_SetPlatinumTargetForLevel, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_SetPlatinumTargetForLevel");
 	lua_pushcfunction(a1, (void*)&GetNumSkinsForCurrentCar, 0);
 	lua_setfield(a1, -10002, "GetNumSkinsForCurrentCar");
 	lua_pushcfunction(a1, (void*)&GetCarSkinAuthor, 0);

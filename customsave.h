@@ -3,30 +3,11 @@ const int nNumArcadeRacesY = 6;
 
 int nSaveSlot = 999;
 
-class ArcadeRaceStats {
-public:
-	uint32_t score; // +0
-	uint32_t placement; // +4, 255 if locked, 254 if unlocked, 1, 2, 3 otherwise
-	uint8_t _8[0xC];
-	uint32_t unlockScore; // +14
-	uint8_t _18[0x8];
-	uint32_t targetScores[3]; // +20
-	uint8_t _2C[0x44];
-};
-static_assert(sizeof(ArcadeRaceStats) == 0x70);
-
-class PlayerProfile {
-public:
-	uint8_t _0[0x3D0];
-	struct {
-		ArcadeRaceStats* races;
-		uint32_t _4;
-	} aArcadeClasses[0];
-};
-
 std::string GetCustomSavePath(int id) {
 	return std::format("Savegame/customsave{:03}.sav", id);
 }
+
+int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
 
 struct tCustomSaveStructure {
 	wchar_t playerName[32];
@@ -39,6 +20,7 @@ struct tCustomSaveStructure {
 	uint32_t numCupsPassed;
 	uint32_t gameProgress;
 	uint8_t playerPortrait;
+	bool bArcadePlatinums[nNumArcadeRacesX][nNumArcadeRacesY];
 
 	static inline bool bOverrideAllArcadeScores = false;
 
@@ -50,6 +32,7 @@ struct tCustomSaveStructure {
 		if (overrideArcadeScores) bOverrideAllArcadeScores = true;
 
 		memset(this,0,sizeof(*this));
+		memset(nArcadePlatinumTargets,0,sizeof(nArcadePlatinumTargets));
 		playerPortrait = 12; // none
 
 		auto file = std::ifstream(GetCustomSavePath(saveSlot), std::ios::in | std::ios::binary);
@@ -72,6 +55,7 @@ struct tCustomSaveStructure {
 		if (score > pRace->targetScores[2]) placement = 3;
 		if (score > pRace->targetScores[1]) placement = 2;
 		if (score > pRace->targetScores[0]) placement = 1;
+		bArcadePlatinums[x][y] = nArcadePlatinumTargets[x][y] > 0 && score > nArcadePlatinumTargets[x][y];
 		pRace->placement = aArcadeRaces[x][y].placement = placement;
 	}
 
@@ -81,6 +65,7 @@ struct tCustomSaveStructure {
 		int numClasses = nNumArcadeRacesX;
 		int numRaces = nNumArcadeRacesY;
 		for (int x = 0; x < numClasses; x++) {
+			profile->aArcadeClasses[x].numRaces = numRaces;
 			for (int y = 0; y < numRaces; y++) {
 				auto vanillaSave = &profile->aArcadeClasses[x].races[y];
 				auto customSave = &aArcadeRaces[x][y];

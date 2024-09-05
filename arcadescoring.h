@@ -95,6 +95,61 @@ void ReadFragDerbyRewardConfig() {
 	nFragDerbyRewardBlastOut = config["main"]["BlastOut"].value_or(nFragDerbyRewardBlastOut);
 }
 
+const char* sPopupName = "PlatinumEarned";
+uintptr_t CreatePopup_call = 0x4EA770;
+float __attribute__((naked)) __fastcall CreatePopup(void* a2, void* a3) {
+	__asm__ (
+		"pushad\n\t"
+		"mov eax, %1\n\t" // popup name in eax
+		"mov esi, ecx\n\t" // a2 in esi
+		"push edx\n\t" // a3 pushed
+		"call %0\n\t"
+		"popad\n\t"
+		"ret\n\t"
+			:
+			:  "m" (CreatePopup_call), "m" (sPopupName)
+	);
+}
+
+bool bArcadePlatinumEnabled = false;
+int nArcadePlatinumCurrentLevelX = 0;
+int nArcadePlatinumCurrentLevelY = 0;
+bool bAchievedPlatinumThisRace = false;
+void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
+	if (!bArcadePlatinumEnabled) return;
+
+	auto target = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
+	if (!target) return;
+
+	// reset platinum status if we restarted
+	if (numPoints <= 0) bAchievedPlatinumThisRace = false;
+	// otherwise check for platinum score
+	else if (numPoints > target && !bAchievedPlatinumThisRace) {
+		CreatePopup(a1[2686], a3);
+		bAchievedPlatinumThisRace = true;
+	}
+}
+
+uintptr_t ArcadePlatinumsASM_jmp = 0x4EA194;
+float __attribute__((naked)) ArcadePlatinumsASM() {
+	__asm__ (
+		"push ecx\n\t"
+		"mov ecx, [esp+0x40]\n\t"
+		"pushad\n\t"
+		"push esi\n\t" // numPoints
+		"push edi\n\t" // a1
+		"push ecx\n\t" // a3
+		"call %1\n\t"
+		"popad\n\t"
+		"pop ecx\n\t"
+		"cmp [edi+0x2A08], bl\n"
+		"mov [esp+0xB], bl\n\t"
+		"jmp %0\n\t"
+			:
+			:  "m" (ArcadePlatinumsASM_jmp), "i" (ArcadePlatinums)
+	);
+}
+
 void ApplyArcadeScoringPatches() {
 	ReadFragDerbyRewardConfig();
 
@@ -118,4 +173,6 @@ void ApplyArcadeScoringPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4E8517, &MoreFragDerbyRewardsASM);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4E8528, &MoreFragDerbyRewardsASM);
 	NyaHookLib::Fill(0x476DE4, 0x90, 0x476DEA - 0x476DE4); // disable reading of showbonus
+
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4EA18A, &ArcadePlatinumsASM);
 }
