@@ -85,13 +85,17 @@ public:
 	uint32_t nScore2; // 58
 	uint8_t _5C[0x10];
 	uint32_t nLives; // 6C
+	uint8_t _70[0x14];
+	float fScoreMultiplier;
 };
 
 class ScoreManager {
 public:
 	uint8_t _0[0x8];
-	void** pScoresStart;
-	void** pScoresEnd;
+	void** pScoresStart; // +8
+	void** pScoresEnd; // +C
+	uint8_t _10[0x34];
+	uint32_t nSurvivorId; // +44
 };
 auto& pScoreManager = *(ScoreManager**)0x846514;
 

@@ -31,7 +31,9 @@ void AddFragDerbyScore(int amount) {
 
 	auto score = GetPlayerScoreDerby(1);
 	if (!score) return;
-	score->nScore1 += amount;
+
+	if (pScoreManager->nSurvivorId == score->nPlayerId) amount *= 2;
+	score->nScore1 += amount * score->fScoreMultiplier;
 
 	int eventData[9] = {};
 	eventData[0] = 6060;

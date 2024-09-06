@@ -138,13 +138,13 @@ int GetUnlockCustomCar(void* a1) {
 	return 1;
 }
 
-int SetArcadeCareerCarSkin(void* a1) {
+int ChloeArcade_SetCarSkin(void* a1) {
 	GenerateUnlockList();
 	nArcadeCareerCarSkin = luaL_checknumber(a1, 1);
 	return 0;
 }
 
-int SetArcadeCareerEventForceAllAICars(void* a1) {
+int ChloeArcade_ForceAllAICars(void* a1) {
 	nForceAllAICarsNextRace = luaL_checknumber(a1, 1);
 
 	// using player skins
@@ -154,12 +154,12 @@ int SetArcadeCareerEventForceAllAICars(void* a1) {
 	return 0;
 }
 
-int SetArcadeCareerEventForceAICarCount(void* a1) {
+int ChloeArcade_ForceAICarCount(void* a1) {
 	nForceAICountNextRace = luaL_checknumber(a1, 1);
 	return 0;
 }
 
-int SetArcadeCareerEventLenientMultipliers(void* a1) {
+int ChloeArcade_SetLenientMultipliers(void* a1) {
 	bool use = luaL_checknumber(a1, 1) != 0.0;
 	SetArcadeRaceMultiplierPointer(use ? fArcadeRacePositionMultiplierLenient : fArcadeRacePositionMultiplier);
 	return 0;
@@ -522,14 +522,14 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "GetNumUnlockCustomCar");
 	lua_pushcfunction(a1, (void*)&GetUnlockCustomCar, 0);
 	lua_setfield(a1, -10002, "GetUnlockCustomCar");
-	lua_pushcfunction(a1, (void*)&SetArcadeCareerCarSkin, 0);
-	lua_setfield(a1, -10002, "SetArcadeCareerCarSkin");
-	lua_pushcfunction(a1, (void*)&SetArcadeCareerEventForceAllAICars, 0);
-	lua_setfield(a1, -10002, "SetArcadeCareerEventForceAllAICars");
-	lua_pushcfunction(a1, (void*)&SetArcadeCareerEventForceAICarCount, 0);
-	lua_setfield(a1, -10002, "SetArcadeCareerEventForceAICarCount");
-	lua_pushcfunction(a1, (void*)&SetArcadeCareerEventLenientMultipliers, 0);
-	lua_setfield(a1, -10002, "SetArcadeCareerEventLenientMultipliers");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_SetCarSkin, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_SetCarSkin");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAllAICars, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_ForceAllAICars");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAICarCount, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_ForceAICarCount");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_SetLenientMultipliers, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_SetLenientMultipliers");
 	lua_pushcfunction(a1, (void*)&GetCustomPlayerModelType, 0);
 	lua_setfield(a1, -10002, "GetCustomPlayerModelType");
 	lua_pushcfunction(a1, (void*)&GetCustomPlayerModelSkinID, 0);

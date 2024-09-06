@@ -16,6 +16,14 @@ void SetWindowedMode() {
 	}
 
 	static int nLastWindowed = -1;
+
+	// reset borderless a bit later, fixes misplacement
+	static CNyaTimer gTimer;
+	if (gTimer.fTotalTime < 1) {
+		gTimer.Process();
+		if (gTimer.fTotalTime >= 1 && nLastWindowed == 0) nLastWindowed = -1;
+	}
+
 	if (nLastWindowed != nWindowedMode) {
 		auto hwnd = *(HWND*)(0x7242B0 + 0x7C);
 		auto resX = *(int*)0x764A84;
