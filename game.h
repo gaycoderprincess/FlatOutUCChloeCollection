@@ -275,4 +275,11 @@ auto lua_setfield = (void(*)(void*, int, const char*))0x633D20;
 auto lua_pushcfunction = (void(*)(void*, void*, int))0x633750;
 auto lua_pushboolean = (int(*)(void*, int))0x633870;
 auto lua_pushlstring = (int(*)(void*, const wchar_t*, size_t))0x6335D0;
+auto lua_pushnil = (int(*)(void*))0x633520;
+auto lua_settable = (int(*)(void*, int))0x633CD0;
 auto BFSManager_DoesFileExist = (bool(__stdcall*)(void*, const char*, int*))0x5B7170;
+
+int lua_setglobal(void* a1, const char *a2) {
+	if (a2) return lua_pushlstring(a1, (const wchar_t*)a2, strlen(a2));
+	return lua_pushnil(a1);
+}

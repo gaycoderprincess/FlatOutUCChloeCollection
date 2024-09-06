@@ -590,6 +590,11 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "ChloeProfiles_GetNumArcadeEvents");
 	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
 	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
+
+	static auto sVersionString = "Chloe's Collection v1.24 - Author Medal Edition";
+	lua_setglobal(a1, "ChloeCollectionVersion");
+	lua_setglobal(a1, sVersionString);
+	lua_settable(a1, -10002);
 	return lua_pushcfunction_hooked(a1, a2, a3);
 }
 
