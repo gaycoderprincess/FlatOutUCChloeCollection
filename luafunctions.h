@@ -502,6 +502,30 @@ int ChloeArcade_SetPlatinumTargetForLevel(void* a1) {
 	return 0;
 }
 
+int ChloeOST_GetSoundtrackName(void* a1) {
+	auto name = aPlaylists[(int)luaL_checknumber(a1, 1)].name;
+	if (name.empty()) return 0;
+	lua_pushlstring(a1, name.c_str(), (name.length() + 1) * 2);
+	return 1;
+}
+
+int ChloeOST_GetMenuSoundtrackName(void* a1) {
+	auto name = aMenuPlaylists[(int)luaL_checknumber(a1, 1)].name;
+	if (name.empty()) return 0;
+	lua_pushlstring(a1, name.c_str(), (name.length() + 1) * 2);
+	return 1;
+}
+
+int ChloeOST_GetNumSoundtracks(void* a1) {
+	lua_pushnumber(a1, aPlaylists.size());
+	return 1;
+}
+
+int ChloeOST_GetNumMenuSoundtracks(void* a1) {
+	lua_pushnumber(a1, aMenuPlaylists.size());
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ReinitChloeCollectionHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -602,6 +626,14 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "ChloeProfiles_GetNumArcadeEventsPassed");
 	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetNumArcadeEvents, 0);
 	lua_setfield(a1, -10002, "ChloeProfiles_GetNumArcadeEvents");
+	lua_pushcfunction(a1, (void*)&ChloeOST_GetSoundtrackName, 0);
+	lua_setfield(a1, -10002, "ChloeOST_GetSoundtrackName");
+	lua_pushcfunction(a1, (void*)&ChloeOST_GetMenuSoundtrackName, 0);
+	lua_setfield(a1, -10002, "ChloeOST_GetMenuSoundtrackName");
+	lua_pushcfunction(a1, (void*)&ChloeOST_GetNumSoundtracks, 0);
+	lua_setfield(a1, -10002, "ChloeOST_GetNumSoundtracks");
+	lua_pushcfunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, 0);
+	lua_setfield(a1, -10002, "ChloeOST_GetNumMenuSoundtracks");
 	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
 	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
 

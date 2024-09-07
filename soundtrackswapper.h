@@ -1,28 +1,20 @@
-char aPlaylistTitleBasePath[64] = "data/music/playlist_title";
-char aPlaylistIngameBasePath[64] = "data/music/playlist_ingame";
+char aPlaylistTitleBasePath[64] = "data/music/";
+char aPlaylistIngameBasePath[64] = "data/music/";
 char aPlaylistTitlePath[64] = "data/music/playlist_title.bed";
 char aPlaylistIngamePath[64] = "data/music/playlist_ingame.bed";
 
-const char* aPlaylists[] = {
-		"",
-		"fo2",
-		"fouc",
-		"fo1",
+struct tPlaylist {
+	std::string filename;
+	std::wstring name;
 };
-const int nNumPlaylists = sizeof(aPlaylists) / sizeof(aPlaylists[0]);
-
-const char* aPlaylistsMenu[] = {
-		"",
-		"fo2",
-		"fouc",
-};
-const int nNumPlaylistsMenu = sizeof(aPlaylistsMenu) / sizeof(aPlaylistsMenu[0]);
+std::vector<tPlaylist> aPlaylists;
+std::vector<tPlaylist> aMenuPlaylists;
 
 auto LoadSoundtrack = (void(*)(int))0x41D870;
 void SetSoundtrack() {
 	static int nLastMenuSoundtrack = -1;
 
-	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aPlaylistsMenu[nMenuSoundtrack]);
+	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aMenuPlaylists[nMenuSoundtrack].filename.c_str());
 
 	if (auto game = pGame) {
 		static int nLastSoundtrackId = -1;
@@ -31,7 +23,7 @@ void SetSoundtrack() {
 		if (game->nLevelId >= TRACK_FO1PIT1A) soundtrackId = nIngameFO1Soundtrack;
 		if (game->nGameRules == GR_DERBY || game->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
 
-		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId]);
+		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId].filename.c_str());
 
 		if (soundtrackId != nLastSoundtrackId) {
 			LoadSoundtrack(1);
@@ -58,6 +50,45 @@ void SoundtrackSwapper2() {
 }
 
 void ApplySoundtrackPatches() {
+	static auto config = toml::parse_file("Config/Music.toml");
+	int numPlaylists = config["main"]["playlist_count"].value_or(1);
+	int numMenuPlaylists = config["main"]["menuplaylist_count"].value_or(1);
+	int defaultMenu = config["main"]["default_menu"].value_or(1) - 1;
+	int defaultIngame = config["main"]["default_race"].value_or(1) - 1;
+	int defaultFO1 = config["main"]["default_fo1_race"].value_or(1) - 1;
+	int defaultDerby = config["main"]["default_derby"].value_or(1) - 1;
+	for (int i = 0; i < numPlaylists; i++) {
+		tPlaylist playlist;
+		playlist.name = config[std::format("playlist{}", i+1)]["name"].value_or(L"");
+		playlist.filename = config[std::format("playlist{}", i+1)]["file"].value_or("");
+		if (playlist.name.empty()) continue;
+		if (playlist.filename.empty()) continue;
+		aPlaylists.push_back(playlist);
+	}
+	for (int i = 0; i < numMenuPlaylists; i++) {
+		tPlaylist playlist;
+		playlist.name = config[std::format("menuplaylist{}", i+1)]["name"].value_or(L"");
+		playlist.filename = config[std::format("menuplaylist{}", i+1)]["file"].value_or("");
+		if (playlist.name.empty()) continue;
+		if (playlist.filename.empty()) continue;
+		aMenuPlaylists.push_back(playlist);
+	}
+	if (defaultMenu < 0 || defaultMenu >= aMenuPlaylists.size()) defaultMenu = 0;
+	if (defaultIngame < 0 || defaultIngame >= aPlaylists.size()) defaultIngame = 0;
+	if (defaultFO1 < 0 || defaultFO1 >= aPlaylists.size()) defaultFO1 = 0;
+	if (defaultDerby < 0 || defaultDerby >= aPlaylists.size()) defaultDerby = 0;
+	nMenuSoundtrack = defaultMenu;
+	nIngameSoundtrack = defaultIngame;
+	nIngameFO1Soundtrack = defaultFO1;
+	nIngameDerbySoundtrack = defaultDerby;
+
+	for (auto& setting : aGameSettings) {
+		if (setting.value == &nMenuSoundtrack) setting.maxValue = aMenuPlaylists.size()-1;
+		if (setting.value == &nIngameSoundtrack) setting.maxValue = aPlaylists.size()-1;
+		if (setting.value == &nIngameFO1Soundtrack) setting.maxValue = aPlaylists.size()-1;
+		if (setting.value == &nIngameDerbySoundtrack) setting.maxValue = aPlaylists.size()-1;
+	}
+
 	NyaHookLib::Patch(0x41D2C3 + 1, aPlaylistTitlePath);
 	NyaHookLib::Patch(0x41D9B8 + 1, aPlaylistTitlePath);
 	NyaHookLib::Patch(0x41D2E5 + 1, aPlaylistIngamePath);
