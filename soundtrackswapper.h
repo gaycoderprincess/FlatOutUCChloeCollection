@@ -3,28 +3,45 @@ char aPlaylistIngameBasePath[64] = "data/music/playlist_ingame";
 char aPlaylistTitlePath[64] = "data/music/playlist_title.bed";
 char aPlaylistIngamePath[64] = "data/music/playlist_ingame.bed";
 
+const char* aPlaylists[] = {
+		"",
+		"fo2",
+		"fouc",
+		"fo1",
+};
+const int nNumPlaylists = sizeof(aPlaylists) / sizeof(aPlaylists[0]);
+
+const char* aPlaylistsMenu[] = {
+		"",
+		"fo2",
+		"fouc",
+};
+const int nNumPlaylistsMenu = sizeof(aPlaylistsMenu) / sizeof(aPlaylistsMenu[0]);
+
 auto LoadSoundtrack = (void(*)(int))0x41D870;
 void SetSoundtrack() {
-	static int nLastSoundtrack = -1;
+	static int nLastMenuSoundtrack = -1;
 
-	const char *suffix = "";
-	if (nSoundtrack == 1) suffix = "fo2";
-	if (nSoundtrack == 2) suffix = "fouc";
-	if (nSoundtrack == 3) suffix = "fo1";
+	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aPlaylistsMenu[nMenuSoundtrack]);
 
-	// no fo1 menu music because we can't have nice things
-	if (nSoundtrack == 3) {
-		snprintf(aPlaylistTitlePath, 64, "%s.bed", aPlaylistTitleBasePath);
+	if (auto game = pGame) {
+		static int nLastSoundtrackId = -1;
+
+		int soundtrackId = nIngameSoundtrack;
+		if (game->nLevelId >= TRACK_FO1PIT1A) soundtrackId = nIngameFO1Soundtrack;
+		if (game->nGameRules == GR_DERBY || game->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
+
+		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId]);
+
+		if (soundtrackId != nLastSoundtrackId) {
+			LoadSoundtrack(1);
+			nLastSoundtrackId = soundtrackId;
+		}
 	}
-	else {
-		snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, suffix);
-	}
-	snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, suffix);
 
-	if (nLastSoundtrack != nSoundtrack) {
+	if (nLastMenuSoundtrack != nMenuSoundtrack) {
 		LoadSoundtrack(0);
-		LoadSoundtrack(1);
-		nLastSoundtrack = nSoundtrack;
+		nLastMenuSoundtrack = nMenuSoundtrack;
 	}
 }
 

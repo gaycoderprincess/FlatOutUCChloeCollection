@@ -1,3 +1,105 @@
+enum eTrack {
+	TRACK_FOREST1A			= 1,
+	TRACK_FOREST1B			= 2,
+	TRACK_FOREST1C			= 3,
+	TRACK_FOREST2A			= 4,
+	TRACK_FOREST2B			= 5,
+	TRACK_FOREST2C			= 6,
+	TRACK_CITY1A			= 10,
+	TRACK_CITY1B			= 11,
+	TRACK_CITY1C			= 12,
+	TRACK_CITY2A			= 13,
+	TRACK_CITY2B			= 14,
+	TRACK_CITY2C			= 15,
+	TRACK_CANAL1A			= 16,
+	TRACK_CANAL1B			= 17,
+	TRACK_CANAL1C			= 18,
+	TRACK_DESERT1A			= 22,
+	TRACK_DESERT1B			= 23,
+	TRACK_DESERT1C			= 24,
+	TRACK_FIELDS1A			= 28,
+	TRACK_FIELDS1B			= 29,
+	TRACK_FIELDS1C			= 30,
+	TRACK_FIELDS2A			= 31,
+	TRACK_FIELDS2B			= 32,
+	TRACK_FIELDS2C			= 33,
+	TRACK_RACING1A			= 40,
+	TRACK_RACING1B			= 41,
+	TRACK_RACING1C			= 42,
+	TRACK_RACING2A			= 43,
+	TRACK_RACING2B			= 44,
+	TRACK_RACING2C			= 45,
+	TRACK_DERBY1A			= 52,
+	TRACK_DERBY2A			= 53,
+	TRACK_DERBY3A			= 54,
+	TRACK_DERBY4A			= 55,
+	TRACK_DERBY5A			= 56,
+	TRACK_DERBY6A			= 57,
+	TRACK_TEST				= 58,
+	TRACK_ARENA1			= 59,
+	TRACK_ARENA2			= 60,
+	TRACK_ARENA3			= 61,
+	TRACK_ARENA4			= 62,
+	TRACK_ARENA5			= 63,
+	TRACK_ARENA6			= 64,
+	TRACK_NASCAR1A			= 65,
+	TRACK_NASCAR1B			= 66,
+	TRACK_NASCAR1C			= 67,
+	TRACK_GARAGETESTTRACK 	= 68,
+	TRACK_CURLING			= 73,
+	TRACK_HIGHJUMP			= 70,
+	TRACK_STONESKIPPING 	= 74,
+	TRACK_RINGOFFIRE		= 75,
+	TRACK_DARTS				= 83,
+	TRACK_ROYALFLUSH		= 81,
+	TRACK_SKIJUMP			= 72,
+	TRACK_FIELDGOAL			= 80,
+	TRACK_BOWLING			= 71,
+	TRACK_BASKETBALL		= 82,
+	TRACK_BASEBALL			= 84,
+	TRACK_SOCCER			= 85,
+	TRACK_FO1PIT1A			= 89,
+	TRACK_FO1PIT1B			= 90,
+	TRACK_FO1PIT1C			= 91,
+	TRACK_FO1PIT2A			= 92,
+	TRACK_FO1PIT2B			= 93,
+	TRACK_FO1PIT2C			= 94,
+	TRACK_FO1PIT3A			= 95,
+	TRACK_FO1PIT3B			= 96,
+	TRACK_FO1PIT3C			= 97,
+	TRACK_FO1TOWN2A			= 86,
+	TRACK_FO1TOWN2B			= 87,
+	TRACK_FO1TOWN2C			= 88,
+	TRACK_FO1TOWN3A			= 98,
+	TRACK_FO1TOWN3B			= 99,
+	TRACK_FO1TOWN3C			= 100,
+	TRACK_FO1FOREST1A		= 101,
+	TRACK_FO1FOREST1B		= 102,
+	TRACK_FO1FOREST1C		= 103,
+	TRACK_FO1FOREST2A		= 104,
+	TRACK_FO1FOREST2B		= 105,
+	TRACK_FO1FOREST2C		= 106,
+	TRACK_FO1FOREST3A		= 107,
+	TRACK_FO1FOREST3B		= 108,
+	TRACK_FO1FOREST3C		= 109,
+	TRACK_FO1WINTER1A		= 110,
+	TRACK_FO1WINTER1B		= 111,
+	TRACK_FO1WINTER1C		= 112,
+	TRACK_FO1WINTER2A		= 113,
+	TRACK_FO1WINTER2B		= 114,
+	TRACK_FO1WINTER2C		= 115,
+	TRACK_FO1RACING1A		= 116,
+	TRACK_FO1RACING1B		= 117,
+	TRACK_FO1RACING1C		= 118,
+	TRACK_FO1RACING2A		= 119,
+	TRACK_FO1RACING2B		= 120,
+	TRACK_FO1RACING2C		= 121,
+	TRACK_RETRODEMO1A		= 122,
+	TRACK_RETRODEMO1B		= 123,
+	TRACK_RETRODEMO2A		= 124,
+	TRACK_RETRODEMO2B		= 125,
+};
+
 enum eCrashBonusType {
 	INGAME_CRASHBONUS_CRASHFLYBY = 908,
 	INGAME_CRASHBONUS_SUPERFLIP = 909,
@@ -44,6 +146,73 @@ enum eDerbyType {
 	DERBY_WRECKING = 2,
 	DERBY_FRAG = 3,
 };
+
+enum eDBValueType {
+	DBVALUE_CHAR = 1,
+	DBVALUE_STRING = 2,
+	DBVALUE_BOOL = 5,
+	DBVALUE_INT = 6,
+	DBVALUE_FLOAT = 7,
+	DBVALUE_RGBA = 8,
+	DBVALUE_VECTOR2 = 9,
+	DBVALUE_VECTOR3 = 10,
+	DBVALUE_VECTOR4 = 11,
+	DBVALUE_NODE = 12,
+	DBVALUE_MAX_COUNT
+};
+
+class LiteDb {
+public:
+
+	virtual void _vf0() = 0;
+	virtual void _vf1() = 0;
+	virtual void _vf2() = 0;
+	virtual void _vf3() = 0;
+	virtual void _vf4() = 0;
+	virtual void _vf5() = 0;
+	virtual void _vf6() = 0;
+	virtual void _vf7() = 0;
+	virtual void _vf8() = 0;
+	virtual void _vf9() = 0;
+	virtual LiteDb* GetTable(const char* name) = 0;
+	virtual void _vf11() = 0;
+	virtual void _vf12() = 0;
+	virtual void _vf13() = 0;
+	virtual void _vf14() = 0;
+	virtual void _vf15() = 0;
+	virtual void _vf16() = 0;
+	virtual void _vf17() = 0;
+	virtual void _vf18() = 0;
+	virtual void _vf19() = 0;
+	virtual void _vf20() = 0;
+	virtual void _vf21() = 0;
+	virtual void _vf22() = 0;
+	virtual void _vf23() = 0;
+	virtual void _vf24() = 0;
+	virtual void _vf25() = 0;
+	virtual void _vf26() = 0;
+	virtual void _vf27() = 0;
+	virtual void _vf28() = 0;
+	virtual void _vf29() = 0;
+	virtual void _vf30() = 0;
+	virtual void _vf31() = 0;
+	virtual void _vf32() = 0;
+	virtual void _vf33() = 0;
+	virtual void _vf34() = 0;
+	virtual void* GetPropertyPointer(const char* name) = 0;
+	virtual int GetPropertyAsBool(const char* name, int offset) = 0;
+	virtual int GetPropertyAsInt(const char* name, int offset) = 0;
+	virtual char GetPropertyAsChar(const char* name, int offset) = 0;
+	virtual float GetPropertyAsFloat(const char* name, int offset) = 0;
+	virtual uint32_t GetPropertyAsRGBA(const char* name, int offset) = 0;
+	virtual void* GetPropertyAsVector2(void* out, const char* name, int offset) = 0;
+	virtual void* GetPropertyAsVector3(void* out, const char* name, int offset) = 0;
+	virtual void* GetPropertyAsVector4(void* out, const char* name, int offset) = 0;
+	virtual LiteDb* GetPropertyAsNode(void* out, const char* name, int offset) = 0;
+	virtual LiteDb* GetPropertyAsNodePtr(const char* name, int offset) = 0;
+	virtual const char* GetPropertyAsString(const char* name) = 0;
+};
+auto GetLiteDB = (LiteDb*(*)())0x5A5EB0;
 
 class Player {
 public:
@@ -125,7 +294,9 @@ public:
 	uint8_t _0[0x4B0];
 	int nGameMode;
 	int nGameRules;
-	uint8_t _4B8[0x64];
+	uint8_t _4B8[0x14];
+	int nLevelId; // +4CC
+	uint8_t _4D0[0x4C];
 	int nDerbyType; // +51C
 	uint8_t _520[0xFCC];
 	uint32_t NumUnlockCar; // +14EC
