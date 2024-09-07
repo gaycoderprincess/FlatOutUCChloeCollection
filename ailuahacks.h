@@ -1,5 +1,10 @@
 void __fastcall SetAICarToForcedCar(int* player) {
 	if (nForceAllAICarsNextRace >= 0) player[166] = nForceAllAICarsNextRace;
+	if (nForceAllAICarsNextRaceDuo[0] >= 0 && nForceAllAICarsNextRaceDuo[1] >= 0) {
+		static bool tmp = false;
+		player[166] = nForceAllAICarsNextRaceDuo[tmp];
+		tmp = !tmp;
+	}
 }
 
 uintptr_t ForceAllAICarsASM_jmp = 0x46969A;
@@ -22,6 +27,8 @@ void __attribute__((naked)) __fastcall ForceAllAICarsASM() {
 
 void ResetAICarForce() {
 	nForceAllAICarsNextRace = -1;
+	nForceAllAICarsNextRaceDuo[0] = -1;
+	nForceAllAICarsNextRaceDuo[1] = -1;
 	NyaHookLib::Patch<uint8_t>(0x43407E, 0x75);
 	NyaHookLib::Patch<uint8_t>(0x432CF5, 0x75);
 	NyaHookLib::Patch<uint8_t>(0x432D6E, 0x75);

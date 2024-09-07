@@ -1,5 +1,6 @@
 int nArcadeCareerCarSkin = 1;
 int nForceAllAICarsNextRace = -1;
+int nForceAllAICarsNextRaceDuo[2] = {-1, -1};
 int nForceAICountNextRace = -1;
 uint32_t nCurrentMenuCar = 0;
 std::vector<int> aCustomCarUnlockList;
@@ -146,6 +147,17 @@ int ChloeArcade_SetCarSkin(void* a1) {
 
 int ChloeArcade_ForceAllAICars(void* a1) {
 	nForceAllAICarsNextRace = luaL_checknumber(a1, 1);
+
+	// using player skins
+	NyaHookLib::Patch<uint8_t>(0x43407E, 0xEB);
+	NyaHookLib::Patch<uint8_t>(0x432CF5, 0xEB);
+	NyaHookLib::Patch<uint8_t>(0x432D6E, 0xEB);
+	return 0;
+}
+
+int ChloeArcade_ForceAllAICarsDuo(void* a1) {
+	nForceAllAICarsNextRaceDuo[0] = luaL_checknumber(a1, 1);
+	nForceAllAICarsNextRaceDuo[1] = luaL_checknumber(a1, 2);
 
 	// using player skins
 	NyaHookLib::Patch<uint8_t>(0x43407E, 0xEB);
@@ -526,6 +538,8 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "ChloeArcade_SetCarSkin");
 	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAllAICars, 0);
 	lua_setfield(a1, -10002, "ChloeArcade_ForceAllAICars");
+	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAllAICarsDuo, 0);
+	lua_setfield(a1, -10002, "ChloeArcade_ForceAllAICarsDuo");
 	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAICarCount, 0);
 	lua_setfield(a1, -10002, "ChloeArcade_ForceAICarCount");
 	lua_pushcfunction(a1, (void*)&ChloeArcade_SetLenientMultipliers, 0);
@@ -591,7 +605,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
 	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
 
-	static auto sVersionString = "Chloe's Collection v1.24 - Author Medal Edition";
+	static auto sVersionString = "Chloe's Collection v1.25 - Retro Demo Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
