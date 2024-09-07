@@ -110,6 +110,19 @@ void* __stdcall LoadMapIconsTGA(void* a1, const char* a2, int a3, int a4) {
 	return ret;
 }
 
+auto UpdateCameraHooked_call = (void(__thiscall*)(void*, float))0x4FAEA0;
+void __fastcall UpdateCameraHooked(void* a1, void*, float a2) {
+	if (nHighCarCam) {
+		auto bak = pCameraManager->pTarget->mMatrix[13];
+		pCameraManager->pTarget->mMatrix[13] += 0.25;
+		UpdateCameraHooked_call(a1, a2);
+		pCameraManager->pTarget->mMatrix[13] = bak;
+	}
+	else {
+		UpdateCameraHooked_call(a1, a2);
+	}
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -200,6 +213,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// removing this for now, it resets arcade scores seemingly, so useless here cuz of the new arcade save system
 			NyaHookLib::Patch<uint8_t>(0x48794C, 0xEB);
 			NyaHookLib::Patch<uint8_t>(0x48796F, 0xEB);
+
+			UpdateCameraHooked_call = (void(__thiscall*)(void*, float))(*(uintptr_t*)0x6EB7DC);
+			NyaHookLib::Patch(0x6EB7DC, &UpdateCameraHooked);
 		} break;
 		default:
 			break;

@@ -15,6 +15,7 @@ uint32_t nSlideControlDisabled = 0;
 uint32_t nPlayerFlag = 0;
 uint32_t nPlayerFlag2 = 0;
 uint32_t nWindowedMode = 0;
+uint32_t nHighCarCam = 0;
 int nFragDerbyRewardSlam = 100;
 int nFragDerbyRewardSuperFlip = 250;
 int nFragDerbyRewardPowerHit = 250;

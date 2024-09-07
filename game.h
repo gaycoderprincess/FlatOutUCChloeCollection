@@ -155,6 +155,23 @@ public:
 	bool bVisible;
 };
 
+class Body {
+public:
+	float mMatrix[4*4]; // +1C0
+	uint8_t _200[0x80];
+	float qQuaternion[4]; // +280
+	float vVelocity[3]; // +290
+	uint8_t _29C[0x4];
+	float vAngVelocity[3]; // +2A0
+};
+
+class CameraManager {
+public:
+	uint8_t _0[0x5C];
+	Body* pTarget;
+};
+auto& pCameraManager = *(CameraManager**)0x9298FC0;
+
 struct tGameSetting {
 	enum eValueType {
 		VALUE_TYPE_INT,
