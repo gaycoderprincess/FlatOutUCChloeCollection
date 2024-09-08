@@ -220,6 +220,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			UpdateCameraHooked_call = (void(__thiscall*)(void*, float))(*(uintptr_t*)0x6EB7DC);
 			NyaHookLib::Patch(0x6EB7DC, &UpdateCameraHooked);
+
+			// increase lua variables memory limit
+			NyaHookLib::Patch(0x673E0D + 1, 0x900000);
 		} break;
 		default:
 			break;
