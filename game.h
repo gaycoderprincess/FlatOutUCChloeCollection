@@ -419,6 +419,12 @@ void __attribute__((naked)) __fastcall SetSharedTextureFolder(const char* path) 
 	);
 }
 
+enum eGameEvent {
+	EVENT_MUSIC_PLAY_TITLE = 4003,
+	EVENT_MUSIC_PLAY_INGAME = 4004,
+	EVENT_MUSIC_STOP = 4007,
+};
+
 uintptr_t PostEvent_call = 0x4611D0;
 float __attribute__((naked)) __fastcall PostEvent(int* eventData) {
 	__asm__ (

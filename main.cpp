@@ -151,6 +151,10 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4F0F0A, &LoadMapIconsTGA);
 
+			static const char* aiDamageMeter = "ai_damage_meter_2";
+			NyaHookLib::Patch(0x4DEC01 + 1, aiDamageMeter);
+			NyaHookLib::Patch(0x4DEC2A + 1, aiDamageMeter);
+
 			// highscoremanager read at:
 			// 00492ACD when finishing a lap
 			// 00465305 and 004703A0 when quitting

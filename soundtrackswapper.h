@@ -33,6 +33,14 @@ void SetSoundtrack() {
 
 	if (nLastMenuSoundtrack != nMenuSoundtrack) {
 		LoadSoundtrack(0);
+
+		if (nLastMenuSoundtrack >= 0) {
+			int eventData[9] = {EVENT_MUSIC_STOP, 0, 0xFFFF, 0};
+			PostEvent(eventData);
+			int eventData2[9] = {EVENT_MUSIC_PLAY_TITLE, 0, 0xFFFF, 0};
+			PostEvent(eventData2);
+		}
+
 		nLastMenuSoundtrack = nMenuSoundtrack;
 	}
 }
