@@ -8,6 +8,7 @@ std::string GetCustomSavePath(int id) {
 }
 
 int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
+bool bUnlockAllArcadeEvents = false;
 
 struct tCustomSaveStructure {
 	wchar_t playerName[32];

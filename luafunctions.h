@@ -222,7 +222,7 @@ int IsArcadeLevelLocked(void* a1) {
 	gCustomSave.UpdateArcadeRace(pProfile);
 	auto cls = (int)luaL_checknumber(a1, 2);
 	auto race = (int)luaL_checknumber(a1, 3);
-	lua_pushboolean(a1, GetTotalArcadeScore(pProfile) < pProfile->aArcadeClasses[cls - 1].races[race - 1].unlockScore);
+	lua_pushboolean(a1, !bUnlockAllArcadeEvents && GetTotalArcadeScore(pProfile) < pProfile->aArcadeClasses[cls - 1].races[race - 1].unlockScore);
 	return 1;
 }
 
@@ -526,6 +526,16 @@ int ChloeOST_GetNumMenuSoundtracks(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_CheckCheatCode(void* a1) {
+	auto str = lua_tolstring(a1, 1, nullptr);
+	if (!wcscmp(str, L"pressplay")) {
+		bUnlockAllArcadeEvents = !bUnlockAllArcadeEvents;
+		lua_pushboolean(a1, true);
+	}
+	else lua_pushboolean(a1, false);
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ReinitChloeCollectionHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -634,6 +644,8 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "ChloeOST_GetNumSoundtracks");
 	lua_pushcfunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, 0);
 	lua_setfield(a1, -10002, "ChloeOST_GetNumMenuSoundtracks");
+	lua_pushcfunction(a1, (void*)&ChloeCollection_CheckCheatCode, 0);
+	lua_setfield(a1, -10002, "ChloeCollection_CheckCheatCode");
 	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
 	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
 
