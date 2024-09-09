@@ -544,6 +544,86 @@ int ChloeCollection_ReinitHooks(void* a1) {
 	return 0;
 }
 
+int ChloeWidescreen_GetAspect(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, fSpacingFixAmount43);
+	}
+	else {
+		lua_pushnumber(a1, 1);
+	}
+	return 1;
+}
+
+int ChloeWidescreen_LeftJustify(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, luaL_checknumber(a1, 1) * fSpacingFixAmount43);
+	}
+	else {
+		lua_pushnumber(a1, luaL_checknumber(a1, 1));
+	}
+	return 1;
+}
+
+int ChloeWidescreen_GetCenter(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, f43AspectCorrectionCenter);
+	}
+	else {
+		lua_pushnumber(a1, 320);
+	}
+	return 1;
+}
+
+int ChloeWidescreen_GetRight(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, f43AspectCorrection);
+	}
+	else {
+		lua_pushnumber(a1, 640);
+	}
+	return 1;
+}
+
+int ChloeWidescreen_GetSpriteLeft(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, -(f43AspectCorrection - 640) * 0.5);
+	}
+	else {
+		lua_pushnumber(a1, 0);
+	}
+	return 1;
+}
+
+int ChloeWidescreen_GetSpriteRight(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, f43AspectCorrection);
+	}
+	else {
+		lua_pushnumber(a1, 640);
+	}
+	return 1;
+}
+
+int ChloeWidescreen_CenterJustify(void* a1) {
+	auto f = luaL_checknumber(a1, 1);
+	if (nWidescreenMenu) {
+		f -= 320.0;
+		f += f43AspectCorrectionCenter;
+	}
+	lua_pushnumber(a1, f);
+	return 1;
+}
+
+int ChloeWidescreen_RightJustify(void* a1) {
+	auto f = luaL_checknumber(a1, 1);
+	if (nWidescreenMenu) {
+		f -= 640.0;
+		f += f43AspectCorrection;
+	}
+	lua_pushnumber(a1, f);
+	return 1;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -551,6 +631,14 @@ void RegisterLUAFunction(void* a1, void* function, const char* name) {
 
 auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetAspect, "ChloeWidescreen_GetAspect");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_LeftJustify, "ChloeWidescreen_LeftJustify");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_CenterJustify, "ChloeWidescreen_CenterJustify");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_RightJustify, "ChloeWidescreen_RightJustify");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetCenter, "ChloeWidescreen_GetCenter");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSpriteLeft, "ChloeWidescreen_GetSpriteLeft");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSpriteRight, "ChloeWidescreen_GetSpriteRight");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetRight, "ChloeWidescreen_GetRight");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_EnablePlatinumGoal, "ChloeArcade_EnablePlatinumGoal");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_DisablePlatinumGoal, "ChloeArcade_DisablePlatinumGoal");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetCurrentEventId, "ChloeArcade_SetCurrentEventId");

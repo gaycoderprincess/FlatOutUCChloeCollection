@@ -18,6 +18,7 @@
 #include "profiles.h"
 #include "customsettings.h"
 #include "soundtrackswapper.h"
+#include "ultrawide.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"
@@ -31,7 +32,6 @@
 #include "setupskip.h"
 #include "windowedmode.h"
 #include "d3dhook.h"
-#include "ultrawide.h"
 #include "verboseerrors.h"
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;

@@ -25,6 +25,7 @@ tGameSetting aGameSettings[] = {
 		{ "Game", "PlayerFlag", &nPlayerFlag, 0, 0, 12 },
 		{ "Game", "PlayerFlag2", &nPlayerFlag2, 1, 0, 0 },
 		{ "Game", "HighCarCam", &nHighCarCam, 1, 0, 0 },
+		{ "Game", "WidescreenMenu", &nWidescreenMenu, 1, 0, 0 },
 		{ "Control", "ControllerGuid", (void*)0x845D98, 3, 0, 0 },
 		{ "Control", "Controller", (void*)0x845DBC, 0, 0, 2 },
 		{ "Control", "ForceFeedback", (void*)0x845DC0, 1, 0, 0 },
