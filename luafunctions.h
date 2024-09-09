@@ -38,7 +38,7 @@ int __attribute__((naked)) __fastcall GetScriptParameter(void* a1) {
 	);
 }
 
-int GetNumSkinsForCurrentCar(void* a1) {
+int ChloeSkins_GetNumSkinsForCurrentCar(void* a1) {
 	int tmp[2];
 	auto path = "data/cars/car_" + std::to_string(GetCarDataPath(nCurrentMenuCar, false)) + "/skin";
 	int i;
@@ -52,7 +52,7 @@ int GetNumSkinsForCurrentCar(void* a1) {
 	return 1;
 }
 
-int GetCarSkinAuthor(void* a1) {
+int ChloeSkins_GetSkinAuthor(void* a1) {
 	static auto config = toml::parse_file("Config/CarSkins.toml");
 	std::wstring author = config["car" + std::to_string((int)luaL_checknumber(a1, 1))]["skin" + std::to_string((int)luaL_checknumber(a1, 2))].value_or(L"");
 	if (!author.empty()) author = L"Skin Author: " + author;
@@ -81,18 +81,12 @@ int GetOpponentCount() {
 	return count;
 }
 
-int ShouldDisplayCareerOpponentsWarning(void* a1) {
-	lua_pushboolean(a1, false);
-	//lua_pushboolean(a1, GetOpponentCount() >= 16);
-	return 1;
-}
-
-int HasCCWelcomeScreenDisplayed(void* a1) {
+int ChloeCollection_HasWelcomeScreenDisplayed(void* a1) {
 	lua_pushboolean(a1, gCustomSave.bWelcomeScreenDisplayed);
 	return 1;
 }
 
-int SetCCWelcomeScreenDisplayed(void* a1) {
+int ChloeCollection_SetWelcomeScreenDisplayed(void* a1) {
 	gCustomSave.bWelcomeScreenDisplayed = true;
 	gCustomSave.Save();
 	return 0;
@@ -127,13 +121,13 @@ void GenerateUnlockList() {
 	}
 }
 
-int GetNumUnlockCustomCar(void* a1) {
+int ChloeUnlocks_GetNumUnlockCustomCar(void* a1) {
 	GenerateUnlockList();
 	lua_pushnumber(a1, aCustomCarUnlockList.size());
 	return 1;
 }
 
-int GetUnlockCustomCar(void* a1) {
+int ChloeUnlocks_GetUnlockCustomCar(void* a1) {
 	GenerateUnlockList();
 	lua_pushnumber(a1, aCustomCarUnlockList[luaL_checknumber(a1, 1)-1]);
 	return 1;
@@ -276,7 +270,7 @@ int GetCustomPlayerModelSkinID(void* a1) {
 	return 1;
 }
 
-int GetFragDerbyRewardAmount(void* a1) {
+int ChloeCollection_GetFragDerbyRewardAmount(void* a1) {
 	int type = luaL_checknumber(a1, 1);
 	switch (type) {
 		case 1:
@@ -300,7 +294,7 @@ int GetFragDerbyRewardAmount(void* a1) {
 }
 
 void SetSlideControl(bool disabled);
-int SetHandlingMode(void* a1) {
+int ChloeCollection_SetHandlingMode(void* a1) {
 	SetSlideControl(luaL_checknumber(a1, 1));
 	return 0;
 }
@@ -537,7 +531,7 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 }
 
 void ApplyAIExtenderPatches();
-int ReinitChloeCollectionHooks(void* a1) {
+int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
 	return 0;
 }
@@ -554,20 +548,18 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "ChloeArcade_HasPlatinumOnEvent");
 	lua_pushcfunction(a1, (void*)&ChloeArcade_SetPlatinumTargetForLevel, 0);
 	lua_setfield(a1, -10002, "ChloeArcade_SetPlatinumTargetForLevel");
-	lua_pushcfunction(a1, (void*)&GetNumSkinsForCurrentCar, 0);
-	lua_setfield(a1, -10002, "GetNumSkinsForCurrentCar");
-	lua_pushcfunction(a1, (void*)&GetCarSkinAuthor, 0);
-	lua_setfield(a1, -10002, "GetCarSkinAuthor");
-	lua_pushcfunction(a1, (void*)&HasCCWelcomeScreenDisplayed, 0);
-	lua_setfield(a1, -10002, "HasCCWelcomeScreenDisplayed");
-	lua_pushcfunction(a1, (void*)&SetCCWelcomeScreenDisplayed, 0);
-	lua_setfield(a1, -10002, "SetCCWelcomeScreenDisplayed");
-	lua_pushcfunction(a1, (void*)&ShouldDisplayCareerOpponentsWarning, 0);
-	lua_setfield(a1, -10002, "ShouldDisplayCareerOpponentsWarning");
-	lua_pushcfunction(a1, (void*)&GetNumUnlockCustomCar, 0);
-	lua_setfield(a1, -10002, "GetNumUnlockCustomCar");
-	lua_pushcfunction(a1, (void*)&GetUnlockCustomCar, 0);
-	lua_setfield(a1, -10002, "GetUnlockCustomCar");
+	lua_pushcfunction(a1, (void*)&ChloeSkins_GetNumSkinsForCurrentCar, 0);
+	lua_setfield(a1, -10002, "ChloeSkins_GetNumSkinsForCurrentCar");
+	lua_pushcfunction(a1, (void*)&ChloeSkins_GetSkinAuthor, 0);
+	lua_setfield(a1, -10002, "ChloeSkins_GetSkinAuthor");
+	lua_pushcfunction(a1, (void*)&ChloeCollection_HasWelcomeScreenDisplayed, 0);
+	lua_setfield(a1, -10002, "ChloeCollection_HasWelcomeScreenDisplayed");
+	lua_pushcfunction(a1, (void*)&ChloeCollection_SetWelcomeScreenDisplayed, 0);
+	lua_setfield(a1, -10002, "ChloeCollection_SetWelcomeScreenDisplayed");
+	lua_pushcfunction(a1, (void*)&ChloeUnlocks_GetNumUnlockCustomCar, 0);
+	lua_setfield(a1, -10002, "ChloeUnlocks_GetNumUnlockCustomCar");
+	lua_pushcfunction(a1, (void*)&ChloeUnlocks_GetUnlockCustomCar, 0);
+	lua_setfield(a1, -10002, "ChloeUnlocks_GetUnlockCustomCar");
 	lua_pushcfunction(a1, (void*)&ChloeArcade_SetCarSkin, 0);
 	lua_setfield(a1, -10002, "ChloeArcade_SetCarSkin");
 	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAllAICars, 0);
@@ -582,10 +574,10 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "GetCustomPlayerModelType");
 	lua_pushcfunction(a1, (void*)&GetCustomPlayerModelSkinID, 0);
 	lua_setfield(a1, -10002, "GetCustomPlayerModelSkinID");
-	lua_pushcfunction(a1, (void*)&GetFragDerbyRewardAmount, 0);
-	lua_setfield(a1, -10002, "GetFragDerbyRewardAmount");
-	lua_pushcfunction(a1, (void*)&SetHandlingMode, 0);
-	lua_setfield(a1, -10002, "SetHandlingMode");
+	lua_pushcfunction(a1, (void*)&ChloeCollection_GetFragDerbyRewardAmount, 0);
+	lua_setfield(a1, -10002, "ChloeCollection_GetFragDerbyRewardAmount");
+	lua_pushcfunction(a1, (void*)&ChloeCollection_SetHandlingMode, 0);
+	lua_setfield(a1, -10002, "ChloeCollection_SetHandlingMode");
 	lua_pushcfunction(a1, (void*)&ChloeInput_OpenInputWindow, 0);
 	lua_setfield(a1, -10002, "ChloeInput_OpenInputWindow");
 	lua_pushcfunction(a1, (void*)&ChloeInput_CloseInputWindow, 0);
@@ -646,8 +638,8 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "ChloeOST_GetNumMenuSoundtracks");
 	lua_pushcfunction(a1, (void*)&ChloeCollection_CheckCheatCode, 0);
 	lua_setfield(a1, -10002, "ChloeCollection_CheckCheatCode");
-	lua_pushcfunction(a1, (void*)&ReinitChloeCollectionHooks, 0);
-	lua_setfield(a1, -10002, "ReinitChloeCollectionHooks");
+	lua_pushcfunction(a1, (void*)&ChloeCollection_ReinitHooks, 0);
+	lua_setfield(a1, -10002, "ChloeCollection_ReinitHooks");
 
 	static auto sVersionString = "Chloe's Collection v1.26 - Custom Soundtrack Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
