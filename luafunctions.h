@@ -38,17 +38,25 @@ int __attribute__((naked)) __fastcall GetScriptParameter(void* a1) {
 	);
 }
 
-int ChloeSkins_GetNumSkinsForCurrentCar(void* a1) {
+int GetNumSkinsForCar(int id) {
 	int tmp[2];
-	auto path = "data/cars/car_" + std::to_string(GetCarDataPath(nCurrentMenuCar, false)) + "/skin";
-	int i;
-	for (i = 0; i < 255; i++) {
+	auto path = "data/cars/car_" + std::to_string(GetCarDataPath(id, false)) + "/skin";
+	for (int i = 0; i < 255; i++) {
 		auto file = (path + std::to_string(i+1) + ".dds");
 		if (!BFSManager_DoesFileExist(*(void**)0x846688, file.c_str(), tmp)) {
-			break;
+			return i;
 		}
 	}
-	lua_pushnumber(a1, i);
+	return 1;
+}
+
+int ChloeSkins_GetNumSkinsForCurrentCar(void* a1) {
+	lua_pushnumber(a1, GetNumSkinsForCar(nCurrentMenuCar));
+	return 1;
+}
+
+int ChloeSkins_GetNumSkinsForCar(void* a1) {
+	lua_pushnumber(a1, GetNumSkinsForCar(luaL_checknumber(a1, 1)));
 	return 1;
 }
 
@@ -554,6 +562,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_ForceAICarCount, "ChloeArcade_ForceAICarCount");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetLenientMultipliers, "ChloeArcade_SetLenientMultipliers");
 	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetNumSkinsForCurrentCar, "ChloeSkins_GetNumSkinsForCurrentCar");
+	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetNumSkinsForCar, "ChloeSkins_GetNumSkinsForCar");
 	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetSkinAuthor, "ChloeSkins_GetSkinAuthor");
 	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetNumUnlockCustomCar, "ChloeUnlocks_GetNumUnlockCustomCar");
 	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetUnlockCustomCar, "ChloeUnlocks_GetUnlockCustomCar");

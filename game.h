@@ -296,7 +296,10 @@ public:
 	int nGameRules;
 	uint8_t _4B8[0x14];
 	int nLevelId; // +4CC
-	uint8_t _4D0[0x4C];
+	uint8_t _4D0[0x8];
+	int nInstantActionCar; // +4D8
+	int nInstantActionCarSkin; // +4DC
+	uint8_t _4E0[0x3C];
 	int nDerbyType; // +51C
 	uint8_t _520[0xFCC];
 	uint32_t NumUnlockCar; // +14EC

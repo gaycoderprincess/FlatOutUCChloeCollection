@@ -30,7 +30,29 @@ void __attribute__((naked)) NoInstantActionTrackIntrosASM2() {
 	);
 }
 
+void RandomizeInstantActionSkin() {
+	pGame->nInstantActionCarSkin = (rand() % GetNumSkinsForCar(pGame->nInstantActionCar)) + 1;
+}
+
+uintptr_t InstantActionSkinRandomizerASM_jmp = 0x469295;
+void __attribute__((naked)) InstantActionSkinRandomizerASM() {
+	__asm__ (
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"push ebx\n\t"
+		"push esi\n\t"
+		"push edi\n\t"
+		"mov edi, eax\n\t"
+		"jmp %0\n\t"
+			:
+			:  "m" (InstantActionSkinRandomizerASM_jmp), "i" (RandomizeInstantActionSkin)
+	);
+}
+
 void ApplyInstantActionPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4687BE, &NoInstantActionTrackIntrosASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x46F880, &NoInstantActionTrackIntrosASM2);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x469290, &InstantActionSkinRandomizerASM);
 }
