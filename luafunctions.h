@@ -305,7 +305,7 @@ int SetHandlingMode(void* a1) {
 	return 0;
 }
 
-int OpenChloeInputWindow(void* a1) {
+int ChloeInput_OpenInputWindow(void* a1) {
 	sInputWindowTitle = GetStringNarrow(lua_tolstring(a1, 1, nullptr));
 	nInputEntryLength = luaL_checknumber(a1, 2);
 	if (nInputEntryLength < 1) nInputEntryLength = 1;
@@ -314,12 +314,12 @@ int OpenChloeInputWindow(void* a1) {
 	return 0;
 }
 
-int CloseChloeInputWindow(void* a1) {
+int ChloeInput_CloseInputWindow(void* a1) {
 	SetInputWindowOpen(false);
 	return 0;
 }
 
-int GetChloeInputWindowText(void* a1) {
+int ChloeInput_GetInputText(void* a1) {
 	if (sInputWindowLastEntry.empty()) return 0;
 
 	auto str = GetStringWide(sInputWindowLastEntry);
@@ -328,7 +328,7 @@ int GetChloeInputWindowText(void* a1) {
 	return 1;
 }
 
-int IsChloeInputWindowCanceled(void* a1) {
+int ChloeInput_IsInputWindowCanceled(void* a1) {
 	lua_pushboolean(a1, !bInputWindowOpen && sInputWindowLastEntry.empty());
 	return 1;
 }
@@ -586,14 +586,14 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setfield(a1, -10002, "GetFragDerbyRewardAmount");
 	lua_pushcfunction(a1, (void*)&SetHandlingMode, 0);
 	lua_setfield(a1, -10002, "SetHandlingMode");
-	lua_pushcfunction(a1, (void*)&OpenChloeInputWindow, 0);
-	lua_setfield(a1, -10002, "OpenChloeInputWindow");
-	lua_pushcfunction(a1, (void*)&CloseChloeInputWindow, 0);
-	lua_setfield(a1, -10002, "CloseChloeInputWindow");
-	lua_pushcfunction(a1, (void*)&GetChloeInputWindowText, 0);
-	lua_setfield(a1, -10002, "GetChloeInputWindowText");
-	lua_pushcfunction(a1, (void*)&IsChloeInputWindowCanceled, 0);
-	lua_setfield(a1, -10002, "IsChloeInputWindowCanceled");
+	lua_pushcfunction(a1, (void*)&ChloeInput_OpenInputWindow, 0);
+	lua_setfield(a1, -10002, "ChloeInput_OpenInputWindow");
+	lua_pushcfunction(a1, (void*)&ChloeInput_CloseInputWindow, 0);
+	lua_setfield(a1, -10002, "ChloeInput_CloseInputWindow");
+	lua_pushcfunction(a1, (void*)&ChloeInput_GetInputText, 0);
+	lua_setfield(a1, -10002, "ChloeInput_GetInputText");
+	lua_pushcfunction(a1, (void*)&ChloeInput_IsInputWindowCanceled, 0);
+	lua_setfield(a1, -10002, "ChloeInput_IsInputWindowCanceled");
 	lua_pushcfunction(a1, (void*)&ChloeProfiles_DoesProfileExist, 0);
 	lua_setfield(a1, -10002, "ChloeProfiles_DoesProfileExist");
 	lua_pushcfunction(a1, (void*)&ChloeProfiles_IsProfileValid, 0);
