@@ -260,12 +260,12 @@ int GetArcadeTotalScore(void* a1) {
 	return 1;
 }
 
-int GetCustomPlayerModelType(void* a1) {
+int ChloeCollection_GetCustomPlayerModelType(void* a1) {
 	lua_pushnumber(a1, GetPlayerModelType());
 	return 1;
 }
 
-int GetCustomPlayerModelSkinID(void* a1) {
+int ChloeCollection_GetCustomPlayerModelSkinID(void* a1) {
 	lua_pushnumber(a1, GetPlayerModelSkinID());
 	return 1;
 }
@@ -536,110 +536,64 @@ int ChloeCollection_ReinitHooks(void* a1) {
 	return 0;
 }
 
+void RegisterLUAFunction(void* a1, void* function, const char* name) {
+	lua_pushcfunction(a1, function, 0);
+	lua_setfield(a1, -10002, name);
+}
+
 auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
-	lua_pushcfunction(a1, (void*)&ChloeArcade_EnablePlatinumGoal, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_EnablePlatinumGoal");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_DisablePlatinumGoal, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_DisablePlatinumGoal");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_SetCurrentEventId, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_SetCurrentEventId");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_HasPlatinumOnEvent, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_HasPlatinumOnEvent");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_SetPlatinumTargetForLevel, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_SetPlatinumTargetForLevel");
-	lua_pushcfunction(a1, (void*)&ChloeSkins_GetNumSkinsForCurrentCar, 0);
-	lua_setfield(a1, -10002, "ChloeSkins_GetNumSkinsForCurrentCar");
-	lua_pushcfunction(a1, (void*)&ChloeSkins_GetSkinAuthor, 0);
-	lua_setfield(a1, -10002, "ChloeSkins_GetSkinAuthor");
-	lua_pushcfunction(a1, (void*)&ChloeCollection_HasWelcomeScreenDisplayed, 0);
-	lua_setfield(a1, -10002, "ChloeCollection_HasWelcomeScreenDisplayed");
-	lua_pushcfunction(a1, (void*)&ChloeCollection_SetWelcomeScreenDisplayed, 0);
-	lua_setfield(a1, -10002, "ChloeCollection_SetWelcomeScreenDisplayed");
-	lua_pushcfunction(a1, (void*)&ChloeUnlocks_GetNumUnlockCustomCar, 0);
-	lua_setfield(a1, -10002, "ChloeUnlocks_GetNumUnlockCustomCar");
-	lua_pushcfunction(a1, (void*)&ChloeUnlocks_GetUnlockCustomCar, 0);
-	lua_setfield(a1, -10002, "ChloeUnlocks_GetUnlockCustomCar");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_SetCarSkin, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_SetCarSkin");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAllAICars, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_ForceAllAICars");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAllAICarsDuo, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_ForceAllAICarsDuo");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_ForceAICarCount, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_ForceAICarCount");
-	lua_pushcfunction(a1, (void*)&ChloeArcade_SetLenientMultipliers, 0);
-	lua_setfield(a1, -10002, "ChloeArcade_SetLenientMultipliers");
-	lua_pushcfunction(a1, (void*)&GetCustomPlayerModelType, 0);
-	lua_setfield(a1, -10002, "GetCustomPlayerModelType");
-	lua_pushcfunction(a1, (void*)&GetCustomPlayerModelSkinID, 0);
-	lua_setfield(a1, -10002, "GetCustomPlayerModelSkinID");
-	lua_pushcfunction(a1, (void*)&ChloeCollection_GetFragDerbyRewardAmount, 0);
-	lua_setfield(a1, -10002, "ChloeCollection_GetFragDerbyRewardAmount");
-	lua_pushcfunction(a1, (void*)&ChloeCollection_SetHandlingMode, 0);
-	lua_setfield(a1, -10002, "ChloeCollection_SetHandlingMode");
-	lua_pushcfunction(a1, (void*)&ChloeInput_OpenInputWindow, 0);
-	lua_setfield(a1, -10002, "ChloeInput_OpenInputWindow");
-	lua_pushcfunction(a1, (void*)&ChloeInput_CloseInputWindow, 0);
-	lua_setfield(a1, -10002, "ChloeInput_CloseInputWindow");
-	lua_pushcfunction(a1, (void*)&ChloeInput_GetInputText, 0);
-	lua_setfield(a1, -10002, "ChloeInput_GetInputText");
-	lua_pushcfunction(a1, (void*)&ChloeInput_IsInputWindowCanceled, 0);
-	lua_setfield(a1, -10002, "ChloeInput_IsInputWindowCanceled");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_DoesProfileExist, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_DoesProfileExist");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_IsProfileValid, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_IsProfileValid");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileName, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileName");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileCar, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileCar");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileClass, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileClass");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileCupsCompleted, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileCupsCompleted");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileCarsUnlocked, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileCarsUnlocked");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileProgress, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileProgress");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfilePortrait, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfilePortrait");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetProfileMoney, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetProfileMoney");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetProfileSlot, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_SetProfileSlot");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_HasLoaded, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_HasLoaded");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_WasLoadSuccessful, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_WasLoadSuccessful");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_DeleteProfile, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_DeleteProfile");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_LoadPlayerNameFromProfile, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_LoadPlayerNameFromProfile");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetNumCupsPassed, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_SetNumCupsPassed");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetNumCarsUnlocked, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_SetNumCarsUnlocked");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetGameProgress, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_SetGameProgress");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_SetProfilePortrait, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_SetProfilePortrait");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetNumArcadeEventsPassed, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetNumArcadeEventsPassed");
-	lua_pushcfunction(a1, (void*)&ChloeProfiles_GetNumArcadeEvents, 0);
-	lua_setfield(a1, -10002, "ChloeProfiles_GetNumArcadeEvents");
-	lua_pushcfunction(a1, (void*)&ChloeOST_GetSoundtrackName, 0);
-	lua_setfield(a1, -10002, "ChloeOST_GetSoundtrackName");
-	lua_pushcfunction(a1, (void*)&ChloeOST_GetMenuSoundtrackName, 0);
-	lua_setfield(a1, -10002, "ChloeOST_GetMenuSoundtrackName");
-	lua_pushcfunction(a1, (void*)&ChloeOST_GetNumSoundtracks, 0);
-	lua_setfield(a1, -10002, "ChloeOST_GetNumSoundtracks");
-	lua_pushcfunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, 0);
-	lua_setfield(a1, -10002, "ChloeOST_GetNumMenuSoundtracks");
-	lua_pushcfunction(a1, (void*)&ChloeCollection_CheckCheatCode, 0);
-	lua_setfield(a1, -10002, "ChloeCollection_CheckCheatCode");
-	lua_pushcfunction(a1, (void*)&ChloeCollection_ReinitHooks, 0);
-	lua_setfield(a1, -10002, "ChloeCollection_ReinitHooks");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_EnablePlatinumGoal, "ChloeArcade_EnablePlatinumGoal");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_DisablePlatinumGoal, "ChloeArcade_DisablePlatinumGoal");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetCurrentEventId, "ChloeArcade_SetCurrentEventId");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_HasPlatinumOnEvent, "ChloeArcade_HasPlatinumOnEvent");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetPlatinumTargetForLevel, "ChloeArcade_SetPlatinumTargetForLevel");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetCarSkin, "ChloeArcade_SetCarSkin");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_ForceAllAICars, "ChloeArcade_ForceAllAICars");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_ForceAllAICarsDuo, "ChloeArcade_ForceAllAICarsDuo");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_ForceAICarCount, "ChloeArcade_ForceAICarCount");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetLenientMultipliers, "ChloeArcade_SetLenientMultipliers");
+	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetNumSkinsForCurrentCar, "ChloeSkins_GetNumSkinsForCurrentCar");
+	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetSkinAuthor, "ChloeSkins_GetSkinAuthor");
+	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetNumUnlockCustomCar, "ChloeUnlocks_GetNumUnlockCustomCar");
+	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetUnlockCustomCar, "ChloeUnlocks_GetUnlockCustomCar");
+	RegisterLUAFunction(a1, (void*)&ChloeInput_OpenInputWindow, "ChloeInput_OpenInputWindow");
+	RegisterLUAFunction(a1, (void*)&ChloeInput_CloseInputWindow, "ChloeInput_CloseInputWindow");
+	RegisterLUAFunction(a1, (void*)&ChloeInput_GetInputText, "ChloeInput_GetInputText");
+	RegisterLUAFunction(a1, (void*)&ChloeInput_IsInputWindowCanceled, "ChloeInput_IsInputWindowCanceled");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_DoesProfileExist, "ChloeProfiles_DoesProfileExist");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_IsProfileValid, "ChloeProfiles_IsProfileValid");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileName, "ChloeProfiles_GetProfileName");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCar, "ChloeProfiles_GetProfileCar");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileClass, "ChloeProfiles_GetProfileClass");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCupsCompleted, "ChloeProfiles_GetProfileCupsCompleted");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCarsUnlocked, "ChloeProfiles_GetProfileCarsUnlocked");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileProgress, "ChloeProfiles_GetProfileProgress");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfilePortrait, "ChloeProfiles_GetProfilePortrait");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileMoney, "ChloeProfiles_GetProfileMoney");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetProfileSlot, "ChloeProfiles_SetProfileSlot");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_HasLoaded, "ChloeProfiles_HasLoaded");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_WasLoadSuccessful, "ChloeProfiles_WasLoadSuccessful");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_DeleteProfile, "ChloeProfiles_DeleteProfile");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_LoadPlayerNameFromProfile, "ChloeProfiles_LoadPlayerNameFromProfile");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetNumCupsPassed, "ChloeProfiles_SetNumCupsPassed");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetNumCarsUnlocked, "ChloeProfiles_SetNumCarsUnlocked");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetGameProgress, "ChloeProfiles_SetGameProgress");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetProfilePortrait, "ChloeProfiles_SetProfilePortrait");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetNumArcadeEventsPassed, "ChloeProfiles_GetNumArcadeEventsPassed");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetNumArcadeEvents, "ChloeProfiles_GetNumArcadeEvents");
+	RegisterLUAFunction(a1, (void*)&ChloeOST_GetSoundtrackName, "ChloeOST_GetSoundtrackName");
+	RegisterLUAFunction(a1, (void*)&ChloeOST_GetMenuSoundtrackName, "ChloeOST_GetMenuSoundtrackName");
+	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumSoundtracks, "ChloeOST_GetNumSoundtracks");
+	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, "ChloeOST_GetNumMenuSoundtracks");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_HasWelcomeScreenDisplayed, "ChloeCollection_HasWelcomeScreenDisplayed");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetWelcomeScreenDisplayed, "ChloeCollection_SetWelcomeScreenDisplayed");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCustomPlayerModelType, "ChloeCollection_GetCustomPlayerModelType");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCustomPlayerModelSkinID, "ChloeCollection_GetCustomPlayerModelSkinID");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetFragDerbyRewardAmount, "ChloeCollection_GetFragDerbyRewardAmount");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetHandlingMode, "ChloeCollection_SetHandlingMode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 
 	static auto sVersionString = "Chloe's Collection v1.26 - Custom Soundtrack Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
