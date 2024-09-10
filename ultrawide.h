@@ -3,19 +3,23 @@ double fSpacingFixAmount43 = (4.0 / 3.0) / fAspectRatio;
 double f43AspectCorrection = 480 * fAspectRatio; // 853
 double f43AspectCorrectionCenter = f43AspectCorrection * 0.5; // 426
 double fButtonPromptSpacing = 16 * fSpacingFixAmount43;
+float fFontScaleMultiplier = fSpacingFixAmount43;
 float fLUAAspect = 2.25;
+float f43AspectCorrection_flt = f43AspectCorrection;
 void RecalculateAspectRatio() {
 	fAspectRatio = *(float*)0x724BB4 / *(float*)0x724BB8;
 	if (nWidescreenMenu) {
 		f43AspectCorrection = 480 * fAspectRatio;
-		fSpacingFixAmount43 = 1;
+		fSpacingFixAmount43 = (4.0 / 3.0) / fAspectRatio;
 	}
 	else {
 		f43AspectCorrection = 640;
-		fSpacingFixAmount43 = (4.0 / 3.0) / fAspectRatio;
+		fSpacingFixAmount43 = 1;
 	}
+	f43AspectCorrection_flt = f43AspectCorrection;
 	f43AspectCorrectionCenter = f43AspectCorrection * 0.5;
 	fButtonPromptSpacing = 16 * fSpacingFixAmount43;
+	fFontScaleMultiplier = 0.5 * fSpacingFixAmount43;
 	fLUAAspect = ((*(float*)0x71098C) * 640.0) / f43AspectCorrection;
 }
 
@@ -222,6 +226,67 @@ double GetSafeAspect() {
 	}
 }
 
+void PatchIngameUIScale(bool patch) {
+	// ingame ui scale
+	NyaHookLib::Patch(0x46BA9F + 2,  patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920);
+	NyaHookLib::Patch(0x489878 + 2,  patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920);
+
+	NyaHookLib::Patch(0x4AB421 + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter : 0x6F7BE0); // ingame pause menu options center
+	NyaHookLib::Patch(0x4B11BC + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame pause menu width
+	NyaHookLib::Patch(0x4B1207 + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter : 0x6F7BE0); // ingame pause menu selection center
+	NyaHookLib::Patch(0x4B13FF + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter : 0x6F7BE0); // ingame pause menu stuff
+	//NyaHookLib::Patch(0x4B158C + 2, &f43AspectCorrectionCenter); // ingame pause menu selected text
+	NyaHookLib::Patch(0x4B6864 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame arcade race finish background width
+	NyaHookLib::Patch(0x4B52AA + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame beat the bomb finish background width
+	NyaHookLib::Patch(0x4C30AF + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame arcade race finish background width
+}
+
+void PatchTextJustify(bool patch) {
+	// disabled during stunts for now
+	PatchIngameUIScale((pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT) || pLoadingScreen);
+
+	bool isInGame = (pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT && *(float*)0x716034 == 480.0f) || pLoadingScreen;
+	NyaHookLib::Patch(0x5A9A76 + 2, patch && isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
+	NyaHookLib::Patch(0x5AF262 + 2, isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
+	NyaHookLib::Patch(0x5AF13B + 2, isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
+}
+
+void DoTextJustify() {
+	PatchTextJustify(true);
+}
+
+void UndoTextJustify() {
+	PatchTextJustify(false);
+}
+
+uintptr_t TextJustifyASM_jmp = 0x5A9139;
+void __attribute__((naked)) __fastcall TextJustifyASM() {
+	__asm__ (
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"push ebp\n\t"
+		"mov ebp, esp\n\t"
+		"and esp, 0xFFFFFFF8\n\t"
+		"sub esp, 0x7C\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (TextJustifyASM_jmp), "i" (DoTextJustify)
+	);
+}
+
+void __attribute__((naked)) __fastcall TextJustifyUndoASM() {
+	__asm__ (
+		"pushad\n\t"
+		"call %0\n\t"
+		"popad\n\t"
+		"ret 0x18\n\t"
+			:
+			: "i" (UndoTextJustify)
+	);
+}
+
 void ApplyUltrawidePatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4CAF6E, &UltrawideTextScaleASM);
 
@@ -238,6 +303,18 @@ void ApplyUltrawidePatches() {
 
 	// always draw lua sprites even if "offscreen"
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5E8CC0, 0x5E8CFF);
+
+	PatchIngameUIScale(true);
+
+	// stunts scoreboard scaling
+	//NyaHookLib::Patch(0x4B8F6B + 2, &f43AspectCorrection_flt); // top bar
+	//NyaHookLib::Patch(0x4B90B8 + 2, &f43AspectCorrection_flt); // not sure what this does
+	//NyaHookLib::Patch(0x4B9122 + 2, &f43AspectCorrection_flt); // not sure what this does
+	//NyaHookLib::Patch(0x4B9172 + 2, &f43AspectCorrection_flt); // bottom bar
+
+	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4B15C9, &PauseMenuTextASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A9130, &TextJustifyASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A9979, &TextJustifyUndoASM);
 
 	uintptr_t aLUAAspectRefs[] = {
 			0x5E2E0D,

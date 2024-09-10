@@ -293,11 +293,19 @@ public:
 	} aArcadeClasses[0];
 };
 
+enum eGameState {
+	GAME_STATE_NONE,
+	GAME_STATE_MENU,
+	GAME_STATE_RACE
+};
+
 class Game {
 public:
-	uint8_t _0[0x4B0];
-	int nGameMode;
-	int nGameRules;
+	uint8_t _0[0x4A4];
+	int nGameState;
+	uint8_t _4A8[0x8];
+	int nGameMode; // +4B0
+	int nGameRules; // +4B4
 	uint8_t _4B8[0x14];
 	int nLevelId; // +4CC
 	uint8_t _4D0[0x8];
@@ -312,6 +320,8 @@ public:
 	uint32_t nArcadeTargets[3]; // +2638
 };
 auto& pGame = *(Game**)0x9298FAC;
+
+auto& pLoadingScreen = *(void**)0x929902C;
 
 class CarUnlockState {
 public:
