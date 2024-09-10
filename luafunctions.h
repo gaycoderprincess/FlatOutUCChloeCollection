@@ -549,7 +549,7 @@ double GetWidescreenLeft(float aspectCorrection = f43AspectCorrection) {
 }
 
 double GetWidescreenSafeLeft() {
-	auto minLeft = GetWidescreenLeft(480 * (16.0 / 9.0));
+	auto minLeft = GetWidescreenLeft(480 * GetSafeAspect());
 	auto left = GetWidescreenLeft();
 	if (minLeft > left) left = minLeft;
 	return left;
@@ -557,7 +557,7 @@ double GetWidescreenSafeLeft() {
 
 double GetWidescreenSafeRight() {
 	auto x = f43AspectCorrection;
-	auto max = (480 * (16.0 / 9.0));
+	auto max = (480 * GetSafeAspect());
 	if (x > max) x = max;
 	return x;
 }

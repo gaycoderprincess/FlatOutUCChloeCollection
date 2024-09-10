@@ -24,7 +24,7 @@ void UltrawideTextScale() {
 	if (!nWidescreenMenu) return;
 
 	*fTextScale *= 640.0;
-	*fTextScale /= 480 * 1.777777;
+	*fTextScale /= f43AspectCorrection;
 }
 
 uintptr_t UltrawideTextScaleASM_jmp = 0x4CAF7B;
@@ -207,6 +207,19 @@ void __attribute__((naked)) __fastcall LUAUpgradeSliderResizerASM() {
 			:
 			: "m" (LUAUpgradeSliderResizerASM_jmp), "i" (LUAUpgradeSliderResizer), "m" (pUpgradePos1), "m" (pUpgradePos2), "m" (pUpgradePos3), "m" (pUpgradePos4)
 	);
+}
+
+double GetSafeAspect() {
+	switch (nWidescreenSafeZone) {
+		case 0:
+			return 4.0 / 3.0;
+		case 1:
+			return 16.0 / 9.0;
+		case 2:
+			return 21.0 / 9.0;
+		default:
+			return INFINITY;
+	}
 }
 
 void ApplyUltrawidePatches() {
