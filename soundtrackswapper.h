@@ -20,7 +20,7 @@ void SetSoundtrack() {
 		static int nLastSoundtrackId = -1;
 
 		int soundtrackId = nIngameSoundtrack;
-		if (game->nLevelId >= TRACK_FO1PIT1A) soundtrackId = nIngameFO1Soundtrack;
+		if (game->nLevelId >= TRACK_FO1TOWN2A) soundtrackId = nIngameFO1Soundtrack;
 		if (game->nGameRules == GR_DERBY || game->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
 
 		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId].filename.c_str());

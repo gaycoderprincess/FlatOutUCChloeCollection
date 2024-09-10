@@ -58,6 +58,9 @@ enum eTrack {
 	TRACK_BASKETBALL		= 82,
 	TRACK_BASEBALL			= 84,
 	TRACK_SOCCER			= 85,
+	TRACK_FO1TOWN2A			= 86,
+	TRACK_FO1TOWN2B			= 87,
+	TRACK_FO1TOWN2C			= 88,
 	TRACK_FO1PIT1A			= 89,
 	TRACK_FO1PIT1B			= 90,
 	TRACK_FO1PIT1C			= 91,
@@ -67,9 +70,6 @@ enum eTrack {
 	TRACK_FO1PIT3A			= 95,
 	TRACK_FO1PIT3B			= 96,
 	TRACK_FO1PIT3C			= 97,
-	TRACK_FO1TOWN2A			= 86,
-	TRACK_FO1TOWN2B			= 87,
-	TRACK_FO1TOWN2C			= 88,
 	TRACK_FO1TOWN3A			= 98,
 	TRACK_FO1TOWN3B			= 99,
 	TRACK_FO1TOWN3C			= 100,
@@ -218,7 +218,11 @@ class Player {
 public:
 	uint8_t _4[0x2C0];
 	uint32_t nPlayerId; // +2C4
-	
+	uint8_t _2C8[0x714];
+	float fLookAheadMin; // +9DC
+	float fLookAheadMax; // +9E0
+	float fLookAheadModifier; // +9E4
+
 	virtual void _vf0() = 0;
 	virtual void _vf1() = 0;
 	virtual void _vf2() = 0;

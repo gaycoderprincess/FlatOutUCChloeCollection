@@ -69,6 +69,21 @@ void SetArrowColor() {
 	}
 }
 
+float __fastcall NoAILookahead(void* a1, void* a2) {
+	return 10.0;
+}
+
+// disable ai lookahead on fo1 tracks
+void SetAILookahead() {
+	if (auto game = pGame) {
+		bool isFO1Track = game->nLevelId >= TRACK_FO1TOWN2A;
+		if (game->nLevelId == TRACK_RETRODEMO1B) isFO1Track = false;
+
+		NyaHookLib::Patch<uint64_t>(0x406CF3, isFO1Track ? 0x818B90000000DEE9 : 0x818B000000DD840F);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x406FE0, isFO1Track ? (uintptr_t)&NoAILookahead : 0x406E50);
+	}
+}
+
 void CustomSetterThread() {
 	SetSoundtrack();
 	SetPlayerModel();
@@ -77,6 +92,7 @@ void CustomSetterThread() {
 	SetArrowColor();
 	SetSlideControl();
 	SetWindowedMode();
+	SetAILookahead();
 }
 
 auto EndSceneOrig = (HRESULT(__thiscall*)(void*))nullptr;
