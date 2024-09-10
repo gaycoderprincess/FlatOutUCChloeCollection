@@ -180,6 +180,9 @@ void __fastcall LUAResizer(GUIRectangle* pRect) {
 	//pRect->fPosX *= f43AspectCorrection;
 	//pRect->fPosX -= pRect->fSizeX * 0.5;
 
+	// hack for listboxes
+	if (pRect->fPosX == 0.0 && pRect->fSizeX > 640.0) return;
+
 	pRect->fPosX -= 320.0;
 	pRect->fPosX += f43AspectCorrectionCenter;
 }
@@ -350,11 +353,15 @@ void ApplyUltrawidePatches() {
 	//NyaHookLib::Patch(0x4CB511 + 2, &fButtonPromptSpacing); // prompt right side clearance
 	NyaHookLib::Patch(0x4CB428 + 2, &f43AspectCorrection); // prompt spacing
 	//NyaHookLib::Patch(0x5E9B04 + 2, &f43AspectCorrection); // lua scaling
+	//NyaHookLib::Patch(0x5F0106 + 2, &f43AspectCorrection); // top & bottom sliders
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5EC90D, &LUAResizerASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5F8532, &LUATextResizerASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5ED0AF, &LUASliderResizerASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5ED2F4, &LUAUpgradeSliderResizerASM);
+
+	// always draw lua sprites even if "offscreen"
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5E8CC0, 0x5E8CFF);
 
 	uintptr_t aLUAAspectRefs[] = {
 			0x5E2E0D,
@@ -400,7 +407,7 @@ void ApplyUltrawidePatches() {
 		NyaHookLib::Patch(addr, &fLUAAspect);
 	}
 
-	std::ifstream t("Config/WindowFunctions.bed", std::ios::in | std::ios::binary);
+	std::ifstream t("Config/WindowFunctions.bed");
 	if (t.is_open()) {
 		std::stringstream buffer;
 		buffer << t.rdbuf();
@@ -408,7 +415,8 @@ void ApplyUltrawidePatches() {
 		int len = buffer.str().length()+1;
 		static char* windowFunctions = new char[len];
 		strcpy_s(windowFunctions, len, buffer.str().c_str());
-		windowFunctions[len]=0;
+		windowFunctions[len-1]=0;
 		NyaHookLib::Patch(0x5E96AA, windowFunctions);
+		NyaHookLib::Patch(0x5E96A1 + 1, len-1);
 	}
 }

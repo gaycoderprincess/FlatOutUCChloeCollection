@@ -58,6 +58,7 @@ tGameSetting aGameSettings[] = {
 		{ "Visual", "CustomPresetParticleQuality", (void*)0x849534, 0, 0, 2 },
 		{ "Visual", "CustomPresetShadowQuality", (void*)0x849538, 0, 0, 2 },
 		{ "Visual", "CustomPresetFoliageQuality", (void*)0x84953C, 0, 0, 2 },
+		{ "Visual", "MotionBlur", (void*)0x7139AC, 1, 0, 0 },
 		{ "Audio", "InterfaceMusicVolume", (void*)0x849548, 0, 0, 100 },
 		{ "Audio", "InterfaceSfxVolume", (void*)0x849550, 0, 0, 100 },
 		{ "Audio", "IngameMusicVolume", (void*)0x849548, 0, 0, 100 },

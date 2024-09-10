@@ -544,22 +544,30 @@ int ChloeCollection_ReinitHooks(void* a1) {
 	return 0;
 }
 
+double GetWidescreenLeft(float aspectCorrection = f43AspectCorrection) {
+	return -(aspectCorrection - 640) * 0.5;
+}
+
+double GetWidescreenSafeLeft() {
+	auto minLeft = GetWidescreenLeft(480 * (16.0 / 9.0));
+	auto left = GetWidescreenLeft();
+	if (minLeft > left) left = minLeft;
+	return left;
+}
+
+double GetWidescreenSafeRight() {
+	auto x = f43AspectCorrection;
+	auto max = (480 * (16.0 / 9.0));
+	if (x > max) x = max;
+	return x;
+}
+
 int ChloeWidescreen_GetAspect(void* a1) {
 	if (nWidescreenMenu) {
 		lua_pushnumber(a1, fSpacingFixAmount43);
 	}
 	else {
 		lua_pushnumber(a1, 1);
-	}
-	return 1;
-}
-
-int ChloeWidescreen_LeftJustify(void* a1) {
-	if (nWidescreenMenu) {
-		lua_pushnumber(a1, luaL_checknumber(a1, 1) * fSpacingFixAmount43);
-	}
-	else {
-		lua_pushnumber(a1, luaL_checknumber(a1, 1));
 	}
 	return 1;
 }
@@ -584,19 +592,9 @@ int ChloeWidescreen_GetRight(void* a1) {
 	return 1;
 }
 
-int ChloeWidescreen_GetSpriteLeft(void* a1) {
+int ChloeWidescreen_GetSafeRight(void* a1) {
 	if (nWidescreenMenu) {
-		lua_pushnumber(a1, -(f43AspectCorrection - 640) * 0.5);
-	}
-	else {
-		lua_pushnumber(a1, 0);
-	}
-	return 1;
-}
-
-int ChloeWidescreen_GetSpriteRight(void* a1) {
-	if (nWidescreenMenu) {
-		lua_pushnumber(a1, f43AspectCorrection);
+		lua_pushnumber(a1, GetWidescreenSafeRight());
 	}
 	else {
 		lua_pushnumber(a1, 640);
@@ -604,11 +602,39 @@ int ChloeWidescreen_GetSpriteRight(void* a1) {
 	return 1;
 }
 
-int ChloeWidescreen_CenterJustify(void* a1) {
+int ChloeWidescreen_GetLeft(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, GetWidescreenLeft());
+	}
+	else {
+		lua_pushnumber(a1, 0);
+	}
+	return 1;
+}
+
+int ChloeWidescreen_GetSafeLeft(void* a1) {
+	if (nWidescreenMenu) {
+		lua_pushnumber(a1, GetWidescreenSafeLeft());
+	}
+	else {
+		lua_pushnumber(a1, 0);
+	}
+	return 1;
+}
+
+int ChloeWidescreen_LeftJustify(void* a1) {
 	auto f = luaL_checknumber(a1, 1);
 	if (nWidescreenMenu) {
-		f -= 320.0;
-		f += f43AspectCorrectionCenter;
+		f += GetWidescreenLeft();
+	}
+	lua_pushnumber(a1, f);
+	return 1;
+}
+
+int ChloeWidescreen_SafeLeftJustify(void* a1) {
+	auto f = luaL_checknumber(a1, 1);
+	if (nWidescreenMenu) {
+		f += GetWidescreenSafeLeft();
 	}
 	lua_pushnumber(a1, f);
 	return 1;
@@ -617,10 +643,27 @@ int ChloeWidescreen_CenterJustify(void* a1) {
 int ChloeWidescreen_RightJustify(void* a1) {
 	auto f = luaL_checknumber(a1, 1);
 	if (nWidescreenMenu) {
-		f -= 640.0;
-		f += f43AspectCorrection;
+		f -= 640.0 * 0.5;
+		f += f43AspectCorrection * 0.5;
 	}
 	lua_pushnumber(a1, f);
+	return 1;
+}
+
+int ChloeWidescreen_SafeRightJustify(void* a1) {
+	auto f = luaL_checknumber(a1, 1);
+	if (nWidescreenMenu) {
+		f -= 640.0 * 0.5;
+		f += GetWidescreenSafeRight() * 0.5;
+	}
+	lua_pushnumber(a1, f);
+	return 1;
+}
+
+int ChloeWidescreen_WasWidescreenToggled(void* a1) {
+	static auto bLastWidescreen = nWidescreenMenu;
+	lua_pushboolean(a1, bLastWidescreen != nWidescreenMenu);
+	bLastWidescreen = nWidescreenMenu;
 	return 1;
 }
 
@@ -633,12 +676,15 @@ auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetAspect, "ChloeWidescreen_GetAspect");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_LeftJustify, "ChloeWidescreen_LeftJustify");
-	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_CenterJustify, "ChloeWidescreen_CenterJustify");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_SafeLeftJustify, "ChloeWidescreen_SafeLeftJustify");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_RightJustify, "ChloeWidescreen_RightJustify");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_SafeRightJustify, "ChloeWidescreen_SafeRightJustify");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetCenter, "ChloeWidescreen_GetCenter");
-	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSpriteLeft, "ChloeWidescreen_GetSpriteLeft");
-	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSpriteRight, "ChloeWidescreen_GetSpriteRight");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetLeft, "ChloeWidescreen_GetLeft");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSafeLeft, "ChloeWidescreen_GetSafeLeft");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetRight, "ChloeWidescreen_GetRight");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSafeRight, "ChloeWidescreen_GetSafeRight");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_WasWidescreenToggled, "ChloeWidescreen_WasWidescreenToggled");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_EnablePlatinumGoal, "ChloeArcade_EnablePlatinumGoal");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_DisablePlatinumGoal, "ChloeArcade_DisablePlatinumGoal");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetCurrentEventId, "ChloeArcade_SetCurrentEventId");
@@ -692,7 +738,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 
-	static auto sVersionString = "Chloe's Collection v1.26 - Custom Soundtrack Edition";
+	static auto sVersionString = "Chloe's Collection v1.27 - Widescreen Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

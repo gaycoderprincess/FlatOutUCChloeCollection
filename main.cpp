@@ -223,6 +223,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			// increase lua variables memory limit
 			NyaHookLib::Patch(0x673E0D + 1, 0x900000);
+
+			// don't set motion blur based on particle quality
+			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x46D732, 0x46D757);
 		} break;
 		default:
 			break;
