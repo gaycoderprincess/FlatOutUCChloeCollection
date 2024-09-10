@@ -256,6 +256,69 @@ void __attribute__((naked)) __fastcall LUASliderResizerASM() {
 	);
 }
 
+float* pUpgradePos1 = nullptr;
+float* pUpgradePos2 = nullptr;
+float* pUpgradePos3 = nullptr;
+float* pUpgradePos4 = nullptr;
+float fUpgradePosNew1[2];
+float fUpgradePosNew2[2];
+float fUpgradePosNew3[2];
+float fUpgradePosNew4[2];
+void LUAUpgradeSliderResizer() {
+	memcpy(fUpgradePosNew1, pUpgradePos1, sizeof(fUpgradePosNew1));
+	memcpy(fUpgradePosNew2, pUpgradePos2, sizeof(fUpgradePosNew2));
+	memcpy(fUpgradePosNew3, pUpgradePos3, sizeof(fUpgradePosNew3));
+	memcpy(fUpgradePosNew4, pUpgradePos4, sizeof(fUpgradePosNew4));
+
+	fUpgradePosNew1[0] -= 320.0;
+	fUpgradePosNew1[0] += f43AspectCorrectionCenter;
+	fUpgradePosNew2[0] -= 320.0;
+	fUpgradePosNew2[0] += f43AspectCorrectionCenter;
+	fUpgradePosNew3[0] -= 320.0;
+	fUpgradePosNew3[0] += f43AspectCorrectionCenter;
+	fUpgradePosNew4[0] -= 320.0;
+	fUpgradePosNew4[0] += f43AspectCorrectionCenter;
+
+	pUpgradePos1 = fUpgradePosNew1;
+	pUpgradePos2 = fUpgradePosNew2;
+	pUpgradePos3 = fUpgradePosNew3;
+	pUpgradePos4 = fUpgradePosNew4;
+}
+
+uintptr_t LUAUpgradeSliderResizerASM_jmp = 0x5ED2FA;
+void __attribute__((naked)) __fastcall LUAUpgradeSliderResizerASM() {
+	__asm__ (
+		"mov ebx, [esp+0x74]\n\t"
+		"mov %2, ebx\n\t"
+		"mov ebx, [esp+0x78]\n\t"
+		"mov %3, ebx\n\t"
+		"mov ebx, [esp+0x7C]\n\t"
+		"mov %4, ebx\n\t"
+		"mov ebx, [esp+0x80]\n\t"
+		"mov %5, ebx\n\t"
+
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"mov ebx, %2\n\t"
+		"mov [esp+0x74], ebx\n\t"
+		"mov ebx, %3\n\t"
+		"mov [esp+0x78], ebx\n\t"
+		"mov ebx, %4\n\t"
+		"mov [esp+0x7C], ebx\n\t"
+		"mov ebx, %5\n\t"
+		"mov [esp+0x80], ebx\n\t"
+
+		"mov ebx, [esp+0x74]\n\t"
+		"fld dword ptr [ebx]\n\t"
+
+		"jmp %0\n\t"
+			:
+			: "m" (LUAUpgradeSliderResizerASM_jmp), "i" (LUAUpgradeSliderResizer), "m" (pUpgradePos1), "m" (pUpgradePos2), "m" (pUpgradePos3), "m" (pUpgradePos4)
+	);
+}
+
 uintptr_t UltrawideJumpTable[] = {
 	0x457429,
 	0x457435,
@@ -291,6 +354,7 @@ void ApplyUltrawidePatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5EC90D, &LUAResizerASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5F8532, &LUATextResizerASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5ED0AF, &LUASliderResizerASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5ED2F4, &LUAUpgradeSliderResizerASM);
 
 	uintptr_t aLUAAspectRefs[] = {
 			0x5E2E0D,
