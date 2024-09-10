@@ -71,12 +71,17 @@ double fButtonPromptSpacing = 16 * fSpacingFixAmount43;
 float fLUAAspect = 2.25;
 void RecalculateAspectRatio() {
 	fAspectRatio = *(float*)0x724BB4 / *(float*)0x724BB8;
-	fSpacingFixAmount43 = (4.0 / 3.0) / fAspectRatio;
-	f43AspectCorrection = 480 * fAspectRatio;
+	if (nWidescreenMenu) {
+		f43AspectCorrection = 480 * fAspectRatio;
+		fSpacingFixAmount43 = 1;
+	}
+	else {
+		f43AspectCorrection = 640;
+		fSpacingFixAmount43 = (4.0 / 3.0) / fAspectRatio;
+	}
 	f43AspectCorrectionCenter = f43AspectCorrection * 0.5;
 	fButtonPromptSpacing = 16 * fSpacingFixAmount43;
-	if (nWidescreenMenu) fLUAAspect = ((*(float*)0x71098C) * 640.0) / f43AspectCorrection;
-	else fLUAAspect = *(float*)0x71098C;
+	fLUAAspect = ((*(float*)0x71098C) * 640.0) / f43AspectCorrection;
 }
 
 double fOrigAspect = 16.0 / 9.0;
@@ -140,6 +145,8 @@ void __attribute__((naked)) __fastcall UltrawideFOVSkyASM() {
 
 float* fTextScale = nullptr;
 void UltrawideTextScale() {
+	if (!nWidescreenMenu) return;
+
 	*fTextScale *= 640.0;
 	*fTextScale /= 480 * 1.777777;
 }
@@ -268,6 +275,8 @@ float fUpgradePosNew2[2];
 float fUpgradePosNew3[2];
 float fUpgradePosNew4[2];
 void LUAUpgradeSliderResizer() {
+	if (!nWidescreenMenu) return;
+
 	memcpy(fUpgradePosNew1, pUpgradePos1, sizeof(fUpgradePosNew1));
 	memcpy(fUpgradePosNew2, pUpgradePos2, sizeof(fUpgradePosNew2));
 	memcpy(fUpgradePosNew3, pUpgradePos3, sizeof(fUpgradePosNew3));
@@ -342,18 +351,13 @@ void ApplyUltrawidePatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4F44F6, &UltrawideFOVASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x591FA5, &UltrawideFOVSkyASM);
 
-	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A99C8, &UltrawideTextScaleOldASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4CAF6E, &UltrawideTextScaleASM);
 
 	NyaHookLib::Patch(0x4CF39B, &f43AspectCorrection); // menu button prompts
 	NyaHookLib::Patch(0x5F08C7, &f43AspectCorrection); // menu selected option text
 	NyaHookLib::Patch(0x5F0B4A, &f43AspectCorrectionCenter); // menu selected option text centered
-	//NyaHookLib::Patch(0x4CAF22, &f43AspectCorrection); // menu button prompt size
 	NyaHookLib::Patch(0x4CB242 + 2, &fButtonPromptSpacing); // prompt spacing
-	//NyaHookLib::Patch(0x4CB511 + 2, &fButtonPromptSpacing); // prompt right side clearance
 	NyaHookLib::Patch(0x4CB428 + 2, &f43AspectCorrection); // prompt spacing
-	//NyaHookLib::Patch(0x5E9B04 + 2, &f43AspectCorrection); // lua scaling
-	//NyaHookLib::Patch(0x5F0106 + 2, &f43AspectCorrection); // top & bottom sliders
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5EC90D, &LUAResizerASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5F8532, &LUATextResizerASM);
