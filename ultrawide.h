@@ -70,7 +70,7 @@ double f43AspectCorrectionCenter = f43AspectCorrection * 0.5; // 426
 double fButtonPromptSpacing = 16 * fSpacingFixAmount43;
 float fLUAAspect = 2.25;
 void RecalculateAspectRatio() {
-	fAspectRatio = (double)nResX / (double)nResY;
+	fAspectRatio = *(float*)0x724BB4 / *(float*)0x724BB8;
 	fSpacingFixAmount43 = (4.0 / 3.0) / fAspectRatio;
 	f43AspectCorrection = 480 * fAspectRatio;
 	f43AspectCorrectionCenter = f43AspectCorrection * 0.5;
@@ -184,6 +184,18 @@ void __fastcall LUAResizer(GUIRectangle* pRect) {
 	pRect->fPosX += f43AspectCorrectionCenter;
 }
 
+void __fastcall LUASliderResizer(GUIRectangle* pRect) {
+	if (!nWidescreenMenu) return;
+
+	static float pLastX = 0;
+	if (pRect->fPosX == pLastX) return;
+
+	pRect->fPosX -= 320.0;
+	pRect->fPosX += f43AspectCorrectionCenter;
+
+	pLastX = pRect->fPosX;
+}
+
 uintptr_t LUAResizerASM_jmp = 0x5EC912;
 void __attribute__((naked)) __fastcall LUAResizerASM() {
 	__asm__ (
@@ -197,6 +209,50 @@ void __attribute__((naked)) __fastcall LUAResizerASM() {
 		"jmp %0\n\t"
 			:
 			: "m" (LUAResizerASM_jmp), "i" (LUAResizer)
+	);
+}
+
+void __fastcall LUATextResizer(float* pText) {
+	if (!nWidescreenMenu) return;
+
+	pText[0] -= 320.0;
+	pText[0] += f43AspectCorrectionCenter;
+}
+
+uintptr_t LUATextResizerASM_jmp = 0x5F8544;
+void __attribute__((naked)) __fastcall LUATextResizerASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov ecx, eax\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"fld dword ptr [eax]\n"
+		"fstp dword ptr [esp+0x20]\n"
+		"lea ecx, [esp+0x14]\n\t"
+		"fld dword ptr [eax+4]\n\t"
+		"mov eax, [ebx]\n\t"
+		"mov edx, [eax+0x14]\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (LUATextResizerASM_jmp), "i" (LUATextResizer)
+	);
+}
+
+uintptr_t LUASliderResizerASM_jmp = 0x5ED0B6;
+void __attribute__((naked)) __fastcall LUASliderResizerASM() {
+	__asm__ (
+		"fstp dword ptr [esp+0x1C]\n\t"
+
+		"pushad\n\t"
+		"mov ecx, esi\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"fld dword ptr [esi+4]\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (LUASliderResizerASM_jmp), "i" (LUASliderResizer)
 	);
 }
 
@@ -232,7 +288,9 @@ void ApplyUltrawidePatches() {
 	NyaHookLib::Patch(0x4CB428 + 2, &f43AspectCorrection); // prompt spacing
 	//NyaHookLib::Patch(0x5E9B04 + 2, &f43AspectCorrection); // lua scaling
 
-	NyaHookLib::PatchRelative(NyaHookLib::JMP,0x5EC90D, &LUAResizerASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5EC90D, &LUAResizerASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5F8532, &LUATextResizerASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5ED0AF, &LUASliderResizerASM);
 
 	uintptr_t aLUAAspectRefs[] = {
 			0x5E2E0D,
