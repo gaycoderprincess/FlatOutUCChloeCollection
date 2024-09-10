@@ -563,6 +563,8 @@ double GetWidescreenSafeRight() {
 }
 
 int ChloeWidescreen_GetAspect(void* a1) {
+	RecalculateAspectRatio();
+
 	if (nWidescreenMenu) {
 		lua_pushnumber(a1, fSpacingFixAmount43);
 	}
@@ -573,6 +575,8 @@ int ChloeWidescreen_GetAspect(void* a1) {
 }
 
 int ChloeWidescreen_GetCenter(void* a1) {
+	RecalculateAspectRatio();
+
 	if (nWidescreenMenu) {
 		lua_pushnumber(a1, f43AspectCorrectionCenter);
 	}
@@ -583,6 +587,8 @@ int ChloeWidescreen_GetCenter(void* a1) {
 }
 
 int ChloeWidescreen_GetRight(void* a1) {
+	RecalculateAspectRatio();
+
 	if (nWidescreenMenu) {
 		lua_pushnumber(a1, f43AspectCorrection);
 	}
@@ -593,6 +599,8 @@ int ChloeWidescreen_GetRight(void* a1) {
 }
 
 int ChloeWidescreen_GetSafeRight(void* a1) {
+	RecalculateAspectRatio();
+
 	if (nWidescreenMenu) {
 		lua_pushnumber(a1, GetWidescreenSafeRight());
 	}
@@ -603,6 +611,8 @@ int ChloeWidescreen_GetSafeRight(void* a1) {
 }
 
 int ChloeWidescreen_GetLeft(void* a1) {
+	RecalculateAspectRatio();
+
 	if (nWidescreenMenu) {
 		lua_pushnumber(a1, GetWidescreenLeft());
 	}
@@ -613,6 +623,8 @@ int ChloeWidescreen_GetLeft(void* a1) {
 }
 
 int ChloeWidescreen_GetSafeLeft(void* a1) {
+	RecalculateAspectRatio();
+
 	if (nWidescreenMenu) {
 		lua_pushnumber(a1, GetWidescreenSafeLeft());
 	}
@@ -623,6 +635,8 @@ int ChloeWidescreen_GetSafeLeft(void* a1) {
 }
 
 int ChloeWidescreen_LeftJustify(void* a1) {
+	RecalculateAspectRatio();
+
 	auto f = luaL_checknumber(a1, 1);
 	if (nWidescreenMenu) {
 		f += GetWidescreenLeft();
@@ -632,6 +646,8 @@ int ChloeWidescreen_LeftJustify(void* a1) {
 }
 
 int ChloeWidescreen_SafeLeftJustify(void* a1) {
+	RecalculateAspectRatio();
+
 	auto f = luaL_checknumber(a1, 1);
 	if (nWidescreenMenu) {
 		f += GetWidescreenSafeLeft();
@@ -641,6 +657,8 @@ int ChloeWidescreen_SafeLeftJustify(void* a1) {
 }
 
 int ChloeWidescreen_RightJustify(void* a1) {
+	RecalculateAspectRatio();
+
 	auto f = luaL_checknumber(a1, 1);
 	if (nWidescreenMenu) {
 		f -= 640.0 * 0.5;
@@ -651,6 +669,8 @@ int ChloeWidescreen_RightJustify(void* a1) {
 }
 
 int ChloeWidescreen_SafeRightJustify(void* a1) {
+	RecalculateAspectRatio();
+
 	auto f = luaL_checknumber(a1, 1);
 	if (nWidescreenMenu) {
 		f -= 640.0 * 0.5;
