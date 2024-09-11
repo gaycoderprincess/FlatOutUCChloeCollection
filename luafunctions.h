@@ -680,6 +680,11 @@ int ChloeWidescreen_SafeRightJustify(void* a1) {
 	return 1;
 }
 
+int ChloeWidescreen_HasSafeZone(void* a1) {
+	lua_pushboolean(a1, std::abs(GetWidescreenLeft() - GetWidescreenSafeLeft()) > 0.05);
+	return 1;
+}
+
 int ChloeWidescreen_WasWidescreenToggled(void* a1) {
 	static auto bLastWidescreen = nWidescreenMenu;
 	lua_pushboolean(a1, bLastWidescreen != nWidescreenMenu);
@@ -704,6 +709,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSafeLeft, "ChloeWidescreen_GetSafeLeft");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetRight, "ChloeWidescreen_GetRight");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetSafeRight, "ChloeWidescreen_GetSafeRight");
+	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_HasSafeZone, "ChloeWidescreen_HasSafeZone");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_WasWidescreenToggled, "ChloeWidescreen_WasWidescreenToggled");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_EnablePlatinumGoal, "ChloeArcade_EnablePlatinumGoal");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_DisablePlatinumGoal, "ChloeArcade_DisablePlatinumGoal");

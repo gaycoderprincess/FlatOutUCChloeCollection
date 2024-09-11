@@ -32,6 +32,7 @@
 #include "setupskip.h"
 #include "windowedmode.h"
 #include "d3dhook.h"
+#include "carlimitadjuster.h"
 #include "verboseerrors.h"
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
@@ -209,6 +210,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyUltrawidePatches();
 			ApplyProfilePatches();
 			ApplyVerboseErrorsPatches();
+			ApplyCarLimitAdjuster();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
@@ -246,6 +248,12 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			// don't set motion blur based on particle quality
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x46D732, 0x46D757);
+
+			// remove hardcoded ReplicatedSession car classes
+			const char* tmpCarClass = "CARCLASS_AAAA";
+			for (int i = 0x714008; i < 0x714028; i += 4) {
+				NyaHookLib::Patch(i, tmpCarClass);
+			}
 		} break;
 		default:
 			break;
