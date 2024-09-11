@@ -248,6 +248,13 @@ void PatchIngameUIScale(bool patch) {
 	NyaHookLib::Patch(0x4B52AA + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame beat the bomb finish background width
 	NyaHookLib::Patch(0x4C30AF + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame arcade race finish background width
 	NyaHookLib::Patch(0x4B3F60 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame race finish top bar
+
+	NyaHookLib::Patch(0x4CEF0B + 2, patch ? (uintptr_t)&f43AspectCorrection : 0x6F7918); // messagebox scale
+	NyaHookLib::Patch(0x4BAE6C + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter_flt : 0x6F7D80); // messagebox pos
+	NyaHookLib::Patch(0x4BB7CC + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter_flt : 0x6F7D80); // messagebox pos
+	NyaHookLib::Patch(0x4BEBAB + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter_flt : 0x6F7D80); // messagebox pos
+	NyaHookLib::Patch(0x4BF567 + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter_flt : 0x6F7D80); // messagebox pos
+	NyaHookLib::Patch(0x4C0079 + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter_flt : 0x6F7D80); // messagebox pos
 }
 
 void PatchTextJustify(bool patch) {
@@ -340,12 +347,6 @@ void ApplyUltrawidePatches() {
 
 	NyaHookLib::Patch(0x4B1AB5 + 2, &f43AspectCorrection); // 3 2 1 go
 	NyaHookLib::Patch(0x4B1E4B + 2, &f43AspectCorrection); // finish
-	NyaHookLib::Patch(0x4CEF0B + 2, &f43AspectCorrection); // messagebox scale
-	NyaHookLib::Patch(0x4BAE6C + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
-	NyaHookLib::Patch(0x4BB7CC + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
-	NyaHookLib::Patch(0x4BEBAB + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
-	NyaHookLib::Patch(0x4BF567 + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
-	NyaHookLib::Patch(0x4C0079 + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
 	NyaHookLib::Patch(0x4B0AA6 + 2, &f43AspectCorrectionCenter); // replay hud pos
 
 #ifdef ULTRAWIDE_SCALING_NEW
