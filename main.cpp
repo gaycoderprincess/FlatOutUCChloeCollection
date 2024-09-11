@@ -69,7 +69,11 @@ void SetArrowColor() {
 	}
 }
 
-float __fastcall NoAILookahead(void* a1, void* a2) {
+float __fastcall NoAILookahead(void* a1, uintptr_t a2) {
+	auto ai = *(Player**)(a2 + 0x1C);
+	ai->fLookAheadMin = 10.0;
+	ai->fLookAheadMax = 10.0;
+	ai->fLookAheadModifier = 0.1;
 	return 10.0;
 }
 
@@ -79,7 +83,7 @@ void SetAILookahead() {
 		bool isFO1Track = game->nLevelId >= TRACK_FO1TOWN2A;
 		if (game->nLevelId == TRACK_RETRODEMO1B) isFO1Track = false;
 
-		NyaHookLib::Patch<uint64_t>(0x406CF3, isFO1Track ? 0x818B90000000DEE9 : 0x818B000000DD840F);
+		//NyaHookLib::Patch<uint64_t>(0x406CF3, isFO1Track ? 0x818B90000000DEE9 : 0x818B000000DD840F);
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x406FE0, isFO1Track ? (uintptr_t)&NoAILookahead : 0x406E50);
 	}
 }

@@ -398,10 +398,10 @@ public:
 	{
 		bool bXCenterAlign : 1;
 		bool bXRightAlign : 1;
-	}; // +34
-	uint8_t _38[0x14];
-	float fScaleX; // +4C
-	float fScaleY; // +50
+	}; // +3C
+	uint8_t _40[0x14];
+	float fScaleX; // +54
+	float fScaleY; // +58
 
 	static inline auto GetFont = (Font*(__stdcall*)(void*, const char*))0x457D00;
 	static inline auto Display = (void(*)(Font*, float, float, const wchar_t*, ...))0x5A8BE0;

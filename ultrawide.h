@@ -6,6 +6,8 @@ double fButtonPromptSpacing = 16 * fSpacingFixAmount43;
 float fFontScaleMultiplier = fSpacingFixAmount43;
 float fLUAAspect = 2.25;
 float f43AspectCorrection_flt = f43AspectCorrection;
+float f43AspectCorrectionCenter_flt = f43AspectCorrectionCenter;
+double f43AspectCorrection_324;
 void RecalculateAspectRatio() {
 	fAspectRatio = *(float*)0x724BB4 / *(float*)0x724BB8;
 	if (nWidescreenMenu) {
@@ -18,9 +20,11 @@ void RecalculateAspectRatio() {
 	}
 	f43AspectCorrection_flt = f43AspectCorrection;
 	f43AspectCorrectionCenter = f43AspectCorrection * 0.5;
+	f43AspectCorrectionCenter_flt = f43AspectCorrectionCenter;
 	fButtonPromptSpacing = 16 * fSpacingFixAmount43;
 	fFontScaleMultiplier = 0.5 * fSpacingFixAmount43;
 	fLUAAspect = ((*(float*)0x71098C) * 640.0) / f43AspectCorrection;
+	f43AspectCorrection_324 = f43AspectCorrectionCenter + 4;
 }
 
 float* fTextScale = nullptr;
@@ -227,6 +231,10 @@ double GetSafeAspect() {
 }
 
 void PatchIngameUIScale(bool patch) {
+	static bool bLast = false;
+	if (bLast == patch) return;
+	bLast = patch;
+
 	// ingame ui scale
 	NyaHookLib::Patch(0x46BA9F + 2,  patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920);
 	NyaHookLib::Patch(0x489878 + 2,  patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920);
@@ -239,6 +247,7 @@ void PatchIngameUIScale(bool patch) {
 	NyaHookLib::Patch(0x4B6864 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame arcade race finish background width
 	NyaHookLib::Patch(0x4B52AA + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame beat the bomb finish background width
 	NyaHookLib::Patch(0x4C30AF + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame arcade race finish background width
+	NyaHookLib::Patch(0x4B3F60 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame race finish top bar
 }
 
 void PatchTextJustify(bool patch) {
@@ -246,9 +255,19 @@ void PatchTextJustify(bool patch) {
 	PatchIngameUIScale((pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT) || pLoadingScreen);
 
 	bool isInGame = (pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT && *(float*)0x716034 == 480.0f) || pLoadingScreen;
-	NyaHookLib::Patch(0x5A9A76 + 2, patch && isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
-	NyaHookLib::Patch(0x5AF262 + 2, isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
-	NyaHookLib::Patch(0x5AF13B + 2, isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
+
+	static bool bLast = false;
+	if (bLast != (patch && isInGame)) {
+		NyaHookLib::Patch(0x5A9A76 + 2, patch && isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
+	}
+	bLast = patch && isInGame;
+
+	static bool bLast2 = false;
+	if (bLast2 != isInGame) {
+		NyaHookLib::Patch(0x5AF262 + 2, isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
+		NyaHookLib::Patch(0x5AF13B + 2, isInGame ? (uintptr_t)&fFontScaleMultiplier : 0x7138DC);
+	}
+	bLast2 = isInGame;
 }
 
 void DoTextJustify() {
@@ -287,6 +306,29 @@ void __attribute__((naked)) __fastcall TextJustifyUndoASM() {
 	);
 }
 
+void __fastcall TextScale(Font* pFont) {
+	// disabled during stunts for now
+	PatchIngameUIScale((pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT) || pLoadingScreen);
+
+	//pFont->fScaleX = pFont->fScaleY * fAspectRatio;
+}
+
+uintptr_t TextScaleASM_jmp = 0x5A9136;
+void __attribute__((naked)) __fastcall TextScaleASM() {
+	__asm__ (
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"push ebp\n"
+		"mov ebp, esp\n"
+		"and esp, 0xFFFFFFF8\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (TextScaleASM_jmp), "i" (TextScale)
+	);
+}
+
 void ApplyUltrawidePatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4CAF6E, &UltrawideTextScaleASM);
 
@@ -295,6 +337,31 @@ void ApplyUltrawidePatches() {
 	NyaHookLib::Patch(0x5F0B4A, &f43AspectCorrectionCenter); // menu selected option text centered
 	NyaHookLib::Patch(0x4CB242 + 2, &fButtonPromptSpacing); // prompt spacing
 	NyaHookLib::Patch(0x4CB428 + 2, &f43AspectCorrection); // prompt spacing
+
+	NyaHookLib::Patch(0x4B1AB5 + 2, &f43AspectCorrection); // 3 2 1 go
+	NyaHookLib::Patch(0x4B1E4B + 2, &f43AspectCorrection); // finish
+	NyaHookLib::Patch(0x4CEF0B + 2, &f43AspectCorrection); // messagebox scale
+	NyaHookLib::Patch(0x4BAE6C + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
+	NyaHookLib::Patch(0x4BB7CC + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
+	NyaHookLib::Patch(0x4BEBAB + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
+	NyaHookLib::Patch(0x4BF567 + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
+	NyaHookLib::Patch(0x4C0079 + 2, &f43AspectCorrectionCenter_flt); // messagebox pos
+	NyaHookLib::Patch(0x4B0AA6 + 2, &f43AspectCorrectionCenter); // replay hud pos
+
+#ifdef ULTRAWIDE_SCALING_NEW
+	NyaHookLib::Patch(0x4B0FE6 + 2, &f43AspectCorrection); // pause menu text scale
+	NyaHookLib::Patch(0x4B158C + 2, &f43AspectCorrectionCenter); // pause menu text spacing
+	NyaHookLib::Patch(0x4BEA17 + 2, &f43AspectCorrection); // messagebox text scale
+	NyaHookLib::Patch(0x4BEBED + 2, &f43AspectCorrectionCenter); // messagebox text spacing
+	NyaHookLib::Patch(0x4B1111 + 2, &f43AspectCorrectionCenter); // paused message text spacing
+	// messagebox arrows
+	NyaHookLib::Patch(0x4BEE14 + 2, &f43AspectCorrection_324);
+	NyaHookLib::Patch(0x4BEF7B + 2, &f43AspectCorrection_324);
+
+	NyaHookLib::Patch(0x598A06, &LoadingScreenTextScaleASM); // loading screen
+	//NyaHookLib::Patch(0x598582 + 2, &f43AspectCorrection); // loading screen
+	//NyaHookLib::Patch(0x598A3D + 2, &f43AspectCorrectionCenter); // loading screen centering
+#endif
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5EC90D, &LUAResizerASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5F8532, &LUATextResizerASM);
@@ -312,9 +379,13 @@ void ApplyUltrawidePatches() {
 	//NyaHookLib::Patch(0x4B9122 + 2, &f43AspectCorrection_flt); // not sure what this does
 	//NyaHookLib::Patch(0x4B9172 + 2, &f43AspectCorrection_flt); // bottom bar
 
+#ifdef ULTRAWIDE_SCALING_NEW
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A9130, &TextScaleASM);
+#else
 	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4B15C9, &PauseMenuTextASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A9130, &TextJustifyASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A9979, &TextJustifyUndoASM);
+#endif
 
 	uintptr_t aLUAAspectRefs[] = {
 			0x5E2E0D,
