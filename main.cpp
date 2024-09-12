@@ -254,6 +254,11 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			for (int i = 0x714008; i < 0x714028; i += 4) {
 				NyaHookLib::Patch(i, tmpCarClass);
 			}
+
+			// remove hardcoded ReplicatedSession gamemodes
+			//for (int i = 0x71406C; i < 0x714098; i += 4) {
+			//	NyaHookLib::Patch(i, tmpCarClass);
+			//}
 		} break;
 		default:
 			break;
