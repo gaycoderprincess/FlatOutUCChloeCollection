@@ -33,6 +33,7 @@
 #include "windowedmode.h"
 #include "d3dhook.h"
 #include "carlimitadjuster.h"
+#include "skippablecopyright.h"
 #include "verboseerrors.h"
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
@@ -210,6 +211,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyUltrawidePatches();
 			ApplyProfilePatches();
 			ApplyVerboseErrorsPatches();
+			ApplySkippableCopyrightPatches();
 			ApplyCarLimitAdjuster();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true

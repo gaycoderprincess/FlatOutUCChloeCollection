@@ -248,6 +248,7 @@ void PatchIngameUIScale(bool patch) {
 	NyaHookLib::Patch(0x4B52AA + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame beat the bomb finish background width
 	NyaHookLib::Patch(0x4C30AF + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame arcade race finish background width
 	NyaHookLib::Patch(0x4B3F60 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame race finish top bar
+	NyaHookLib::Patch(0x4B5A54 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame career timetrial finish top bar
 
 	NyaHookLib::Patch(0x4CEF0B + 2, patch ? (uintptr_t)&f43AspectCorrection : 0x6F7918); // messagebox scale
 	NyaHookLib::Patch(0x4BAE6C + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter_flt : 0x6F7D80); // messagebox pos
@@ -283,6 +284,15 @@ void DoTextJustify() {
 
 void UndoTextJustify() {
 	PatchTextJustify(false);
+}
+
+// i have no idea why this is offset???????
+float* fMPPlayerNameText = nullptr;
+void UndoTextJustifyMPPlayerNames() {
+	PatchTextJustify(false);
+	PatchIngameUIScale(false);
+	//fMPPlayerNameText[1] /= 640.0;
+	//fMPPlayerNameText[1] *= f43AspectCorrection;
 }
 
 uintptr_t TextJustifyASM_jmp = 0x5A9139;
@@ -336,6 +346,27 @@ void __attribute__((naked)) __fastcall TextScaleASM() {
 	);
 }
 
+uintptr_t DrawMPNamesASM_jmp = 0x5A913B;
+void __attribute__((naked)) __fastcall DrawMPNamesASM() {
+	__asm__ (
+		"mov %2, esp\n\t"
+
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"push ebp\n\t"
+		"mov ebp, esp\n\t"
+		"and esp, 0xFFFFFFF8\n\t"
+		"sub esp, 0x7C\n\t"
+		"push ebx\n\t"
+		"push esi\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (DrawMPNamesASM_jmp), "i" (UndoTextJustifyMPPlayerNames), "m" (fMPPlayerNameText)
+	);
+}
+
 void ApplyUltrawidePatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4CAF6E, &UltrawideTextScaleASM);
 
@@ -386,6 +417,7 @@ void ApplyUltrawidePatches() {
 	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4B15C9, &PauseMenuTextASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A9130, &TextJustifyASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5A9979, &TextJustifyUndoASM);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4826F9, &DrawMPNamesASM);
 #endif
 
 	uintptr_t aLUAAspectRefs[] = {
