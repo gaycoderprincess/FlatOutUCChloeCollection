@@ -43,4 +43,8 @@ void __attribute__((naked)) PlayerModelASM() {
 void ApplyPlayerModelPatches() {
 	NyaHookLib::Patch(0x482C16, &nPlayerModel);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4696C2, &PlayerModelASM);
+
+	// skip region-based ctd models
+	NyaHookLib::Patch<uint8_t>(0x4323A7, 0xEB);
+	NyaHookLib::Patch<uint8_t>(0x43231B, 0xEB);
 }

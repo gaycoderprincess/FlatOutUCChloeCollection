@@ -77,6 +77,7 @@ tGameSetting aGameSettings[] = {
 		{ "Network", "VoiceJitterInitialVariation", (void*)0x849578, 0, 0, 100 },
 		{ "Network", "Interpolation", &nMPInterpolation, 0, 0, 1 },
 		{ "Network", "InterpMinRange", &nInterpMinRange, 0, 0, 100 },
+		{ "Network", "UseRelativePosition", &nUseRelativePosition, 0, 0, 1 },
 		{ nullptr, nullptr, nullptr, 0, 0, 0 },
 };
 
