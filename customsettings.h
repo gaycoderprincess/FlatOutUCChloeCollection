@@ -7,7 +7,7 @@ tGameSetting aGameSettings[] = {
 		{ "Game", "DefaultPlayerName", (void*)0x8494DC, 3, 0, 0 },
 		{ "Game", "Camera", (void*)0x8494B8, 0, 0, 9 },
 		{ "Game", "Hud", (void*)0x8494CC, 0, 0, 4 },
-		{ "Game", "PlayerModel", &nPlayerModel, 0, 0, 13 },
+		{ "Game", "PlayerModel", &nPlayerModel, 0, 0, 24 },
 		{ "Game", "MPPortrait", &nAvatarID, 0, 0, 12 },
 		{ "Game", "ArrowColor", &nArrowColor, 0, 0, 13 },
 		//{ "Game", "ShowBonus", (void*)0x8494D4, 1, 0, 0 },

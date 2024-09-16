@@ -236,6 +236,12 @@ public:
 };
 auto GetLiteDB = (LiteDb*(*)())0x5A5EB0;
 
+class Car {
+public:
+	uint8_t _0[0x1D98];
+	float vDriverLoc[3]; // +1D98
+};
+
 class Player {
 public:
 	uint8_t _4[0x2A0];
