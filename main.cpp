@@ -71,17 +71,26 @@ void SetArrowColor() {
 	}
 }
 
+auto LoadExplosions = (void(*)())0x4F3270;
 void SetExplosionEffects() {
 	static int nLastExplosionEffects = -1;
 	if (nLastExplosionEffects != nExplosionEffects) {
+		float mult = nExplosionEffects ? 1 : 0.05;
+		if (nExplosionEffects == 2) mult = 0;
+
 		// Blast
-		*(float*)0x84B254 = nExplosionEffects ? 20.0 : 0.0; // BloomScale
-		*(float*)0x84B25C = nExplosionEffects ? 1.2 : 0.0; // CameraShakeScale
+		*(float*)0x84B254 = 20.0 * mult; // BloomScale
+		*(float*)0x84B25C = 1.2 * mult; // CameraShakeScale
 
 		// Bomb
-		*(float*)(0x84B254 + 0x30) = nExplosionEffects ? 6.13 : 0.0; // BloomScale
-		*(float*)(0x84B25C + 0x30) = nExplosionEffects ? 1.0 : 0.0; // CameraShakeScale
+		*(float*)(0x84B254 + 0x30) = 6.13 * mult; // BloomScale
+		*(float*)(0x84B25C + 0x30) = 1.0 * mult; // CameraShakeScale
 		nLastExplosionEffects = nExplosionEffects;
+	}
+
+	if (!*(bool*)0x929908C && GetLiteDB()) {
+		LoadExplosions();
+		nLastExplosionEffects = -1;
 	}
 }
 
