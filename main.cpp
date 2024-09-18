@@ -71,6 +71,20 @@ void SetArrowColor() {
 	}
 }
 
+void SetExplosionEffects() {
+	static int nLastExplosionEffects = -1;
+	if (nLastExplosionEffects != nExplosionEffects) {
+		// Blast
+		*(float*)0x84B254 = nExplosionEffects ? 20.0 : 0.0; // BloomScale
+		*(float*)0x84B25C = nExplosionEffects ? 1.2 : 0.0; // CameraShakeScale
+
+		// Bomb
+		*(float*)(0x84B254 + 0x30) = nExplosionEffects ? 6.13 : 0.0; // BloomScale
+		*(float*)(0x84B25C + 0x30) = nExplosionEffects ? 1.0 : 0.0; // CameraShakeScale
+		nLastExplosionEffects = nExplosionEffects;
+	}
+}
+
 float __fastcall NoAILookahead(void* a1, uintptr_t a2) {
 	auto ai = *(Player**)(a2 + 0x1C);
 	ai->fLookAheadMin = 10.0;
@@ -99,6 +113,7 @@ void CustomSetterThread() {
 	SetSlideControl();
 	SetWindowedMode();
 	SetAILookahead();
+	SetExplosionEffects();
 }
 
 auto EndSceneOrig = (HRESULT(__thiscall*)(void*))nullptr;
