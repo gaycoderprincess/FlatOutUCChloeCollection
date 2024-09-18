@@ -45,10 +45,39 @@ void __attribute__((naked)) AISkinPropertiesForSkin6ASM() {
 	);
 }
 
+uintptr_t CapDBSkinIDASM_jmp = 0x433EB1;
+void __attribute__((naked)) __fastcall CapDBSkinIDASM() {
+	__asm__ (
+		// 0 skin1
+		// 1 skin2
+		// 2 skin3
+		// 3 skin4
+		// 4 skin5
+		// 5 skinai1
+		// 6 skinai2
+		// 7 skinai3
+		// 8 skinai4
+
+		"mov eax, [esp+0x14]\n\t"
+		"cmp eax, 8\n\t"
+		"jle noCap\n\t"
+		"mov eax, 8\n\t"
+		"mov [esp+0x14], eax\n\t"
+
+		"noCap:\n\t"
+		"mov eax, [esp+0x18]\n\t"
+		"test eax, eax\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (CapDBSkinIDASM_jmp)
+	);
+}
+
 void ApplySkinDBExtenderPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4C7819, &AISkinPropertiesForSkin6ASM);
 
 	// read in stunt at 004693C4, same as race
 	// then read at 004696DA
 	NyaHookLib::Patch<uint16_t>(0x4696D8, 0x9090); // skin changing in stunt
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x433EAB, &CapDBSkinIDASM);
 }
