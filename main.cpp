@@ -5,6 +5,7 @@
 #include "toml++/toml.hpp"
 #include "nya_dx9_hookbase.h"
 #include "nya_commonhooklib.h"
+#include "nya_commonmath.h"
 
 #include "game.h"
 
@@ -35,6 +36,7 @@
 #include "carlimitadjuster.h"
 #include "skippablecopyright.h"
 #include "verboseerrors.h"
+#include "bombexplosion.h"
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
 void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
@@ -236,6 +238,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyProfilePatches();
 			ApplyVerboseErrorsPatches();
 			ApplySkippableCopyrightPatches();
+			ApplyBombExplosionPatches();
 			ApplyCarLimitAdjuster();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true

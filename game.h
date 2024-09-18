@@ -238,13 +238,38 @@ auto GetLiteDB = (LiteDb*(*)())0x5A5EB0;
 
 class Car {
 public:
-	uint8_t _0[0x1D98];
+	uint8_t _0[0x1C0];
+	float mMatrix[4*4]; // +1C0
+	uint8_t _200[0x80];
+	float qQuaternion[4]; // +280
+	float vVelocity[3]; // +290
+	uint8_t _29C[0x4];
+	float vAngVelocity[3]; // +2A0
+	uint8_t _2AC[0x340];
+	float fNitro; // +5EC
+	uint8_t _5F0[0x16D8];
+	uint32_t nIsSkinCharred; // +1CC8
+	uint8_t _1CCC[0x74];
+	float fMass; // +1D40
+	uint8_t _1D44[0x54];
 	float vDriverLoc[3]; // +1D98
+	uint8_t _1D9C[0x174];
+	float fGasPedal; // +1F10
+	float fBrakePedal; // +1F14
+	float fNitroButton; // +1F18
+	float fHandbrake; // +1F1C
+	float fSteerAngle; // +1F20
+	uint8_t _1F24[0x5B94];
+	float fDamage; // +7AB8
+	uint8_t _7ABC[0xC];
+	uint32_t nIsWrecked; // +7AC8
 };
 
 class Player {
 public:
-	uint8_t _4[0x2A0];
+	uint8_t _4[0x290];
+	Car* pCar; // +294
+	uint8_t _298[0xC];
 	uint32_t nPlayerModel; // +2A4
 	uint8_t _2A8[0x1C];
 	uint32_t nPlayerId; // +2C4
@@ -513,6 +538,8 @@ int __attribute__((naked)) __fastcall SendEvent(void* a1, int* eventData) {
 			:  "m" (SendEvent_call)
 	);
 }
+
+auto& fPowerups_BombMaxDistance = *(float*)0x76510C;
 
 auto sTextureFolder = (const char*)0x845B78;
 auto sSharedTextureFolder = (const char*)0x845C80;
