@@ -538,6 +538,11 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_SaveSettings(void* a1) {
+	gCustomSave.Save();
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -810,6 +815,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetFragDerbyRewardAmount, "ChloeCollection_GetFragDerbyRewardAmount");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetHandlingMode, "ChloeCollection_SetHandlingMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SaveSettings, "ChloeCollection_SaveSettings");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 
 	static auto sVersionString = "Chloe's Collection v1.33 - Better Author Medals Edition";

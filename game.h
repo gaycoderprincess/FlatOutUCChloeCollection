@@ -266,6 +266,8 @@ public:
 	float fDamage; // +7AB8
 	uint8_t _7ABC[0xC];
 	uint32_t nIsWrecked; // +7AC8
+
+	static inline auto CalculatePerformance = (void(*)(float* out, float torque, float torqueRPM, float power, float powerRPM, float zeroRPM, float redlineRPM))0x45C750;
 };
 
 enum ePlayerType {
