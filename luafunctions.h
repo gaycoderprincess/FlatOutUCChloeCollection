@@ -692,6 +692,46 @@ int ChloeWidescreen_WasWidescreenToggled(void* a1) {
 	return 1;
 }
 
+int ChloeTuning_GetCarNitroModifier(void* a1) {
+	lua_pushnumber(a1, GetCurrentCarTuning()->fNitroModifier * 100);
+	return 1;
+}
+
+int ChloeTuning_SetCarNitroModifier(void* a1) {
+	GetCurrentCarTuning()->fNitroModifier = luaL_checknumber(a1, 1) / 100.0;
+	return 0;
+}
+
+int ChloeTuning_GetCarBrakeBias(void* a1) {
+	lua_pushnumber(a1, GetCurrentCarTuning()->fBrakeBias * 100);
+	return 1;
+}
+
+int ChloeTuning_SetCarBrakeBias(void* a1) {
+	GetCurrentCarTuning()->fBrakeBias = luaL_checknumber(a1, 1) / 100.0;
+	return 0;
+}
+
+int ChloeTuning_GetCarEngineModifier(void* a1) {
+	lua_pushnumber(a1, GetCurrentCarTuning()->fEngineModifier * 100);
+	return 1;
+}
+
+int ChloeTuning_SetCarEngineModifier(void* a1) {
+	GetCurrentCarTuning()->fEngineModifier = luaL_checknumber(a1, 1) / 100.0;
+	return 0;
+}
+
+int ChloeTuning_SetEnabledForMultiplayer(void* a1) {
+	bEnableCarTuningForMultiplayer = luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeTuning_SetActiveCarForMultiplayer(void* a1) {
+	nCarTuningCurrectCarForMultiplayer = luaL_checknumber(a1, 1);
+	return 0;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -699,6 +739,14 @@ void RegisterLUAFunction(void* a1, void* function, const char* name) {
 
 auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarNitroModifier, "ChloeTuning_GetCarNitroModifier");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetCarNitroModifier, "ChloeTuning_SetCarNitroModifier");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarBrakeBias, "ChloeTuning_GetCarBrakeBias");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetCarBrakeBias, "ChloeTuning_SetCarBrakeBias");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarEngineModifier, "ChloeTuning_GetCarEngineModifier");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetCarEngineModifier, "ChloeTuning_SetCarEngineModifier");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetEnabledForMultiplayer, "ChloeTuning_SetEnabledForMultiplayer");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetActiveCarForMultiplayer, "ChloeTuning_SetActiveCarForMultiplayer");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetAspect, "ChloeWidescreen_GetAspect");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_LeftJustify, "ChloeWidescreen_LeftJustify");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_SafeLeftJustify, "ChloeWidescreen_SafeLeftJustify");

@@ -20,6 +20,7 @@
 #include "customsettings.h"
 #include "soundtrackswapper.h"
 #include "ultrawide.h"
+#include "cartuning.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"
@@ -240,6 +241,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplySkippableCopyrightPatches();
 			ApplyBombExplosionPatches();
 			ApplyCarLimitAdjuster();
+			ApplyCarTuningPatches();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 

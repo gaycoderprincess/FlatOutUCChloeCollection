@@ -10,6 +10,14 @@ std::string GetCustomSavePath(int id) {
 int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
 bool bUnlockAllArcadeEvents = false;
 
+struct tCarTuning {
+	bool initialized = false;
+	float fNitroModifier;
+	float fBrakeBias;
+	float fEngineModifier;
+	float tmp[16];
+};
+
 struct tCustomSaveStructure {
 	wchar_t playerName[32];
 	bool bWelcomeScreenDisplayed;
@@ -21,8 +29,9 @@ struct tCustomSaveStructure {
 	uint32_t numCupsPassed;
 	uint32_t gameProgress;
 	uint8_t playerPortrait;
-	bool bArcadePlatinums[nNumArcadeRacesX][nNumArcadeRacesY];
+	tCarTuning aCarTunings[256];
 
+	static inline bool bArcadePlatinums[nNumArcadeRacesX][nNumArcadeRacesY] = {};
 	static inline bool bOverrideAllArcadeScores = false;
 
 	tCustomSaveStructure() {

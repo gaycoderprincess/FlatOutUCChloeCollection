@@ -31,6 +31,7 @@ int GetPlayerModelSkinID() {
 	if (nPlayerModel < 23) return nPlayerModel - 18; // fo1 female
 	if (nPlayerModel == 23) return 1; // ctd male
 	if (nPlayerModel == 24) return 1; // ctd female
+	return 1;
 }
 int GetPlayerModelType() {
 	if (nPlayerModel < 2) return nPlayerModel;

@@ -236,6 +236,7 @@ public:
 };
 auto GetLiteDB = (LiteDb*(*)())0x5A5EB0;
 
+class Player;
 class Car {
 public:
 	uint8_t _0[0x1C0];
@@ -253,27 +254,38 @@ public:
 	float fMass; // +1D40
 	uint8_t _1D44[0x54];
 	float vDriverLoc[3]; // +1D98
-	uint8_t _1D9C[0x174];
+	uint8_t _1DA4[0x16C];
 	float fGasPedal; // +1F10
 	float fBrakePedal; // +1F14
 	float fNitroButton; // +1F18
 	float fHandbrake; // +1F1C
 	float fSteerAngle; // +1F20
-	uint8_t _1F24[0x5B94];
+	uint8_t _1F24[0x2778];
+	Player* pPlayer; // +469C
+	uint8_t _46A0[0x3418];
 	float fDamage; // +7AB8
 	uint8_t _7ABC[0xC];
 	uint32_t nIsWrecked; // +7AC8
+};
+
+enum ePlayerType {
+	PLAYER_TYPE_NONE = 0,
+	PLAYER_TYPE_LOCAL = 1,
+	PLAYER_TYPE_NETWORK = 2,
+	PLAYER_TYPE_AI = 4,
 };
 
 class Player {
 public:
 	uint8_t _4[0x290];
 	Car* pCar; // +294
-	uint8_t _298[0xC];
+	uint32_t nCarId; // +298
+	uint8_t _29C[0x8];
 	uint32_t nPlayerModel; // +2A4
 	uint8_t _2A8[0x1C];
 	uint32_t nPlayerId; // +2C4
-	uint8_t _2C8[0x714];
+	uint32_t nPlayerType; // +2C8
+	uint8_t _2C4[0x710];
 	float fLookAheadMin; // +9DC
 	float fLookAheadMax; // +9E0
 	float fLookAheadModifier; // +9E4
@@ -345,7 +357,9 @@ public:
 	struct {
 		ArcadeRaceStats* races;
 		uint32_t numRaces;
-	} aArcadeClasses[0];
+	} aArcadeClasses[0]; // +3D0
+	uint8_t _3D0[0xEEA];
+	uint8_t nActiveCar; // +12BA
 };
 
 enum eGameState {
@@ -373,6 +387,8 @@ public:
 	uint32_t UnlockCar[16]; // +14F0
 	uint8_t _1530[0x1108];
 	uint32_t nArcadeTargets[3]; // +2638
+	uint8_t _2644[0x80C];
+	PlayerProfile Profile; // +2E50
 };
 auto& pGame = *(Game**)0x9298FAC;
 
