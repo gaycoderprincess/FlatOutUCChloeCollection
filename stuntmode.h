@@ -2,6 +2,7 @@ bool bIsStuntMode = false;
 int nStuntModeTime = 5 * 60 * 1000; // 5 minutes
 float fStuntModeJumpYaw = 0;
 float fStuntModeJumpRoll = 0;
+float fStuntModeJumpPitch = 0;
 int nStuntModeNum360Spins = 0;
 int nStuntModeNum360Rolls = 0;
 bool bStuntModeRagdolled = false;
@@ -11,20 +12,24 @@ double fStuntModeLastReset = 0;
 enum eAirControlMode {
 	AIRCONTROL_DEFAULT,
 	AIRCONTROL_ON,
+	AIRCONTROL_YAWONLY,
 	AIRCONTROL_OFF
 };
 int nStuntModeAirControlMode = AIRCONTROL_DEFAULT;
 
 volatile float fAirControlLimitStart = 4;
 volatile float fAirControlLimitEnd = 5;
-volatile float fAirControlBaseSpeed = 3;
+volatile float fAirControlBaseSpeedPitch = 2;
+volatile float fAirControlBaseSpeedYaw = 3;
+volatile float fAirControlBaseSpeedRoll = 2;
 
 volatile float fStuntModeMinTwoWheelTime = 1;
 volatile float fStuntModeTwoWheelMultiplier = 2000;
 volatile float fStuntModeMaxSpinSpeed = 10;
 volatile float fStuntModeSpinMultiplier = 200;
 volatile float fStuntModeSpinMinimum = std::numbers::pi * 0.9; // about 160 degrees
-volatile float fStuntModeSpin360 = std::numbers::pi * 1.9; // about 340 degrees
+volatile float fStuntMode360RollTolerance = 0.7; // about 40 degrees
+volatile float fStuntMode360SpinTolerance = 0.4; // about 25 degrees
 
 bool IsCarTwoWheeling(Car* car) {
 	// 0 1 front, 2 3 rear
@@ -39,14 +44,40 @@ void ProcessAirControl(Player* pPlayer) {
 	auto car = pPlayer->pCar;
 	if (car->nIsRagdolled) return;
 	if (pPlayer->nTimeInAir < 300) return;
-	if (abs(car->fSteerAngle) < 0.01) return;
 
-	float yawSpeed = car->fSteerAngle < 0 ? -1 : 1;
+	bool yawOnly = nStuntModeAirControlMode == AIRCONTROL_YAWONLY;
+
+	double steeringInput = pPlayer->fSteeringController;
+	if (pPlayer->nSteeringKeyboardLeft || pPlayer->nSteeringKeyboardRight) {
+		steeringInput = 0;
+		if (pPlayer->nSteeringKeyboardLeft) steeringInput = -1;
+		if (pPlayer->nSteeringKeyboardRight) steeringInput += 1;
+	}
+	double upDownInput = GetPadKeyState(NYA_PAD_KEY_LSTICK_Y) / 32767.0;
+	bool upPressed = IsKeyPressed(VK_LSHIFT);
+	bool downPressed = IsKeyPressed(VK_LCONTROL);
+	if (upPressed || downPressed) {
+		upDownInput = 0;
+		if (downPressed) upDownInput = -1;
+		if (upPressed) upDownInput += 1;
+	}
+	if (yawOnly) upDownInput = 0;
+
+	if (abs(steeringInput) < 0.1 && abs(upDownInput) < 0.1) return;
+
+	if (abs(steeringInput) < 0.1) steeringInput = 0;
+	if (abs(upDownInput) < 0.1) upDownInput = 0;
 
 	NyaVec3 angVel = {car->vAngVelocity[0], car->vAngVelocity[1], car->vAngVelocity[2]};
 	NyaVec3 angVelNew = angVel;
 	for (int i = 0; i < 3; i++) {
-		angVelNew[i] += car->mMatrix[(4 * 1) + i] * yawSpeed * fAirControlBaseSpeed * fDeltaTime;
+		if (car->fHandbrake > 0.5 && !yawOnly) {
+			angVelNew[i] += car->mMatrix[(4 * 2) + i] * -steeringInput * fAirControlBaseSpeedRoll * fDeltaTime;
+		}
+		else {
+			angVelNew[i] += car->mMatrix[(4 * 1) + i] * steeringInput * fAirControlBaseSpeedYaw * fDeltaTime;
+		}
+		angVelNew[i] += car->mMatrix[(4 * 0) + i] * upDownInput * fAirControlBaseSpeedPitch * fDeltaTime;
 	}
 
 	float airControlFactor = 1;
@@ -64,13 +95,23 @@ void ProcessAirControl(Player* pPlayer) {
 	}
 }
 
+void ResetStuntTricks() {
+	fStuntModeJumpPitch = 0;
+	fStuntModeJumpRoll = 0;
+	fStuntModeJumpYaw = 0;
+	nStuntModeNum360Spins = 0;
+	nStuntModeNum360Rolls = 0;
+}
+
+NyaMat4x4 carMatrix;
+
 void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 	if (nStuntModeAirControlMode == AIRCONTROL_ON) ProcessAirControl(pPlayer);
 
 	if (!bIsStuntMode) return;
 	if (pGame->nGameRules != GR_ARCADE_RACE) return;
 
-	if (nStuntModeAirControlMode == AIRCONTROL_DEFAULT) ProcessAirControl(pPlayer);
+	if (nStuntModeAirControlMode == AIRCONTROL_DEFAULT || nStuntModeAirControlMode == AIRCONTROL_YAWONLY) ProcessAirControl(pPlayer);
 
 	// air control
 	const float fDeltaTime = 0.01;
@@ -82,8 +123,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 	if (car->mMatrix[13] < -50 && fStuntModeLastReset > 3) {
 		int eventData[9] = {EVENT_RESPAWN_PLAYER, 0, (int)pPlayer->nPlayerId, 0xFFFF, 0};
 		PostEvent(eventData);
-		fStuntModeJumpYaw = 0;
-		fStuntModeJumpRoll = 0;
+		ResetStuntTricks();
 		fStuntModeLastReset = 0;
 
 		AddArcadeRaceScore(L"CHEESE PENALTY", 0, pGame, -10000, GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
@@ -104,27 +144,19 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 		fStuntModeTimeTwoWheeling = 0;
 	}
 
+	memcpy(&carMatrix, car->mMatrix, sizeof(carMatrix));
+
 	if (pPlayer->nTimeInAir > 50 && !car->nIsRagdolled) {
-		NyaMat4x4 carMatrix;
-		memcpy(&carMatrix, car->mMatrix, sizeof(carMatrix));
-		carMatrix.p = {0,0,0};
-		carMatrix = carMatrix.Invert();
+		auto carRotation = carMatrix;
+		carRotation.p = {0,0,0};
+		carRotation = carRotation.Invert();
 
 		NyaVec3 angVel = {car->vAngVelocity[0], car->vAngVelocity[1], car->vAngVelocity[2]};
-		auto angVelRelative = carMatrix * angVel;
+		auto angVelRelative = carRotation * angVel;
 
+		fStuntModeJumpPitch += angVelRelative.x * fDeltaTime;
 		fStuntModeJumpYaw += angVelRelative.y * fDeltaTime;
-		fStuntModeJumpRoll += (angVelRelative.x + angVelRelative.z) * fDeltaTime;
-		if (abs(fStuntModeJumpYaw) > fStuntModeSpin360 * (nStuntModeNum360Spins + 1)) {
-			AddArcadeRaceScore(L"360!", 0, pGame, 5000,
-							   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
-			nStuntModeNum360Spins++;
-		}
-		if (abs(fStuntModeJumpRoll) > fStuntModeSpin360 * (nStuntModeNum360Rolls + 1)) {
-			AddArcadeRaceScore(L"FLIP!", 0, pGame, 5000,
-							   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
-			nStuntModeNum360Rolls++;
-		}
+		fStuntModeJumpRoll += angVelRelative.z * fDeltaTime;
 
 		// cap spin speed
 		if (angVel.length() > fStuntModeMaxSpinSpeed) {
@@ -135,6 +167,45 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 			}
 		}
 	} else {
+		if (pPlayer->nGhosting) {
+			ResetStuntTricks();
+		}
+
+		if (carMatrix.y.y > 0.6) {
+			for (int i = 1; i < 9; i++) {
+				double fTarget = std::numbers::pi * 2 * i;
+				if (abs(abs(fStuntModeJumpRoll) - fTarget) < fStuntMode360RollTolerance) {
+					wchar_t tmp[64];
+					_snwprintf(tmp, 64, L"%dx ROLL!", i);
+					AddArcadeRaceScore(tmp, 0, pGame, 10000 * i,
+									   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+					break;
+				}
+			}
+
+			for (int i = 1; i < 9; i++) {
+				double fTarget = std::numbers::pi * 2 * i;
+				if (abs(abs(fStuntModeJumpPitch) - fTarget) < fStuntMode360RollTolerance) {
+					wchar_t tmp[64];
+					_snwprintf(tmp, 64, L"%dx FLIP!", i);
+					AddArcadeRaceScore(tmp, 0, pGame, 10000 * i,
+									   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+					break;
+				}
+			}
+		}
+
+		for (int i = 1; i < 9; i++) {
+			double fTarget = std::numbers::pi * i;
+			if (abs(abs(fStuntModeJumpYaw) - fTarget) < fStuntMode360SpinTolerance) {
+				wchar_t tmp[64];
+				_snwprintf(tmp, 64, L"%d!", 180 * i);
+				AddArcadeRaceScore(tmp, 0, pGame, 2500 * i,
+								   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+				break;
+			}
+		}
+
 		if (abs(fStuntModeJumpYaw) > fStuntModeSpinMinimum) {
 			AddArcadeRaceScore(L"SPIN", 0, pGame, fStuntModeSpinMultiplier * abs(fStuntModeJumpYaw),
 							   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
@@ -143,10 +214,8 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 			AddArcadeRaceScore(L"ROLL", 0, pGame, fStuntModeSpinMultiplier * abs(fStuntModeJumpRoll),
 							   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
 		}
-		fStuntModeJumpYaw = 0;
-		fStuntModeJumpRoll = 0;
-		nStuntModeNum360Spins = 0;
-		nStuntModeNum360Rolls = 0;
+
+		ResetStuntTricks();
 	}
 }
 
@@ -167,6 +236,15 @@ void ApplyStuntModeAirControlPatch() {
 	ProcessPlayerCarASM_call = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47A010, &ProcessPlayerCarASM);
 }
 
+void GetRaceTypeString(wchar_t* str, size_t len) {
+	_snwprintf(str, len, L"STUNT SHOW");
+}
+
+void GetRaceDescString(wchar_t* str, size_t len) {
+	const wchar_t* descString = L"Get as much score as possible by doing tricks with your car. Earn points by:\n\n· Spins, rolls and flips\n· Catching huge air\n· Two-wheeling\n· Throwing yourself out of your car\n\nYour car is given air control in this mode, so make good use of it to do tricks!";
+	_snwprintf(str, len, descString);
+}
+
 void ApplyStuntModePatches(bool apply) {
 	bIsStuntMode = apply;
 	SetArcadeRaceMultiplierPointer(apply ? fArcadeRacePositionMultiplierStunt : fArcadeRacePositionMultiplier);
@@ -181,6 +259,8 @@ void ApplyStuntModePatches(bool apply) {
 	NyaHookLib::Patch(0x48C797, apply ? nStuntModeTime : 120000);
 	// disable resetmap.4b
 	NyaHookLib::Patch<uint64_t>(0x4D81F8, apply ? 0x448D9000000175E9 : 0x448D00000174840F);
+	// disable airtime reset and derby oob reset
+	NyaHookLib::Patch<uint8_t>(0x43D69E, apply ? 0xEB : 0x75);
 
 	// remove crash bonuses
 	NyaHookLib::Patch<uint64_t>(0x48C957, apply ? 0x4B8B9000000210E9 : 0x4B8B0000020F850F);
@@ -190,6 +270,9 @@ void ApplyStuntModePatches(bool apply) {
 	NyaHookLib::Patch<uint64_t>(0x48C9D7, apply ? 0x538B9000000190E9 : 0x538B0000018F850F);
 	NyaHookLib::Patch<uint64_t>(0x48C917, apply ? 0x538B9000000250E9 : 0x538B0000024F850F);
 	NyaHookLib::Patch<uint64_t>(0x48C9D7, apply ? 0x538B9000000190E9 : 0x538B0000018F850F);
+
+	NyaHookLib::Patch(0x4F2494 + 1, apply ? (uintptr_t)&GetRaceTypeString : 0x4F2920);
+	NyaHookLib::Patch(0x4F24BC + 1, apply ? (uintptr_t)&GetRaceDescString : 0x4F25F0);
 
 	const char* str = "Data.Track.Forest.Forest1.A.Checkpoints.ArcadeRace";
 	NyaHookLib::Patch(0x48DEB3 + 1, apply ? (uintptr_t)str : 0x6E2568);

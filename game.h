@@ -300,9 +300,17 @@ public:
 	uint8_t _2A8[0x1C];
 	uint32_t nPlayerId; // +2C4
 	uint32_t nPlayerType; // +2C8
-	uint8_t _2CC[0x1F0];
+	uint8_t _2CC[0x174];
+	uint32_t nGhosting; // +440
+	uint8_t _444[0x78];
 	uint32_t nTimeInAir; // +4BC
-	uint8_t _4C0[0x440];
+	uint8_t _4C0[0x3E0];
+	uint32_t nSteeringKeyboardLeft; // +8A0
+	uint32_t nSteeringKeyboardRight; // +8A4
+	uint8_t _8A8[0x20];
+	float fSteeringController; // +8C8
+	float fOutputSteerAngle; // +8CC
+	uint8_t _8D0[0x30];
 	float fTimeInAirForBonus; // +900
 	uint8_t _904[0xD8];
 	float fLookAheadMin; // +9DC
