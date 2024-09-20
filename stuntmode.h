@@ -222,7 +222,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 		}
 
 		if (IsCarOnAllWheels(car)) {
-			if (fStuntModeLandOnAllWheelsTimer < fStuntModePerfectLandingTolerance && fStuntModeInAirTimer > 2) {
+			if (fStuntModeLandOnAllWheelsTimer < fStuntModePerfectLandingTolerance && fStuntModeInAirTimer > 1.5) {
 				AddArcadeRaceScore(L"PERFECT LANDING!", 0, pGame, nStuntModePerfectLandingBonus,
 								   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
 			}
@@ -313,6 +313,8 @@ void GetRaceDescString(wchar_t* str, size_t len) {
 }
 
 void ApplyStuntModePatches(bool apply) {
+	fStuntModeLastReset = 0;
+
 	bIsStuntMode = apply;
 	SetArcadeRaceMultiplierPointer(apply ? fArcadeRacePositionMultiplierStunt : fArcadeRacePositionMultiplier);
 	// remove scenery crash bonus

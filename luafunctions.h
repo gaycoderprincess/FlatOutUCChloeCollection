@@ -558,6 +558,11 @@ int ChloeCollection_SetAirControlMode(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_WasLastRaceStuntMode(void* a1) {
+	lua_pushboolean(a1, bIsStuntMode);
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -841,6 +846,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntMode, "ChloeCollection_SetStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntTime, "ChloeCollection_SetStuntTime");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetAirControlMode, "ChloeCollection_SetAirControlMode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceStuntMode, "ChloeCollection_WasLastRaceStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
