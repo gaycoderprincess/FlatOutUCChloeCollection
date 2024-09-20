@@ -307,10 +307,14 @@ public:
 	uint8_t _4C0[0x3E0];
 	uint32_t nSteeringKeyboardLeft; // +8A0
 	uint32_t nSteeringKeyboardRight; // +8A4
-	uint8_t _8A8[0x20];
+	uint8_t _8A8[0x14];
+	uint32_t nIsUsingKeyboard; // +8BC
+	uint8_t _8C0[0x8];
 	float fSteeringController; // +8C8
 	float fOutputSteerAngle; // +8CC
-	uint8_t _8D0[0x30];
+	float fGasPedal; // +8D0
+	float fBrakePedal; // +8D4
+	uint8_t _8D8[0x28];
 	float fTimeInAirForBonus; // +900
 	uint8_t _904[0xD8];
 	float fLookAheadMin; // +9DC
