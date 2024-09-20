@@ -154,6 +154,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 	fStuntModeLastReset += fDeltaTime;
 
 	auto car = pPlayer->pCar;
+	auto playerScore = GetPlayerScore<PlayerScoreArcadeRace>(1);
 
 	// below map resets since we've disabled the out of map reset
 	if (car->mMatrix[13] < -50 && fStuntModeLastReset > 3) {
@@ -162,16 +163,16 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 		ResetStuntTricks();
 		fStuntModeLastReset = 0;
 
-		AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeCheesePenalty, GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+		AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeCheesePenalty, playerScore->nUnknownScoringRelated);
 	}
 
-	if (pPlayer->nGhosting && !bStuntModeGhosting && fStuntModeLastReset > 3 && !bStuntModeRagdolled) {
-		AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeResetPenalty, GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+	if (pPlayer->nGhosting && !bStuntModeGhosting && fStuntModeLastReset > 3 && !bStuntModeRagdolled && playerScore->fScore >= -nStuntModeResetPenalty) {
+		AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeResetPenalty, playerScore->nUnknownScoringRelated);
 	}
 	bStuntModeGhosting = pPlayer->nGhosting;
 
 	if (car->nIsRagdolled && !bStuntModeRagdolled) {
-		AddArcadeRaceScore(L"CRASH OUT!", 0, pGame, nStuntModeCrashOutBonus, GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+		AddArcadeRaceScore(L"CRASH OUT!", 0, pGame, nStuntModeCrashOutBonus, playerScore->nUnknownScoringRelated);
 	}
 	bStuntModeRagdolled = car->nIsRagdolled;
 
@@ -183,7 +184,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 	else {
 		if (fStuntModeTimeTwoWheeling > fStuntModeMinTwoWheelTime) {
 			AddArcadeRaceScore(L"TWO WHEELING", 0, pGame, fStuntModeTwoWheelMultiplier * fStuntModeTimeTwoWheeling,
-							   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+							   playerScore->nUnknownScoringRelated);
 		}
 		fStuntModeTimeTwoWheeling = 0;
 	}
@@ -224,15 +225,15 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 		if (IsCarOnAllWheels(car)) {
 			if (fStuntModeLandOnAllWheelsTimer < fStuntModePerfectLandingTolerance && fStuntModeInAirTimer > 1.5) {
 				AddArcadeRaceScore(L"PERFECT LANDING!", 0, pGame, nStuntModePerfectLandingBonus,
-								   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+								   playerScore->nUnknownScoringRelated);
 			}
 			if (abs(fStuntModeJumpYaw) > fStuntModeSpinMinimum) {
 				AddArcadeRaceScore(L"SPIN", 0, pGame, fStuntModeSpinMultiplier * abs(fStuntModeJumpYaw),
-								   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+								   playerScore->nUnknownScoringRelated);
 			}
 			if (abs(fStuntModeJumpRoll) > fStuntModeRollMinimum) {
 				AddArcadeRaceScore(L"ROLL", 0, pGame, fStuntModeSpinMultiplier * abs(fStuntModeJumpRoll),
-								   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+								   playerScore->nUnknownScoringRelated);
 			}
 			if (fStuntModeLandOnAllWheelsTimer < fStuntModeTrickLandingTolerance) {
 				float roll = abs(fStuntModeJumpRoll);
@@ -250,7 +251,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 					wchar_t tmp[64];
 					_snwprintf(tmp, 64, L"%dx ROLL!", numRolls);
 					AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectRollBonus * numRolls,
-									   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+									   playerScore->nUnknownScoringRelated);
 				}
 
 				int numFlips = 0;
@@ -265,7 +266,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 					wchar_t tmp[64];
 					_snwprintf(tmp, 64, L"%dx FLIP!", numFlips);
 					AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectFlipBonus * numFlips,
-									   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+									   playerScore->nUnknownScoringRelated);
 				}
 
 				for (int i = 1; i < 9; i++) {
@@ -274,7 +275,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 						wchar_t tmp[64];
 						_snwprintf(tmp, 64, L"%d!", 180 * i);
 						AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectSpinBonus * i,
-										   GetPlayerScore<PlayerScoreArcadeRace>(1)->nUnknownScoringRelated);
+										   playerScore->nUnknownScoringRelated);
 						break;
 					}
 				}

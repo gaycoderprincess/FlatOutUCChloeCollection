@@ -345,8 +345,12 @@ public:
 class PlayerScoreArcadeRace {
 public:
 	uint8_t _0[0x4];
-	uint32_t nPlayerId; // 4
-	uint32_t nUnknownScoringRelated;
+	uint32_t nPlayerId; // +4
+	uint32_t nUnknownScoringRelated; // +8
+	uint8_t _C[0x74];
+	int32_t nTimeLeft; // 80
+	uint8_t _84[0xC];
+	float fScore; // 90
 };
 
 class PlayerScoreDerby {
