@@ -160,6 +160,7 @@ enum eGameRules {
 	GR_ARCADE_RACE = 9,
 	GR_TIME_TRIAL = 10,
 	GR_TEST = 11,
+	GR_TONYHAWK = 12,
 };
 
 enum eDerbyType {
@@ -236,6 +237,14 @@ public:
 };
 auto GetLiteDB = (LiteDb*(*)())0x5A5EB0;
 
+class Tire {
+public:
+	uint8_t _0[0x344];
+	uint32_t bOnGround; // +344
+	uint8_t _348[0x68];
+};
+static_assert(sizeof(Tire) == 0x3B0);
+
 class Player;
 class Car {
 public:
@@ -248,7 +257,9 @@ public:
 	float vAngVelocity[3]; // +2A0
 	uint8_t _2AC[0x340];
 	float fNitro; // +5EC
-	uint8_t _5F0[0x16D8];
+	uint8_t _5F0[0x440];
+	Tire aTires[4]; // +A30
+	uint8_t _18F0[0x3D8];
 	uint32_t nIsSkinCharred; // +1CC8
 	uint8_t _1CCC[0x74];
 	float fMass; // +1D40
@@ -260,7 +271,9 @@ public:
 	float fNitroButton; // +1F18
 	float fHandbrake; // +1F1C
 	float fSteerAngle; // +1F20
-	uint8_t _1F24[0x2778];
+	uint8_t _1F24[0x166C];
+	int nIsRagdolled; // +3590
+	uint8_t _3594[0x1108];
 	Player* pPlayer; // +469C
 	uint8_t _46A0[0x3418];
 	float fDamage; // +7AB8
@@ -287,7 +300,11 @@ public:
 	uint8_t _2A8[0x1C];
 	uint32_t nPlayerId; // +2C4
 	uint32_t nPlayerType; // +2C8
-	uint8_t _2C4[0x710];
+	uint8_t _2CC[0x1F0];
+	uint32_t nTimeInAir; // +4BC
+	uint8_t _4C0[0x440];
+	float fTimeInAirForBonus; // +900
+	uint8_t _904[0xD8];
 	float fLookAheadMin; // +9DC
 	float fLookAheadMax; // +9E0
 	float fLookAheadModifier; // +9E4
@@ -311,6 +328,13 @@ public:
 	virtual void _vf16() = 0;
 	virtual void _vf17() = 0;
 	virtual void TriggerEvent(int* properties) = 0;
+};
+
+class PlayerScoreArcadeRace {
+public:
+	uint8_t _0[0x4];
+	uint32_t nPlayerId; // 4
+	uint32_t nUnknownScoringRelated;
 };
 
 class PlayerScoreDerby {
@@ -526,6 +550,7 @@ enum eGameEvent {
 	EVENT_MUSIC_PLAY_TITLE = 4003,
 	EVENT_MUSIC_PLAY_INGAME = 4004,
 	EVENT_MUSIC_STOP = 4007,
+	EVENT_RESPAWN_PLAYER = 6037,
 };
 
 uintptr_t PostEvent_call = 0x4611D0;
@@ -557,6 +582,32 @@ int __attribute__((naked)) __fastcall SendEvent(void* a1, int* eventData) {
 	);
 }
 
+uintptr_t AddArcadeRaceScore_call = 0x46F300;
+void __attribute__((naked)) __fastcall AddArcadeRaceScore(const wchar_t* name, int category, Game* game, float score, int unknown) {
+	__asm__ (
+		"mov eax, ecx\n\t"
+		"mov ecx, edx\n\t"
+		"jmp %0\n\t"
+			:
+			:  "m" (AddArcadeRaceScore_call)
+	);
+}
+
+template<typename T>
+T* GetPlayerScore(int playerId) {
+	if (!pScoreManager) return nullptr;
+
+	auto score = (T**)pScoreManager->pScoresStart;
+	auto end = (T**)pScoreManager->pScoresEnd;
+	while (score < end) {
+		if ((*score)->nPlayerId + 1 == playerId) {
+			return *score;
+		}
+		score++;
+	}
+	return nullptr;
+}
+
 auto& fPowerups_BombMaxDistance = *(float*)0x76510C;
 
 auto sTextureFolder = (const char*)0x845B78;
@@ -576,9 +627,5 @@ auto lua_pushboolean = (int(*)(void*, int))0x633870;
 auto lua_pushlstring = (int(*)(void*, const wchar_t*, size_t))0x6335D0;
 auto lua_pushnil = (int(*)(void*))0x633520;
 auto lua_settable = (int(*)(void*, int))0x633CD0;
+auto lua_setglobal = (int(*)(void*, const char*))0x633640;
 auto BFSManager_DoesFileExist = (bool(__stdcall*)(void*, const char*, int*))0x5B7170;
-
-int lua_setglobal(void* a1, const char *a2) {
-	if (a2) return lua_pushlstring(a1, (const wchar_t*)a2, strlen(a2));
-	return lua_pushnil(a1);
-}

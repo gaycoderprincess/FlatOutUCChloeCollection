@@ -9,27 +9,13 @@ void SetArcadeRaceMultiplierPointer(float* values) {
 	}
 }
 
-PlayerScoreDerby* GetPlayerScoreDerby(int playerId) {
-	if (!pScoreManager) return nullptr;
-
-	auto score = (PlayerScoreDerby**)pScoreManager->pScoresStart;
-	auto end = (PlayerScoreDerby**)pScoreManager->pScoresEnd;
-	while (score < end) {
-		if ((*score)->nPlayerId + 1 == playerId) {
-			return *score;
-		}
-		score++;
-	}
-	return nullptr;
-}
-
 void AddFragDerbyScore(int amount) {
 	//if (!nFragDerbyCrashRewards) return;
 	if (amount <= 0) return;
 	if (pGame->nGameRules != GR_DEFAULT && pGame->nGameRules != GR_DERBY) return;
 	if (pGame->nDerbyType != DERBY_FRAG) return;
 
-	auto score = GetPlayerScoreDerby(1);
+	auto score = GetPlayerScore<PlayerScoreDerby>(1);
 	if (!score) return;
 
 	if (pScoreManager->nSurvivorId == score->nPlayerId) amount *= 2;

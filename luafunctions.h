@@ -543,9 +543,25 @@ int ChloeCollection_SaveSettings(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_SetStuntMode(void* a1) {
+	ApplyStuntModePatches(luaL_checknumber(a1, 1));
+	return 0;
+}
+
+int ChloeCollection_SetStuntTime(void* a1) {
+	nStuntModeTime = (int)luaL_checknumber(a1, 1) * 60 * 1000;
+	return 0;
+}
+
+int ChloeCollection_SetAirControlMode(void* a1) {
+	nStuntModeAirControlMode = (int)luaL_checknumber(a1, 1);
+	return 0;
+}
+
 void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
+	ApplyStuntModePatches(false);
 	return 0;
 }
 
@@ -742,6 +758,12 @@ void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_setfield(a1, -10002, name);
 }
 
+void RegisterLUAEnum(void* a1, int id, const char* name) {
+	lua_setglobal(a1, name);
+	lua_pushnumber(a1, id);
+	lua_settable(a1, -10002);
+}
+
 auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
 void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarNitroModifier, "ChloeTuning_GetCarNitroModifier");
@@ -816,7 +838,12 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetHandlingMode, "ChloeCollection_SetHandlingMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SaveSettings, "ChloeCollection_SaveSettings");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntMode, "ChloeCollection_SetStuntMode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntTime, "ChloeCollection_SetStuntTime");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetAirControlMode, "ChloeCollection_SetAirControlMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
+
+	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 
 	static auto sVersionString = "Chloe's Collection v1.34 - Car Tuning Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");

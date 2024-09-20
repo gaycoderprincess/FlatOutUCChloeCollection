@@ -15,6 +15,7 @@ auto InitAIHooked_call = (void(__stdcall*)(void*, int))0x4693F0;
 void __stdcall InitAIHooked(void* a1, int count) {
 	if (count >= 7) {
 		count = GetOpponentCount();
+		if (bIsStuntMode) count = 0;
 		if (pGame->nGameRules == GR_STUNT) count = 7;
 		if (nForceAICountNextRace >= 0) {
 			count = nForceAICountNextRace;

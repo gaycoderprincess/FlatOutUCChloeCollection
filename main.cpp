@@ -21,6 +21,7 @@
 #include "soundtrackswapper.h"
 #include "ultrawide.h"
 #include "cartuning.h"
+#include "stuntmode.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"
@@ -181,9 +182,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 				return TRUE;
 			}
 
-			// there's a check against car count at 46B440
-			// seems to check if the current car was a bonus car?
-
 			// after race finish, autopilot starts being read:
 			// 00481EAB
 			// 00478EBB
@@ -242,6 +240,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyBombExplosionPatches();
 			ApplyCarLimitAdjuster();
 			ApplyCarTuningPatches();
+			ApplyStuntModeAirControlPatch();
 			ApplySoundTweaks();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
@@ -287,9 +286,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			}
 
 			// remove hardcoded ReplicatedSession gamemodes
-			//for (int i = 0x71406C; i < 0x714098; i += 4) {
-			//	NyaHookLib::Patch(i, tmpCarClass);
-			//}
+			for (int i = 0x71406C; i < 0x714098; i += 4) {
+				NyaHookLib::Patch(i, tmpCarClass);
+			}
 		} break;
 		default:
 			break;
