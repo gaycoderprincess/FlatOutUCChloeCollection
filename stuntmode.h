@@ -319,7 +319,7 @@ void ApplyStuntModePatches(bool apply) {
 	bIsStuntMode = apply;
 	SetArcadeRaceMultiplierPointer(apply ? fArcadeRacePositionMultiplierStunt : fArcadeRacePositionMultiplier);
 	// remove scenery crash bonus
-	NyaHookLib::Patch<uint8_t>(0x48D175, apply ? 0xEB : 0x74);
+	NyaHookLib::Patch<uint8_t>(0x48D175, apply ? 0xEB : 0x75);
 	// remove checkpoint bonus and time gain
 	NyaHookLib::Patch<uint64_t>(0x48CA41, apply ? 0x05D99000000126E9 : 0x05D9000001258A0F);
 	// don't render checkpoints

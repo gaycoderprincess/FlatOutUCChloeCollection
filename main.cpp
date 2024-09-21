@@ -2,6 +2,8 @@
 #include <fstream>
 #include <format>
 #include <thread>
+#include <codecvt>
+#include <filesystem>
 #include "toml++/toml.hpp"
 #include "nya_dx9_hookbase.h"
 #include "nya_commonhooklib.h"
