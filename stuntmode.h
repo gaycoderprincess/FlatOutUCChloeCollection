@@ -42,6 +42,7 @@ int nStuntModeCheesePenalty = -10000 * 0.5;
 int nStuntModeResetPenalty = -5000 * 0.5;
 float fStuntModeTwoWheelMultiplier = 2000 * 0.5;
 float fStuntModeSpinMultiplier = 400 * 0.5;
+float fStuntModeGrindMultiplier = 50 * 0.5;
 
 bool IsCarTwoWheeling(Car* car) {
 	// twowheeling is always either 0 3 or 1 2 on ground
@@ -58,6 +59,16 @@ bool IsCarOnAllWheels(Car* car) {
 	}
 	return true;
 }
+
+bool IsCarOnNoWheels(Car* car) {
+	for (int i = 0; i < 4; i++) {
+		if (car->aTires[i].bOnGround) return false;
+	}
+	return true;
+}
+
+float fStuntModeGrindingTimer = 0;
+float fStuntModeGrindingDistance = 0;
 float fStuntModeLandOnAllWheelsTimer = 0;
 float fStuntModeInAirTimer = 0;
 bool bStuntModeDontCashOutNextLanding = false;
@@ -217,6 +228,8 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 			fStuntModeInAirTimer = 0;
 		}
 		fStuntModeLandOnAllWheelsTimer = 0;
+		fStuntModeGrindingTimer = 0;
+		fStuntModeGrindingDistance = 0;
 	} else {
 		if (pPlayer->nGhosting) {
 			ResetStuntTricks();
@@ -283,7 +296,20 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 			ResetStuntTricks();
 			fStuntModeLandOnAllWheelsTimer = 0;
 		}
-		else fStuntModeLandOnAllWheelsTimer += fDeltaTime;
+		else {
+			fStuntModeLandOnAllWheelsTimer += fDeltaTime;
+			if (IsCarOnNoWheels(car) && abs(carMatrix.x.y) < 0.2 && carMatrix.y.y > 0) {
+				fStuntModeGrindingTimer += fDeltaTime;
+				NyaVec3 vel = {car->vVelocity[0], 0, car->vVelocity[2]};
+				fStuntModeGrindingDistance += vel.length() * fDeltaTime;
+			}
+			else if (fStuntModeGrindingTimer > 0.5 && fStuntModeGrindingDistance > 10) {
+				AddArcadeRaceScore(L"GRINDING", 0, pGame, fStuntModeGrindMultiplier * abs(fStuntModeGrindingDistance),
+								   playerScore->nUnknownScoringRelated);
+				fStuntModeGrindingTimer = 0;
+				fStuntModeGrindingDistance = 0;
+			}
+		}
 	}
 }
 
