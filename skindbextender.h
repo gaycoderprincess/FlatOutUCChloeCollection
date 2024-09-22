@@ -3,7 +3,7 @@ void __fastcall CheckForHigherSkinID(int id) {
 	bool useAISkins = id > 5;
 	if (useAISkins) {
 		id -= 5;
-		if (id > 4) id = 4;
+		if (id > 3) id = 3;
 	}
 	nHigherSkinIDReturn = id;
 
@@ -56,12 +56,11 @@ void __attribute__((naked)) __fastcall CapDBSkinIDASM() {
 		// 5 skinai1
 		// 6 skinai2
 		// 7 skinai3
-		// 8 skinai4
 
 		"mov eax, [esp+0x14]\n\t"
-		"cmp eax, 8\n\t"
+		"cmp eax, 7\n\t"
 		"jle noCap\n\t"
-		"mov eax, 8\n\t"
+		"mov eax, 7\n\t"
 		"mov [esp+0x14], eax\n\t"
 
 		"noCap:\n\t"

@@ -40,6 +40,7 @@ tGameSetting aGameSettings[] = {
 		{ "Control", "DigitalCenteringSpeed", (void*)0x845E3C, 2, 0, 100 },
 		{ "Control", "DigitalSteeringMaxSpeed", (void*)0x845E40, 2, 0, 100 },
 		{ "Control", "DigitalSteeringMinSpeed", (void*)0x845E44, 2, 0, 100 },
+		{ "Control", "AirControlType", &nAirControlType, 0, 0, 1 },
 		{ "Visual", "Windowed", &nWindowedMode, 1, 0, 0 },
 		{ "Visual", "AlphaBlend", (void*)0x8494F0, 1, 0, 0 },
 		{ "Visual", "SunFlare", (void*)0x8494F8, 1, 0, 0 },
