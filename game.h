@@ -184,6 +184,25 @@ enum eDBValueType {
 	DBVALUE_MAX_COUNT
 };
 
+class GameController {
+public:
+
+	virtual void _vf0() = 0;
+	virtual void Initialize() = 0;
+	virtual void _vf2() = 0;
+	virtual void _vf3() = 0;
+	virtual void _vf4() = 0;
+	virtual void _vf5() = 0;
+	virtual void _vf6() = 0;
+	virtual void _vf7() = 0;
+	virtual void _vf8() = 0;
+	virtual void _vf9() = 0;
+	virtual void _vf10() = 0;
+	virtual void _vf11() = 0;
+	virtual void _vf12() = 0;
+	virtual void SetControllerLayout(int id) = 0;
+};
+
 class LiteDb {
 public:
 
@@ -645,3 +664,4 @@ auto lua_pushnil = (int(*)(void*))0x633520;
 auto lua_settable = (int(*)(void*, int))0x633CD0;
 auto lua_setglobal = (int(*)(void*, const char*))0x633640;
 auto BFSManager_DoesFileExist = (bool(__stdcall*)(void*, const char*, int*))0x5B7170;
+auto SetDefaultOptions = (void(*)())0x458A80;

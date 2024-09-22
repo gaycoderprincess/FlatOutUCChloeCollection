@@ -92,6 +92,20 @@ void WriteSettingsToTestFile() {
 	}
 }
 
+void SetNewDefaultOptions() {
+	SetDefaultOptions();
+
+	// halve music & sfx volume by default
+	*(int*)0x849548 = 25;
+	*(int*)0x849550 = 40;
+}
+
+auto InitXInputController = (void(__thiscall*)(GameController*))0x5BA340;
+void __fastcall SetControllerLayout(GameController* pThis) {
+	InitXInputController(pThis);
+	pThis->SetControllerLayout((*(int*)0x845DDC) + 1);
+}
+
 void ApplyCustomSettingsPatches() {
 	uintptr_t aCategoryAddresses[] = {
 			0x45882C,
@@ -145,4 +159,12 @@ void ApplyCustomSettingsPatches() {
 	NyaHookLib::Patch(0x458976, &aGameSettings[0].minValue);
 	NyaHookLib::Patch(0x4588A8, &aGameSettings[0].maxValue);
 	NyaHookLib::Patch(0x458957, &aGameSettings[0].maxValue);
+
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4582AB, &SetNewDefaultOptions);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D12B0, &SetNewDefaultOptions);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55B1F5, &SetNewDefaultOptions);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55B618, &SetNewDefaultOptions);
+
+	//InitXInputController = (void(__thiscall*)(GameController*))(*(uintptr_t*)0x6F4040);
+	//NyaHookLib::Patch(0x6F4040, &SetControllerLayout);
 }
