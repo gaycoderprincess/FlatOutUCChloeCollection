@@ -553,6 +553,16 @@ int ChloeCollection_SetStuntTime(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_SetStuntHandling(void* a1) {
+	bStuntModeHandling = luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeCollection_GetStuntHandling(void* a1) {
+	lua_pushnumber(a1, bStuntModeHandling);
+	return 1;
+}
+
 int ChloeCollection_SetAirControlMode(void* a1) {
 	nStuntModeAirControlMode = (int)luaL_checknumber(a1, 1);
 	return 0;
@@ -845,6 +855,8 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SaveSettings, "ChloeCollection_SaveSettings");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntMode, "ChloeCollection_SetStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntTime, "ChloeCollection_SetStuntTime");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntHandling, "ChloeCollection_SetStuntHandling");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetStuntHandling, "ChloeCollection_GetStuntHandling");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetAirControlMode, "ChloeCollection_SetAirControlMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceStuntMode, "ChloeCollection_WasLastRaceStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");

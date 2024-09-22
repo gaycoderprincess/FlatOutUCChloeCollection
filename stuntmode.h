@@ -15,6 +15,7 @@ enum eAirControlMode {
 	AIRCONTROL_OFF
 };
 int nStuntModeAirControlMode = AIRCONTROL_DEFAULT;
+bool bStuntModeHandling = true;
 
 float fAirControlLimitStart = 4;
 float fAirControlLimitEnd = 5;
@@ -92,6 +93,8 @@ void ProcessAirControl(Player* pPlayer) {
 		if (pPlayer->nSteeringKeyboardLeft) steeringInput = -1;
 		if (pPlayer->nSteeringKeyboardRight) steeringInput += 1;
 	}
+
+	double leftRightInput = pPlayer->nIsUsingKeyboard ? 0 : GetPadKeyState(NYA_PAD_KEY_RSTICK_X) / 32767.0;
 	double upDownInput = GetPadKeyState(NYA_PAD_KEY_LSTICK_Y) / 32767.0;
 	if (pPlayer->nIsUsingKeyboard) {
 		bool upPressed = pPlayer->fGasPedal > 0.5;
@@ -102,9 +105,17 @@ void ProcessAirControl(Player* pPlayer) {
 			if (upPressed) upDownInput += 1;
 		}
 	}
+	//else {
+	//	upDownInput += GetPadKeyState(NYA_PAD_KEY_RSTICK_Y) / 32767.0;
+	//}
+
+	if (steeringInput < -1) steeringInput = -1;
+	if (steeringInput > 1) steeringInput = 1;
+	if (upDownInput < -1) upDownInput = -1;
+	if (upDownInput > 1) upDownInput = 1;
 	if (yawOnly) upDownInput = 0;
 
-	if (abs(steeringInput) < 0.1 && abs(upDownInput) < 0.1) return;
+	if (abs(steeringInput) < 0.1 && abs(upDownInput) < 0.1 && abs(leftRightInput) < 0.1) return;
 
 	if (abs(steeringInput) < 0.1) steeringInput = 0;
 	if (abs(upDownInput) < 0.1) upDownInput = 0;
@@ -114,9 +125,11 @@ void ProcessAirControl(Player* pPlayer) {
 	for (int i = 0; i < 3; i++) {
 		if (car->fHandbrake > 0.5 && !yawOnly) {
 			angVelNew[i] += car->mMatrix[(4 * 2) + i] * -steeringInput * fAirControlBaseSpeedRoll * fDeltaTime;
+			angVelNew[i] += car->mMatrix[(4 * 1) + i] * leftRightInput * fAirControlBaseSpeedYaw * fDeltaTime;
 		}
 		else {
 			angVelNew[i] += car->mMatrix[(4 * 1) + i] * steeringInput * fAirControlBaseSpeedYaw * fDeltaTime;
+			angVelNew[i] += car->mMatrix[(4 * 2) + i] * -leftRightInput * fAirControlBaseSpeedRoll * fDeltaTime;
 		}
 		angVelNew[i] += car->mMatrix[(4 * 0) + i] * upDownInput * fAirControlBaseSpeedPitch * fDeltaTime;
 	}
@@ -326,6 +339,91 @@ void __attribute__((naked)) ProcessPlayerCarASM() {
 	);
 }
 
+void __fastcall SetStuntCarHandling(float* baseHandling) {
+	if (!bIsStuntMode) return;
+	if (!bStuntModeHandling) return;
+
+	// SpeedLimit
+	baseHandling[24] = 550;
+	baseHandling[25] = 550;
+
+	// AeroDrag
+	*(float*)0x84970C = 0.1;
+	*(float*)0x849710 = 0.1;
+
+	// ArcadeBrakePower
+	*(float*)0x8496C0 = 5;
+	*(float*)0x8496C4 = 5;
+
+	// PeakPowerRpm
+	*(float*)0x8497F0 = 5200;
+	*(float*)0x8497F4 = 5200;
+
+	// PeakPower
+	*(float*)0x8497F8 = 182;
+	*(float*)0x8497FC = 182;
+
+	// PeakTorqueRpm
+	*(float*)0x849800 = 4000;
+	*(float*)0x849804 = 4000;
+
+	// PeakTorque
+	*(float*)0x849808 = 363;
+	*(float*)0x84980C = 363;
+
+	// RedLineRpm
+	*(float*)0x849810 = 10000;
+	*(float*)0x849814 = 10000;
+
+	// RpmLimit
+	*(float*)0x849818 = 100;
+	*(float*)0x84981C = 100;
+
+	// ZeroPowerRpm
+	*(float*)0x849820 = 600;
+	*(float*)0x849824 = 600;
+
+	// IdleRpm
+	*(float*)0x849828 = 1000;
+	*(float*)0x84982C = 1000;
+
+	// NitroStorage
+	*(float*)0x849830 = 5;
+	*(float*)0x849834 = 5;
+
+	// NitroAcceleration
+	*(float*)0x849838 = 1.8;
+	*(float*)0x84983C = 1.8;
+
+	// TurboAcceleration
+	*(float*)0x849840 = 3;
+	*(float*)0x849844 = 3;
+
+	// InertiaEngine
+	*(float*)0x849848 = 0.3;
+	*(float*)0x84984C = 0.3;
+
+	// EngineFriction
+	*(float*)0x849850 = 0.025;
+	*(float*)0x849854 = 0.025;
+}
+
+void __attribute__((naked)) StuntCarHandlingASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov ecx, esi\n\t"
+		"call %0\n\t"
+		"popad\n\t"
+		"pop edi\n\t"
+		"pop ebx\n\t"
+		"mov esp, ebp\n\t"
+		"pop ebp\n\t"
+		"ret\n\t"
+			:
+			: "i" (SetStuntCarHandling)
+	);
+}
+
 void ApplyStuntModeAirControlPatch() {
 	ProcessPlayerCarASM_call = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47A010, &ProcessPlayerCarASM);
 }
@@ -337,6 +435,41 @@ void GetRaceTypeString(wchar_t* str, size_t len) {
 void GetRaceDescString(wchar_t* str, size_t len) {
 	const wchar_t* descString = L"Get as much score as possible by doing tricks with your car. Earn points by:\n\n· Spins, rolls and flips\n· Catching huge air\n· Two-wheeling\n· Throwing yourself out of your car\n\nYour car is given air control in this mode, so make good use of it to do tricks!";
 	_snwprintf(str, len, descString);
+}
+
+void __fastcall SetStuntCarCollisions(float* v) {
+	if (!bIsStuntMode) return;
+	v[1] -= 0.1;
+}
+
+uintptr_t StuntCarCollisionASM_call = 0x5DC480;
+uintptr_t StuntCarCollisionASM_jmp = 0x436F51;
+void __attribute__((naked)) StuntCarCollisionASM() {
+	__asm__ (
+		"call %1\n\t"
+		"pushad\n\t"
+		"mov ecx, eax\n\t"
+		"call %2\n\t"
+		"popad\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (StuntCarCollisionASM_jmp), "m" (StuntCarCollisionASM_call), "i" (SetStuntCarCollisions)
+	);
+}
+
+uintptr_t StuntCarCollisionASM2_call = 0x5DC480;
+uintptr_t StuntCarCollisionASM2_jmp = 0x4370B1;
+void __attribute__((naked)) StuntCarCollisionASM2() {
+	__asm__ (
+		"call %1\n\t"
+		"pushad\n\t"
+		"mov ecx, eax\n\t"
+		"call %2\n\t"
+		"popad\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (StuntCarCollisionASM2_jmp), "m" (StuntCarCollisionASM2_call), "i" (SetStuntCarCollisions)
+	);
 }
 
 void ApplyStuntModePatches(bool apply) {
@@ -372,4 +505,8 @@ void ApplyStuntModePatches(bool apply) {
 
 	const char* str = "Data.Track.Forest.Forest1.A.Checkpoints.ArcadeRace";
 	NyaHookLib::Patch(0x48DEB3 + 1, apply ? (uintptr_t)str : 0x6E2568);
+
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x45DF0D, &StuntCarHandlingASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x436F4C, &StuntCarCollisionASM);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4370AC, &StuntCarCollisionASM2);
 }
