@@ -28,8 +28,6 @@ float fStuntModeMinTwoWheelTime = 0.5;
 float fStuntModeMaxSpinSpeed = 10;
 float fStuntModeSpinMinimum = std::numbers::pi * 0.75;
 float fStuntModeRollMinimum = std::numbers::pi * 0.5; // 90 degrees
-float fStuntMode360RollTolerance = std::numbers::pi * 0.25; // 45 degrees
-float fStuntMode360SpinTolerance = std::numbers::pi * 0.4; // 72 degrees
 float fStuntModeTrickLandingTolerance = 0.2;
 float fStuntModePerfectLandingTolerance = 0.05;
 
@@ -87,15 +85,15 @@ void ProcessAirControl(Player* pPlayer) {
 
 	bool yawOnly = nStuntModeAirControlMode == AIRCONTROL_YAWONLY;
 
-	double steeringInput = pPlayer->fSteeringController;
-	if (pPlayer->nSteeringKeyboardLeft || pPlayer->nSteeringKeyboardRight) {
+	double steeringInput = GetPadKeyState(NYA_PAD_KEY_LSTICK_X) / 32767.0;
+	if (pPlayer->nIsUsingKeyboard) {
 		steeringInput = 0;
 		if (pPlayer->nSteeringKeyboardLeft) steeringInput = -1;
 		if (pPlayer->nSteeringKeyboardRight) steeringInput += 1;
 	}
 
 	double leftRightInput = pPlayer->nIsUsingKeyboard ? 0 : GetPadKeyState(NYA_PAD_KEY_RSTICK_X) / 32767.0;
-	double upDownInput = GetPadKeyState(NYA_PAD_KEY_LSTICK_Y) / 32767.0;
+	double upDownInput = GetPadKeyState(nAirControlFlipType ? NYA_PAD_KEY_RSTICK_Y : NYA_PAD_KEY_LSTICK_Y) / 32767.0;
 	if (pPlayer->nIsUsingKeyboard) {
 		bool upPressed = pPlayer->fGasPedal > 0.5;
 		bool downPressed = pPlayer->fBrakePedal > 0.5;
@@ -268,6 +266,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 				if (fStuntModeLandOnAllWheelsTimer < fStuntModeTrickLandingTolerance) {
 					float roll = abs(fStuntModeJumpRoll);
 					float pitch = abs(fStuntModeJumpPitch);
+					float yaw = abs(fStuntModeJumpYaw);
 
 					int numRolls = 0;
 					while (roll > std::numbers::pi * 2) {
@@ -299,15 +298,19 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 										   playerScore->nUnknownScoringRelated);
 					}
 
-					for (int i = 1; i < 9; i++) {
-						double fTarget = std::numbers::pi * i;
-						if (abs(abs(fStuntModeJumpYaw) - fTarget) < fStuntMode360SpinTolerance) {
-							wchar_t tmp[64];
-							_snwprintf(tmp, 64, L"%d!", 180 * i);
-							AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectSpinBonus * i,
-											   playerScore->nUnknownScoringRelated);
-							break;
-						}
+					int numSpins = 0;
+					while (yaw > std::numbers::pi) {
+						yaw -= std::numbers::pi;
+						numSpins++;
+					}
+					if (yaw > std::numbers::pi * 0.75) {
+						numSpins++;
+					}
+					if (numSpins > 0) {
+						wchar_t tmp[64];
+						_snwprintf(tmp, 64, L"%d!", 180 * numSpins);
+						AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectSpinBonus * numSpins,
+										   playerScore->nUnknownScoringRelated);
 					}
 				}
 				ResetStuntTricks();

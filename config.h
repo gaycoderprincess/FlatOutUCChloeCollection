@@ -24,6 +24,7 @@ uint32_t nWidescreenMenu = 1;
 uint32_t nWidescreenSafeZone = 1;
 uint32_t nExplosionEffects = 1;
 uint32_t nAirControlType = 0;
+uint32_t nAirControlFlipType = 0;
 int nFragDerbyRewardSlam = 100;
 int nFragDerbyRewardSuperFlip = 250;
 int nFragDerbyRewardPowerHit = 250;
