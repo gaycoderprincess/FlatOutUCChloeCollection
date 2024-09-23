@@ -30,6 +30,8 @@ float fStuntModeSpinMinimum = std::numbers::pi * 0.75;
 float fStuntModeRollMinimum = std::numbers::pi * 0.5; // 90 degrees
 float fStuntModeTrickLandingTolerance = 0.2;
 float fStuntModePerfectLandingTolerance = 0.05;
+float fStuntModeLandingFudge = 1.0 / 3.0;
+int nStuntModeMinWheelsOnGroundToCount = 2;
 
 int nStuntModeAirtimeBonus = 4 * 0.5;
 int nStuntModePerfectRollBonus = 10000 * 0.5;
@@ -66,11 +68,24 @@ bool IsCarOnNoWheels(Car* car) {
 	return true;
 }
 
+int GetCarNumWheelsOnGround(Car* car) {
+	int count = 0;
+	for (int i = 0; i < 4; i++) {
+		if (car->aTires[i].bOnGround) count++;
+	}
+	return count;
+}
+
 float fStuntModeGrindingTimer = 0;
 float fStuntModeGrindingDistance = 0;
-float fStuntModeLandOnAllWheelsTimer = 0;
+float fStuntModeLandWheelsTimer = 0;
+float fStuntModePerfectLandOnAllWheelsTimer = 0;
 float fStuntModeInAirTimer = 0;
-bool bStuntModeDontCashOutNextLanding = false;
+float fStuntModePerfectLandInAirTimer = 0;
+NyaVec3 vStuntModeLastTakeoffPoint = {0,0,0};
+NyaVec3 vStuntModeRawLastTakeoffPoint = {0,0,0};
+float fStuntModeSameyMultiplier = 1;
+bool bStuntModeJustLanded = false;
 
 void ProcessAirControl(Player* pPlayer) {
 	const float fDeltaTime = 0.01;
@@ -157,12 +172,15 @@ void ResetStuntTricks() {
 	fStuntModeJumpYaw = 0;
 }
 
-NyaMat4x4 carMatrix;
-
 bool IsAirControlOn() {
 	if (nStuntModeAirControlMode == AIRCONTROL_ON) return true;
 	if ((nStuntModeAirControlMode == AIRCONTROL_DEFAULT || nStuntModeAirControlMode == AIRCONTROL_YAWONLY) && bIsStuntMode && pGame->nGameRules == GR_ARCADE_RACE) return true;
 	return false;
+}
+
+void AddScore(const wchar_t* str, float amount) {
+	auto playerScore = GetPlayerScore<PlayerScoreArcadeRace>(1);
+	AddArcadeRaceScore(str, 0, pGame, amount * fStuntModeSameyMultiplier, playerScore->nUnknownScoringRelated);
 }
 
 void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
@@ -214,6 +232,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 		fStuntModeTimeTwoWheeling = 0;
 	}
 
+	NyaMat4x4 carMatrix;
 	memcpy(&carMatrix, car->mMatrix, sizeof(carMatrix));
 
 	if (pPlayer->nTimeInAir > 50 && !car->nIsRagdolled) {
@@ -237,33 +256,65 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 			}
 		}
 
-		fStuntModeInAirTimer += fDeltaTime;
-		if (fStuntModeLandOnAllWheelsTimer > 0) {
+		if (fStuntModePerfectLandOnAllWheelsTimer > 0) {
 			fStuntModeInAirTimer = 0;
+			fStuntModePerfectLandInAirTimer = 0;
 		}
-		fStuntModeLandOnAllWheelsTimer = 0;
+
+		// less points if taking off from the same spot multiple times
+		if (fStuntModeInAirTimer <= 0) {
+			vStuntModeRawLastTakeoffPoint = carMatrix.p;
+		}
+		if (fStuntModeInAirTimer < 1 && fStuntModeInAirTimer + fDeltaTime > 1) {
+			if (playerScore->fScore >= -nStuntModeResetPenalty && (vStuntModeRawLastTakeoffPoint - vStuntModeLastTakeoffPoint).length() < 25) {
+				fStuntModeSameyMultiplier *= 0.5;
+			}
+			else {
+				fStuntModeSameyMultiplier = 1;
+			}
+			vStuntModeLastTakeoffPoint = vStuntModeRawLastTakeoffPoint;
+		}
+
+		fStuntModeInAirTimer += fDeltaTime;
+		fStuntModePerfectLandInAirTimer += fDeltaTime;
+		fStuntModeLandWheelsTimer = 0;
+		fStuntModePerfectLandOnAllWheelsTimer = 0;
 		fStuntModeGrindingTimer = 0;
 		fStuntModeGrindingDistance = 0;
+		bStuntModeJustLanded = true;
 	} else {
 		if (pPlayer->nGhosting) {
 			ResetStuntTricks();
+			bStuntModeJustLanded = false;
+			fStuntModePerfectLandInAirTimer = 0;
 		}
 
 		if (!car->nIsRagdolled) {
-			if (IsCarOnAllWheels(car)) {
-				if (fStuntModeLandOnAllWheelsTimer < fStuntModePerfectLandingTolerance && fStuntModeInAirTimer > 1.5) {
-					AddArcadeRaceScore(L"PERFECT LANDING!", 0, pGame, nStuntModePerfectLandingBonus,
-									   playerScore->nUnknownScoringRelated);
+			if (bStuntModeJustLanded) {
+				if (fStuntModeInAirTimer > 1 && abs(car->vVelocity[2]) > 5.0) {
+					car->vVelocity[1] *= fStuntModeLandingFudge;
 				}
+			}
+
+			if (IsCarOnAllWheels(car)) {
+				if (fStuntModePerfectLandOnAllWheelsTimer < fStuntModePerfectLandingTolerance && fStuntModePerfectLandInAirTimer > 1.5) {
+					AddScore(L"PERFECT LANDING!", nStuntModePerfectLandingBonus);
+				}
+				fStuntModePerfectLandOnAllWheelsTimer = 0;
+				fStuntModePerfectLandInAirTimer = 0;
+			}
+			else {
+				fStuntModePerfectLandOnAllWheelsTimer += fDeltaTime;
+			}
+
+			if (GetCarNumWheelsOnGround(car) >= nStuntModeMinWheelsOnGroundToCount) {
 				if (abs(fStuntModeJumpYaw) > fStuntModeSpinMinimum) {
-					AddArcadeRaceScore(L"SPIN", 0, pGame, fStuntModeSpinMultiplier * abs(fStuntModeJumpYaw),
-									   playerScore->nUnknownScoringRelated);
+					AddScore(L"SPIN", fStuntModeSpinMultiplier * abs(fStuntModeJumpYaw));
 				}
 				if (abs(fStuntModeJumpRoll) > fStuntModeRollMinimum) {
-					AddArcadeRaceScore(L"ROLL", 0, pGame, fStuntModeSpinMultiplier * abs(fStuntModeJumpRoll),
-									   playerScore->nUnknownScoringRelated);
+					AddScore(L"ROLL", fStuntModeSpinMultiplier * abs(fStuntModeJumpRoll));
 				}
-				if (fStuntModeLandOnAllWheelsTimer < fStuntModeTrickLandingTolerance) {
+				if (fStuntModeLandWheelsTimer < fStuntModeTrickLandingTolerance) {
 					float roll = abs(fStuntModeJumpRoll);
 					float pitch = abs(fStuntModeJumpPitch);
 					float yaw = abs(fStuntModeJumpYaw);
@@ -279,8 +330,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 					if (numRolls > 0) {
 						wchar_t tmp[64];
 						_snwprintf(tmp, 64, L"%dx ROLL!", numRolls);
-						AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectRollBonus * numRolls,
-										   playerScore->nUnknownScoringRelated);
+						AddScore(tmp, nStuntModePerfectRollBonus * numRolls);
 					}
 
 					int numFlips = 0;
@@ -294,8 +344,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 					if (numFlips > 0) {
 						wchar_t tmp[64];
 						_snwprintf(tmp, 64, L"%dx FLIP!", numFlips);
-						AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectFlipBonus * numFlips,
-										   playerScore->nUnknownScoringRelated);
+						AddScore(tmp, nStuntModePerfectFlipBonus * numFlips);
 					}
 
 					int numSpins = 0;
@@ -309,27 +358,29 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 					if (numSpins > 0) {
 						wchar_t tmp[64];
 						_snwprintf(tmp, 64, L"%d!", 180 * numSpins);
-						AddArcadeRaceScore(tmp, 0, pGame, nStuntModePerfectSpinBonus * numSpins,
-										   playerScore->nUnknownScoringRelated);
+						AddScore(tmp, nStuntModePerfectSpinBonus * numSpins);
 					}
 				}
 				ResetStuntTricks();
-				fStuntModeLandOnAllWheelsTimer = 0;
+				fStuntModeLandWheelsTimer = 0;
 			} else {
-				fStuntModeLandOnAllWheelsTimer += fDeltaTime;
-				if (IsCarOnNoWheels(car) && abs(carMatrix.x.y) < 0.2 && carMatrix.y.y > 0) {
-					fStuntModeGrindingTimer += fDeltaTime;
-					NyaVec3 vel = {car->vVelocity[0], 0, car->vVelocity[2]};
-					fStuntModeGrindingDistance += vel.length() * fDeltaTime;
-				} else if (fStuntModeGrindingTimer > 0.5 && fStuntModeGrindingDistance > 10) {
-					AddArcadeRaceScore(L"GRINDING", 0, pGame,
-									   fStuntModeGrindMultiplier * abs(fStuntModeGrindingDistance),
-									   playerScore->nUnknownScoringRelated);
-					fStuntModeGrindingTimer = 0;
-					fStuntModeGrindingDistance = 0;
-				}
+				fStuntModeLandWheelsTimer += fDeltaTime;
+			}
+
+			if (IsCarOnNoWheels(car) && abs(carMatrix.x.y) < 0.2 && carMatrix.y.y > 0) {
+				fStuntModeGrindingTimer += fDeltaTime;
+				NyaVec3 vel = {car->vVelocity[0], 0, car->vVelocity[2]};
+				fStuntModeGrindingDistance += vel.length() * fDeltaTime;
+			}
+			else if (fStuntModeGrindingTimer > 0.5 && fStuntModeGrindingDistance > 10) {
+				AddArcadeRaceScore(L"GRINDING", 0, pGame,
+								   fStuntModeGrindMultiplier * abs(fStuntModeGrindingDistance),
+								   playerScore->nUnknownScoringRelated);
+				fStuntModeGrindingTimer = 0;
+				fStuntModeGrindingDistance = 0;
 			}
 		}
+		bStuntModeJustLanded = false;
 	}
 }
 
