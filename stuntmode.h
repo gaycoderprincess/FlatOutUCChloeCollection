@@ -265,7 +265,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 		if (fStuntModeInAirTimer <= 0) {
 			vStuntModeRawLastTakeoffPoint = carMatrix.p;
 		}
-		if (fStuntModeInAirTimer < 1 && fStuntModeInAirTimer + fDeltaTime > 1) {
+		if (fStuntModeInAirTimer < 1 && fStuntModeInAirTimer + fDeltaTime >= 1) {
 			if (playerScore->fScore >= -nStuntModeResetPenalty && (vStuntModeRawLastTakeoffPoint - vStuntModeLastTakeoffPoint).length() < 25) {
 				fStuntModeSameyMultiplier *= 0.5;
 			}

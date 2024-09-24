@@ -29,10 +29,20 @@ void SetSlideControl(bool disabled) {
 	}
 }
 
+void SetBetaHandling(bool enabled) {
+	NyaHookLib::Patch(0x45CC35 + 1, enabled ? "BetaBody" : "Body");
+	NyaHookLib::Patch(0x45DA4F + 1, enabled ? "BetaEngine" : "Engine");
+	//NyaHookLib::Patch(0x423CCA + 1, enabled ? "BetaEngineSound" : "EngineSound");
+	NyaHookLib::Patch(0x45CF8D + 1, enabled ? "BetaGearbox" : "Gearbox");
+	NyaHookLib::Patch(0x45D200 + 1, enabled ? "BetaSuspension" : "Suspension");
+	NyaHookLib::Patch(0x45D7B6 + 1, enabled ? "BetaTires" : "Tires");
+}
+
 void SetSlideControl() {
-	static int nLastSlideControl = -1;
-	if (nLastSlideControl != nSlideControlDisabled) {
-		SetSlideControl(nSlideControlDisabled);
-		nLastSlideControl = nSlideControlDisabled;
+	static int nLastHandling = -1;
+	if (nLastHandling != nHandlingMode) {
+		SetSlideControl(nHandlingMode == 1);
+		SetBetaHandling(nHandlingMode == 2);
+		nLastHandling = nHandlingMode;
 	}
 }
