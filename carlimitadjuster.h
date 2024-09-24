@@ -12,7 +12,8 @@ void __attribute__((naked)) __fastcall CarMatchupSwapASM() {
 	);
 }
 
-int* newCarMatchupArray1 = nullptr;
+int* newCarMatchupArrayDataToDB = nullptr;
+int* newCarMatchupArrayDBToData = nullptr;
 uintptr_t CarMatchupSwap2ASM_jmp = 0x45ECE2;
 void __attribute__((naked)) __fastcall CarMatchupSwap2ASM() {
 	__asm__ (
@@ -20,16 +21,24 @@ void __attribute__((naked)) __fastcall CarMatchupSwap2ASM() {
 		"mov [ecx+eax*4], edi\n\t"
 		"jmp %0\n\t"
 			:
-			: "m" (CarMatchupSwap2ASM_jmp), "m" (newCarMatchupArray1)
+			: "m" (CarMatchupSwap2ASM_jmp), "m" (newCarMatchupArrayDataToDB)
 	);
 }
 
+int GetCarDataID(int dbId) {
+	return newCarMatchupArrayDBToData[dbId+128];
+}
+
+int GetCarDBID(int dataId) {
+	return newCarMatchupArrayDataToDB[dataId];
+}
+
 void ApplyCarLimitAdjuster() {
-	newCarMatchupArray1 = new int[8192];
-	static auto newCarMatchupArray2 = new int[8192]; // +512
-	NyaHookLib::Patch(0x4C7EB9, &newCarMatchupArray1);
-	NyaHookLib::Patch(0x47FB8E, &newCarMatchupArray2);
-	NyaHookLib::Patch(0x55B713, &newCarMatchupArray2);
+	newCarMatchupArrayDataToDB = new int[8192];
+	newCarMatchupArrayDBToData = new int[8192]; // +512
+	NyaHookLib::Patch(0x4C7EB9, &newCarMatchupArrayDataToDB);
+	NyaHookLib::Patch(0x47FB8E, &newCarMatchupArrayDBToData);
+	NyaHookLib::Patch(0x55B713, &newCarMatchupArrayDBToData);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x45ED17, &CarMatchupSwapASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x45ECDB, &CarMatchupSwap2ASM);
 }

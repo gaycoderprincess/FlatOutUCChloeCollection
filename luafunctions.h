@@ -62,7 +62,7 @@ int ChloeSkins_GetNumSkinsForCar(void* a1) {
 
 int ChloeSkins_GetSkinAuthor(void* a1) {
 	static auto config = toml::parse_file("Config/CarSkins.toml");
-	std::wstring author = config["car" + std::to_string((int)luaL_checknumber(a1, 1))]["skin" + std::to_string((int)luaL_checknumber(a1, 2))].value_or(L"");
+	std::wstring author = config["car" + std::to_string(GetCarDataID((int)luaL_checknumber(a1, 1)))]["skin" + std::to_string((int)luaL_checknumber(a1, 2))].value_or(L"");
 	if (!author.empty()) author = L"Skin Author: " + author;
 	lua_pushlstring(a1, author.c_str(), (author.length() + 1) * 2);
 	return 1;
