@@ -32,7 +32,7 @@ auto GetCurrentCarTuning() {
 void __fastcall DoCarTuning(Car* pCar, float* pStackHandling) {
 	if (!bEnableCarTuningForMultiplayer && pGame->nGameMode != GM_CAREER) return;
 	auto player = pCar->pPlayer;
-	if (player->nPlayerType != PLAYER_TYPE_LOCAL) return;
+	if (player->nPlayerType != PLAYERTYPE_LOCAL) return;
 
 	auto tuning = GetCarTuning(player->nCarId);
 

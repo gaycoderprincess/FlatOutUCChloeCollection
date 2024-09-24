@@ -100,6 +100,16 @@ int ChloeCollection_SetWelcomeScreenDisplayed(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_GetCarDataID(void* a1) {
+	lua_pushnumber(a1, GetCarDataID(luaL_checknumber(a1, 1)));
+	return 1;
+}
+
+int ChloeCollection_GetCarDBID(void* a1) {
+	lua_pushnumber(a1, GetCarDBID(luaL_checknumber(a1, 1)));
+	return 1;
+}
+
 float UpdateMenuCar(void* a1, int a2) {
 	nCurrentMenuCar = luaL_checknumber(a1, a2);
 	return nCurrentMenuCar;
@@ -107,7 +117,13 @@ float UpdateMenuCar(void* a1, int a2) {
 
 int GetUnlockIDForCustomCar(int id, bool warn) {
 	static auto config = toml::parse_file("Config/CarUnlocks.toml");
-	int replacementId = config["main"]["car" + std::to_string(id)].value_or(-1);
+	int replacementId = config["db_override"]["car" + std::to_string(id)].value_or(-1);
+	if (replacementId < 0) {
+		replacementId = config["main"]["car" + std::to_string(GetCarDataID(id))].value_or(-1);
+		if (replacementId >= 0) {
+			replacementId = GetCarDBID(replacementId);
+		}
+	}
 	if (replacementId < 0) {
 		if (warn) MessageBoxA(nullptr, ("Failed to find unlock data for car " + std::to_string(id) + "!").c_str(), "nya?!~", MB_ICONERROR);
 		return 0;
@@ -120,10 +136,16 @@ void GenerateUnlockList() {
 
 	static auto config = toml::parse_file("Config/CarUnlocks.toml");
 	for (int i = 0; i < pGame->NumUnlockCar; i++) {
-		for (int j = 0; j < 255; j++) {
-			if (j == pGame->UnlockCar[i]) continue; // don't duplicate
-			if (config["main"]["car" + std::to_string(j)].value_or(-1) == pGame->UnlockCar[i]) {
+		for (int j = 0; j < 512; j++) {
+			if (config["db_override"]["car" + std::to_string(j)].value_or(-1) == pGame->UnlockCar[i]) {
+				if (j == pGame->UnlockCar[i]) continue; // don't duplicate
 				aCustomCarUnlockList.push_back(j);
+			}
+			else if (config["main"]["car" + std::to_string(j)].value_or(-1) == GetCarDataID(pGame->UnlockCar[i])) {
+				int dbId = GetCarDBID(j);
+				if (dbId == pGame->UnlockCar[i]) continue; // don't duplicate
+
+				if (dbId >= 0) aCustomCarUnlockList.push_back(dbId);
 			}
 		}
 	}
@@ -847,6 +869,8 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetMenuSoundtrackName, "ChloeOST_GetMenuSoundtrackName");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumSoundtracks, "ChloeOST_GetNumSoundtracks");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, "ChloeOST_GetNumMenuSoundtracks");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarDataID, "ChloeCollection_GetCarDataID");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarDBID, "ChloeCollection_GetCarDBID");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_HasWelcomeScreenDisplayed, "ChloeCollection_HasWelcomeScreenDisplayed");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetWelcomeScreenDisplayed, "ChloeCollection_SetWelcomeScreenDisplayed");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCustomPlayerModelType, "ChloeCollection_GetCustomPlayerModelType");
@@ -882,7 +906,7 @@ int DebugConsolePrint(void* a1) {
 
 void ApplyLUAPatches() {
 	luaL_checknumber = (float(*)(void*, int))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D653A, &UpdateMenuCar);
-	lua_pushcfunction_hooked = (void(*)(void*, void*, int))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4C9829, &CustomLUAFunctions);
+	lua_pushcfunction_hooked = (void(*)(void*, void*, int))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x46256C, &CustomLUAFunctions);
 	NyaHookLib::Patch(0x715C50, &IsCarLocked);
 	NyaHookLib::Patch(0x715B0C, &GetArcadeLevelPosition);
 	NyaHookLib::Patch(0x715B24, &IsArcadeLevelLocked);

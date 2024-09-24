@@ -11,6 +11,14 @@
 
 #include "game.h"
 
+void WriteLog(const std::string& str) {
+	static auto file = std::ofstream("FlatOutUCChloeCollection_gcp.log");
+
+	file << str;
+	file << "\n";
+	file.flush();
+}
+
 #include "config.h"
 #include "mallochook.h"
 #include "customsave.h"
