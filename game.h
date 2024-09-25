@@ -337,7 +337,9 @@ public:
 	float fBrakePedal; // +8D4
 	uint8_t _8D8[0x28];
 	float fTimeInAirForBonus; // +900
-	uint8_t _904[0xD8];
+	uint8_t _904[0x68];
+	uint32_t nAICarNum; // +96C
+	uint8_t _970[0x6C];
 	float fLookAheadMin; // +9DC
 	float fLookAheadMax; // +9E0
 	float fLookAheadModifier; // +9E4

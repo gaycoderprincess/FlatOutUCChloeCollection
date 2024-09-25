@@ -99,6 +99,24 @@ void __attribute__((naked)) __fastcall GhostForMoreOpponentsASM() {
 	);
 }
 
+void __fastcall SetAICarDataID(Player* pPlayer) {
+	pPlayer->nCarId = GetCarDBID(pPlayer->nAICarNum);
+}
+
+uintptr_t AICarDataIDsASM_jmp = 0x409308;
+void __attribute__((naked)) __fastcall AICarDataIDsASM() {
+	__asm__ (
+		"mov [esi+0x298], edx\n\t"
+		"pushad\n\t"
+		"mov ecx, esi\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (AICarDataIDsASM_jmp), "i" (SetAICarDataID)
+	);
+}
+
 void ApplyAIExtenderPatches() {
 	auto config = toml::parse_file("Config/AIConfig.toml");
 	nNumAIProfiles = config["main"]["NumAIProfiles"].value_or(11);
@@ -112,4 +130,6 @@ void ApplyAIExtenderPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x46A2B9, &InitAIHooked);
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x428841, &GhostForMoreOpponentsASM);
+
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x409302, &AICarDataIDsASM);
 }
