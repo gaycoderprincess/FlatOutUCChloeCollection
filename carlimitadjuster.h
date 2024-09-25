@@ -53,6 +53,18 @@ int GetCarDBID(int dataId) {
 	return -1;
 }
 
+int GetCarByName(const std::string& name) {
+	auto db = GetLiteDB();
+	for (int i = 0; i < 255; i++) {
+		auto table = db->GetTable(std::format("FlatOut2.Cars.Car[{}]", i).c_str());
+		auto str = (const char*)table->GetPropertyPointer("Name");
+		if (str == name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 void ApplyCarLimitAdjuster() {
 	newCarMatchupArrayDataToDB = new int[8192];
 	newCarMatchupArrayDBToData = new int[8192]; // +512

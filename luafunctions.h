@@ -110,6 +110,11 @@ int ChloeCollection_GetCarDBID(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_GetCarByName(void* a1) {
+	lua_pushnumber(a1, GetCarByName((const char*)lua_tolstring(a1, 1, nullptr)));
+	return 1;
+}
+
 float UpdateMenuCar(void* a1, int a2) {
 	nCurrentMenuCar = luaL_checknumber(a1, a2);
 	return nCurrentMenuCar;
@@ -871,6 +876,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, "ChloeOST_GetNumMenuSoundtracks");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarDataID, "ChloeCollection_GetCarDataID");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarDBID, "ChloeCollection_GetCarDBID");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarByName, "ChloeCollection_GetCarByName");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_HasWelcomeScreenDisplayed, "ChloeCollection_HasWelcomeScreenDisplayed");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetWelcomeScreenDisplayed, "ChloeCollection_SetWelcomeScreenDisplayed");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCustomPlayerModelType, "ChloeCollection_GetCustomPlayerModelType");
@@ -889,7 +895,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 
-	static auto sVersionString = "Chloe's Collection v1.35 - Stunt Show Edition";
+	static auto sVersionString = "Chloe's Collection v1.36 - Car Lore Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
