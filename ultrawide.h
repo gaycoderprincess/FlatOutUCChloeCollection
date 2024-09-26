@@ -348,7 +348,7 @@ void __attribute__((naked)) __fastcall TextScaleASM() {
 }
 
 uintptr_t DrawMPNamesASM_jmp = 0x5A913B;
-void __attribute__((naked)) __fastcall DrawMPNamesASM() {
+void __attribute__((naked)) DrawMPNamesASM() {
 	__asm__ (
 		"mov %2, esp\n\t"
 
@@ -368,7 +368,38 @@ void __attribute__((naked)) __fastcall DrawMPNamesASM() {
 	);
 }
 
+void __fastcall FixLoadingScreenScale(float* min, float* max) {
+	auto resX = pDeviceD3d->nResolutionX;
+	auto resY = pDeviceD3d->nResolutionY;
+	auto fDisplayAspect = pDeviceD3d->fAspectX / pDeviceD3d->fAspectY;
+
+	// Y always max
+	min[1] = 0;
+	max[1] = resY;
+
+	double fLetterboxMultiplier = (resX * ((16.0 / 9.0) / fDisplayAspect) * 0.5);
+	min[0] = resX * 0.5 - fLetterboxMultiplier;
+	max[0] = resX * 0.5 + fLetterboxMultiplier;
+}
+
+void __attribute__((naked)) LoadingScreenScaleASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov ecx, edi\n\t"
+		"mov edx, esi\n\t"
+		"call %0\n\t"
+		"popad\n\t"
+		"ret\n\t"
+			:
+			: "i" (FixLoadingScreenScale)
+	);
+}
+
 void ApplyUltrawidePatches() {
+	static double fTemp = 1.25;
+	NyaHookLib::Patch(0x564391 + 2, &fTemp);
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x564350, &LoadingScreenScaleASM);
+
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4CAF6E, &UltrawideTextScaleASM);
 
 	NyaHookLib::Patch(0x4CF39B, &f43AspectCorrection); // menu button prompts
