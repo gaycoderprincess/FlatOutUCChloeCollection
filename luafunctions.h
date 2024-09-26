@@ -490,8 +490,7 @@ int ChloeProfiles_GetNumArcadeEventsPassed(void* a1) {
 	int numRacesPassed = 0;
 	for (int x = 0; x < nNumArcadeRacesX; x++) {
 		for (int y = 0; y < nNumArcadeRacesY; y++) {
-			auto pos = gCustomSave.aArcadeRaces[x][y].placement;
-			if (pos == 1) numRacesPassed++; // arcade events should only count if golded
+			if (gCustomSave.aArcadeRaces[x][y].placement == 1) numRacesPassed++; // arcade events should only count if golded
 		}
 	}
 	lua_pushnumber(a1, numRacesPassed);
@@ -522,7 +521,7 @@ int ChloeArcade_SetCurrentEventId(void* a1) {
 int ChloeArcade_HasPlatinumOnEvent(void* a1) {
 	int x = luaL_checknumber(a1, 1) - 1;
 	int y = luaL_checknumber(a1, 2) - 1;
-	lua_pushboolean(a1, gCustomSave.bArcadePlatinums[x][y]);
+	lua_pushboolean(a1, nArcadePlatinumTargets[x][y] > 0 && gCustomSave.aArcadeRaces[x][y].score >= nArcadePlatinumTargets[x][y]);
 	return 1;
 }
 

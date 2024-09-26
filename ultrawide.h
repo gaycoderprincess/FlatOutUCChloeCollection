@@ -224,6 +224,8 @@ double GetSafeAspect() {
 		case 1:
 			return 16.0 / 9.0;
 		case 2:
+			return 16.0 / 10.0;
+		case 3:
 			return 21.0 / 9.0;
 		default:
 			return INFINITY;

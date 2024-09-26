@@ -122,16 +122,6 @@ enum eTrack {
 	TRACK_TOUGHTRUCKS22		= 147,
 };
 
-enum eCrashBonusType {
-	INGAME_CRASHBONUS_CRASHFLYBY = 908,
-	INGAME_CRASHBONUS_SUPERFLIP = 909,
-	INGAME_CRASHBONUS_SLAM = 910,
-	INGAME_CRASHBONUS_POWERHIT = 911,
-	INGAME_CRASHBONUS_BLASTOUT = 912,
-	INGAME_CRASHBONUS_RAGDOLLED = 913,
-	INGAME_CRASHBONUS_WRECKED = 914,
-};
-
 enum eGameMode {
 	GM_NONE = 0,
 	GM_CAREER = 1,
@@ -394,6 +384,14 @@ public:
 	float fScoreMultiplier;
 };
 
+class PlayerScoreTest {
+public:
+	uint8_t _0[0x4];
+	uint32_t nPlayerId; // +4
+	uint8_t _8[0x30];
+	uint32_t nTopSpeed; // +38
+};
+
 class ScoreManager {
 public:
 	uint8_t _0[0x8];
@@ -427,6 +425,12 @@ public:
 	uint8_t nActiveCar; // +12BA
 };
 
+class PlayerHost {
+public:
+	uint8_t _0[0x14];
+	Player** aPlayers;
+};
+
 enum eGameState {
 	GAME_STATE_NONE,
 	GAME_STATE_MENU,
@@ -452,10 +456,22 @@ public:
 	uint32_t UnlockCar[16]; // +14F0
 	uint8_t _1530[0x1108];
 	uint32_t nArcadeTargets[3]; // +2638
-	uint8_t _2644[0x80C];
+	uint8_t _2644[0x1DC];
+	PlayerHost* pHost; // +2820
+	uint8_t _2824[0x62C];
 	PlayerProfile Profile; // +2E50
 };
 auto& pGame = *(Game**)0x9298FAC;
+
+Player* GetPlayer(int id) {
+	auto host = pGame->pHost;
+	if (!host) return nullptr;
+	auto players = host->aPlayers;
+	if (!players) return nullptr;
+	auto ply = players[id];
+	if (!ply || !ply->pCar) return nullptr;
+	return ply;
+}
 
 auto& pLoadingScreen = *(void**)0x929902C;
 
@@ -664,6 +680,7 @@ auto sTextureFolder = (const char*)0x845B78;
 auto sSharedTextureFolder = (const char*)0x845C80;
 
 auto AddHUDKeyword = (void(*)(const char*, void*, void*))0x4ECB20;
+auto LoadHUDFromDB = (void*(__thiscall*)(void*, const char*, void*))0x4EB880;
 
 auto luaL_checktype = (void(*)(void*, int, int))0x634C70;
 auto luaL_checkudata = (void*(*)(void*, int, const char*))0x634BB0;
@@ -680,3 +697,9 @@ auto lua_settable = (int(*)(void*, int))0x633CD0;
 auto lua_setglobal = (int(*)(void*, const char*))0x633640;
 auto BFSManager_DoesFileExist = (bool(__stdcall*)(void*, const char*, int*))0x5B7170;
 auto SetDefaultOptions = (void(*)())0x458A80;
+
+const char* GetCarName(int id) {
+	auto db = GetLiteDB();
+	auto table = db->GetTable(std::format("FlatOut2.Cars.Car[{}]", id).c_str());
+	return (const char*)table->GetPropertyPointer("Name");
+}

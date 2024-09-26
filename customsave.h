@@ -31,7 +31,6 @@ struct tCustomSaveStructure {
 	uint8_t playerPortrait;
 	tCarTuning aCarTunings[256];
 
-	static inline bool bArcadePlatinums[nNumArcadeRacesX][nNumArcadeRacesY] = {};
 	static inline bool bOverrideAllArcadeScores = false;
 
 	tCustomSaveStructure() {
@@ -65,7 +64,6 @@ struct tCustomSaveStructure {
 		if (score >= pRace->targetScores[2]) placement = 3;
 		if (score >= pRace->targetScores[1]) placement = 2;
 		if (score >= pRace->targetScores[0]) placement = 1;
-		bArcadePlatinums[x][y] = nArcadePlatinumTargets[x][y] > 0 && score >= nArcadePlatinumTargets[x][y];
 		pRace->placement = aArcadeRaces[x][y].placement = placement;
 	}
 
