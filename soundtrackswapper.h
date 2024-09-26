@@ -22,6 +22,7 @@ void SetSoundtrack() {
 		int soundtrackId = nIngameSoundtrack;
 		if (game->nLevelId >= TRACK_FO1TOWN2A) soundtrackId = nIngameFO1Soundtrack;
 		if (game->nGameRules == GR_DERBY || game->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
+		if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
 
 		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId].filename.c_str());
 
@@ -65,6 +66,7 @@ void ApplySoundtrackPatches() {
 	int defaultIngame = config["main"]["default_race"].value_or(1) - 1;
 	int defaultFO1 = config["main"]["default_fo1_race"].value_or(1) - 1;
 	int defaultDerby = config["main"]["default_derby"].value_or(1) - 1;
+	int defaultStuntShow = config["main"]["default_stuntshow"].value_or(1) - 1;
 	for (int i = 0; i < numPlaylists; i++) {
 		tPlaylist playlist;
 		playlist.name = config[std::format("playlist{}", i+1)]["name"].value_or(L"");
@@ -85,16 +87,19 @@ void ApplySoundtrackPatches() {
 	if (defaultIngame < 0 || defaultIngame >= aPlaylists.size()) defaultIngame = 0;
 	if (defaultFO1 < 0 || defaultFO1 >= aPlaylists.size()) defaultFO1 = 0;
 	if (defaultDerby < 0 || defaultDerby >= aPlaylists.size()) defaultDerby = 0;
+	if (defaultStuntShow < 0 || defaultStuntShow >= aPlaylists.size()) defaultStuntShow = 0;
 	nMenuSoundtrack = defaultMenu;
 	nIngameSoundtrack = defaultIngame;
 	nIngameFO1Soundtrack = defaultFO1;
 	nIngameDerbySoundtrack = defaultDerby;
+	nIngameStuntShowSoundtrack = defaultStuntShow;
 
 	for (auto& setting : aGameSettings) {
 		if (setting.value == &nMenuSoundtrack) setting.maxValue = aMenuPlaylists.size()-1;
 		if (setting.value == &nIngameSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameFO1Soundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameDerbySoundtrack) setting.maxValue = aPlaylists.size()-1;
+		if (setting.value == &nIngameStuntShowSoundtrack) setting.maxValue = aPlaylists.size()-1;
 	}
 
 	NyaHookLib::Patch(0x41D2C3 + 1, aPlaylistTitlePath);

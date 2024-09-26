@@ -3,6 +3,7 @@ uint32_t nMenuSoundtrack = 0;
 uint32_t nIngameSoundtrack = 0;
 uint32_t nIngameDerbySoundtrack = 0;
 uint32_t nIngameFO1Soundtrack = 3;
+uint32_t nIngameStuntShowSoundtrack = 0;
 uint32_t nOpponentCountType = 2;
 uint32_t nPlayerModel = 0;
 uint32_t nPlayerModelSkinID = 0;

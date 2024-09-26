@@ -377,6 +377,7 @@ void __fastcall FixLoadingScreenScale(float* min, float* max) {
 	min[1] = 0;
 	max[1] = resY;
 
+	// letterbox on X axis
 	double fLetterboxMultiplier = (resX * ((16.0 / 9.0) / fDisplayAspect) * 0.5);
 	min[0] = resX * 0.5 - fLetterboxMultiplier;
 	max[0] = resX * 0.5 + fLetterboxMultiplier;
@@ -396,8 +397,6 @@ void __attribute__((naked)) LoadingScreenScaleASM() {
 }
 
 void ApplyUltrawidePatches() {
-	static double fTemp = 1.25;
-	NyaHookLib::Patch(0x564391 + 2, &fTemp);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x564350, &LoadingScreenScaleASM);
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4CAF6E, &UltrawideTextScaleASM);

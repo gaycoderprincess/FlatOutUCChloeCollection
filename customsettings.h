@@ -16,6 +16,7 @@ tGameSetting aGameSettings[] = {
 		{ "Game", "Soundtrack", &nIngameSoundtrack, 0, 0, 1 },
 		{ "Game", "DerbySoundtrack", &nIngameDerbySoundtrack, 0, 0, 1 },
 		{ "Game", "FO1Soundtrack", &nIngameFO1Soundtrack, 0, 0, 1 },
+		{ "Game", "StuntShowSoundtrack", &nIngameStuntShowSoundtrack, 0, 0, 1 },
 		{ "Game", "MenuSoundtrack", &nMenuSoundtrack, 0, 0, 1 },
 		{ "Game", "OpponentCount", &nOpponentCountType, 0, 0, 3 },
 		{ "Game", "OpponentStrength", &nAIFudgeDisabled, 0, 0, 2 },

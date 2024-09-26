@@ -28,10 +28,10 @@ void WriteLog(const std::string& str) {
 #include "custominput.h"
 #include "profiles.h"
 #include "customsettings.h"
+#include "stuntmode.h"
 #include "soundtrackswapper.h"
 #include "ultrawide.h"
 #include "cartuning.h"
-#include "stuntmode.h"
 #include "carlimitadjuster.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
@@ -183,6 +183,14 @@ void __fastcall UpdateCameraHooked(void* a1, void*, float a2) {
 	}
 }
 
+float __fastcall MenuCameraRotation(void* a1) {
+	float value = 0;
+	if (IsKeyPressed(VK_NEXT)) value -= 1;
+	if (IsKeyPressed(VK_PRIOR)) value += 1;
+	value += GetPadKeyState(NYA_PAD_KEY_RSTICK_X) / 32767.0;
+	return value;
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -299,6 +307,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			for (int i = 0x71406C; i < 0x714098; i += 4) {
 				NyaHookLib::Patch(i, tmpCarClass);
 			}
+
+			NyaHookLib::Patch(0x6F38DC+0x54, &MenuCameraRotation);
 		} break;
 		default:
 			break;
