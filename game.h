@@ -699,7 +699,6 @@ auto BFSManager_DoesFileExist = (bool(__stdcall*)(void*, const char*, int*))0x5B
 auto SetDefaultOptions = (void(*)())0x458A80;
 
 const char* GetCarName(int id) {
-	auto db = GetLiteDB();
-	auto table = db->GetTable(std::format("FlatOut2.Cars.Car[{}]", id).c_str());
+	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", id).c_str());
 	return (const char*)table->GetPropertyPointer("Name");
 }
