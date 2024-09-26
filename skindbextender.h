@@ -72,6 +72,26 @@ void __attribute__((naked)) __fastcall CapDBSkinIDASM() {
 	);
 }
 
+LiteDb* pSkinDBVisualsNode = nullptr;
+void __fastcall GetSkinDBVisuals(LiteDb* node) {
+	pSkinDBVisualsNode = node->GetTable("Visuals");
+}
+
+// load visuals from Car->Visuals instead of %sVisuals
+uintptr_t SkinDBVisualsASM_jmp = 0x4C768D;
+void __attribute__((naked)) __fastcall SkinDBVisualsASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov ecx, eax\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"mov eax, %2\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (SkinDBVisualsASM_jmp), "i" (GetSkinDBVisuals), "m" (pSkinDBVisualsNode)
+	);
+}
+
 void ApplySkinDBExtenderPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4C7819, &AISkinPropertiesForSkin6ASM);
 
@@ -79,4 +99,6 @@ void ApplySkinDBExtenderPatches() {
 	// then read at 004696DA
 	NyaHookLib::Patch<uint16_t>(0x4696D8, 0x9090); // skin changing in stunt
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x433EAB, &CapDBSkinIDASM);
+
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4C7644, &SkinDBVisualsASM);
 }
