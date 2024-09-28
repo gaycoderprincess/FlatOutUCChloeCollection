@@ -786,8 +786,7 @@ void RegisterLUAEnum(void* a1, int id, const char* name) {
 	lua_settable(a1, -10002);
 }
 
-auto lua_pushcfunction_hooked = (void(*)(void*, void*, int))0x633750;
-void CustomLUAFunctions(void* a1, void* a2, int a3) {
+void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarNitroModifier, "ChloeTuning_GetCarNitroModifier");
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetCarNitroModifier, "ChloeTuning_SetCarNitroModifier");
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarBrakeBias, "ChloeTuning_GetCarBrakeBias");
@@ -878,7 +877,6 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
-	return lua_pushcfunction_hooked(a1, a2, a3);
 }
 
 int DebugConsolePrint(void* a1) {
@@ -891,7 +889,10 @@ int DebugConsolePrint(void* a1) {
 
 void ApplyLUAPatches() {
 	luaL_checknumber = (float(*)(void*, int))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D653A, &UpdateMenuCar);
-	lua_pushcfunction_hooked = (void(*)(void*, void*, int))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x46256C, &CustomLUAFunctions);
+
+	NyaFO2Hooks::PlaceScriptHook();
+	NyaFO2Hooks::aScriptFuncs.push_back(CustomLUAFunctions);
+
 	NyaHookLib::Patch(0x715C50, &IsCarLocked);
 	NyaHookLib::Patch(0x715B0C, &GetArcadeLevelPosition);
 	NyaHookLib::Patch(0x715B24, &IsArcadeLevelLocked);

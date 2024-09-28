@@ -140,27 +140,12 @@ void CustomSetterThread() {
 	SetExplosionEffects();
 }
 
-auto EndSceneOrig = (HRESULT(__thiscall*)(void*))nullptr;
-HRESULT __fastcall EndSceneHook(void* a1) {
-	CustomSetterThread();
-	D3DHookMain();
-	return EndSceneOrig(a1);
-}
-
-auto D3DResetOrig = (void(__thiscall*)(void*))nullptr;
-void __fastcall D3DResetHook(void* a1) {
+void OnD3DReset() {
 	if (g_pd3dDevice) {
 		UpdateD3DProperties();
 		ImGui_ImplDX9_InvalidateDeviceObjects();
 		bDeviceJustReset = true;
 	}
-	return D3DResetOrig(a1);
-}
-
-auto wndProcCallback = (LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM))0x60E690;
-LRESULT __stdcall WndProcCustom(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	WndProcHook(hWnd, msg, wParam, lParam);
-	return wndProcCallback(hWnd, msg, wParam, lParam);
 }
 
 auto LoadMapIconsTGA_call = (void*(__stdcall*)(void*, const char*, int, int))0x5A6F00;
@@ -231,11 +216,12 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x465F46, 0x467312); // disable video recording
 
-			EndSceneOrig = (HRESULT(__thiscall*)(void*))(*(uintptr_t*)0x677448);
-			NyaHookLib::Patch(0x677448, &EndSceneHook);
-			D3DResetOrig = (void(__thiscall*)(void*))NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x60F744, &D3DResetHook);
-			wndProcCallback = (LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM))(*(uintptr_t*)0x60F0CF);
-			NyaHookLib::Patch(0x60F0CF, &WndProcCustom);
+			NyaFO2Hooks::PlaceD3DHooks();
+			NyaFO2Hooks::aEndSceneFuncs.push_back(CustomSetterThread);
+			NyaFO2Hooks::aEndSceneFuncs.push_back(D3DHookMain);
+			NyaFO2Hooks::aD3DResetFuncs.push_back(OnD3DReset);
+			NyaFO2Hooks::PlaceWndProcHook();
+			NyaFO2Hooks::aWndProcFuncs.push_back(WndProcHook);
 
 			HookMalloc();
 			ApplyCustomSettingsPatches();
