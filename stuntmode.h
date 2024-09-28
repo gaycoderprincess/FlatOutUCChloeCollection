@@ -10,6 +10,7 @@ double fStuntModeLastReset = 0;
 
 int nStuntModeAirControlMode = AIRCONTROL_DEFAULT;
 bool bStuntModeHandling = true;
+bool bStuntModeSimpleUI = false;
 
 float fAirControlLimitStart = 4;
 float fAirControlLimitEnd = 5;
@@ -542,6 +543,18 @@ void ApplyStuntModePatches(bool apply) {
 	NyaHookLib::Patch<uint64_t>(0x4D81F8, apply ? 0x448D9000000175E9 : 0x448D00000174840F);
 	// disable airtime reset and derby oob reset
 	NyaHookLib::Patch<uint8_t>(0x43D69E, apply ? 0xEB : 0x75);
+
+	if (apply && bStuntModeSimpleUI) {
+		// load FragDerbyOnline HUD
+		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4DC005, 0x4DC186);
+		NyaHookLib::Patch<uint16_t>(0x4DC192, 0x9090);
+		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x9090);
+	}
+	else {
+		NyaHookLib::Patch<uint64_t>(0x4DC005, 0x2B01E80000012068);
+		NyaHookLib::Patch<uint16_t>(0x4DC192, 0x4D75);
+		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x2275);
+	}
 
 	// remove crash bonuses
 	NyaHookLib::Patch<uint64_t>(0x48C957, apply ? 0x4B8B9000000210E9 : 0x4B8B0000020F850F);

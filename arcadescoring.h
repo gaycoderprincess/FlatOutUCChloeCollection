@@ -89,7 +89,7 @@ int nArcadePlatinumCurrentLevelX = 0;
 int nArcadePlatinumCurrentLevelY = 0;
 bool bAchievedPlatinumThisRace = false;
 void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
-	if (!bArcadePlatinumEnabled) {
+	if (!bArcadePlatinumEnabled || pGame->nGameMode != GM_ARCADE_CAREER) {
 		if (pArcadePlatinumImage) pArcadePlatinumImage->bVisible = false;
 		return;
 	}
@@ -99,12 +99,14 @@ void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 	auto platTarget = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
 	if (platTarget <= 0) return;
 
-	pArcadeGoldImage->bVisible = numPoints >= silverTarget;
-	if (pArcadePlatinumImage) {
-		pArcadePlatinumImage->bVisible = false;
-		if (numPoints >= goldTarget) {
-			pArcadeGoldImage->bVisible = false;
-			pArcadePlatinumImage->bVisible = true;
+	if (pArcadeGoldImage) {
+		pArcadeGoldImage->bVisible = numPoints >= silverTarget;
+		if (pArcadePlatinumImage) {
+			pArcadePlatinumImage->bVisible = false;
+			if (numPoints >= goldTarget) {
+				pArcadeGoldImage->bVisible = false;
+				pArcadePlatinumImage->bVisible = true;
+			}
 		}
 	}
 
