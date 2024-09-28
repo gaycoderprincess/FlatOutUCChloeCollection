@@ -556,6 +556,10 @@ void ApplyStuntModePatches(bool apply) {
 		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x2275);
 	}
 
+	// disable visual damage
+	NyaHookLib::Patch<uint8_t>(0x427A40, apply ? 0xEB : 0x74); // body
+	NyaHookLib::Patch<uint8_t>(0x427A76, apply ? 0xEB : 0x7E); // panels
+
 	// remove crash bonuses
 	NyaHookLib::Patch<uint64_t>(0x48C957, apply ? 0x4B8B9000000210E9 : 0x4B8B0000020F850F);
 	NyaHookLib::Patch<uint64_t>(0x48C897, apply ? 0x4B8B90000002D0E9 : 0x4B8B000002CF850F);
