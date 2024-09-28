@@ -168,7 +168,7 @@ void __fastcall SetPlayerModelType(Player* pPlayer) {
 	};
 
 	auto playerModel = &gMale;
-	switch (pPlayer->nPlayerModel) {
+	switch (pPlayer->nCharacterTypeId) {
 		case 0:
 			playerModel = &gMale;
 			break;
@@ -223,7 +223,7 @@ void __attribute__((naked)) PlayerModelTypesASM() {
 float fFO1DriverLocOffset[3] = { (-0.39) - (-0.382), 0.29 - 0.2, (-0.14) - 0.027 };
 
 void __fastcall SetDriverLocOffset(Player* pPlayer, Car* pCar) {
-	if (pPlayer->nPlayerModel == 2 || pPlayer->nPlayerModel == 3) {
+	if (pPlayer->nCharacterTypeId == 2 || pPlayer->nCharacterTypeId == 3) {
 		for (int i = 0; i < 3; i++) {
 			pCar->vDriverLoc[i] -= fFO1DriverLocOffset[i];
 		}

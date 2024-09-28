@@ -10,7 +10,7 @@ void __fastcall NewBombExplosions(Player* pBomber, Player* pVictim) {
 	bomberPos.y -= 5; // add a bit of upwards velocity to the push
 
 	auto dist = (victimPos - bomberPos);
-	auto impulse = dist * (fNewBombExplosionPower * victimCar->fMass / 1000.0 * std::min((fPowerups_BombMaxDistance - dist.length()) * 2.0 / fPowerups_BombMaxDistance, 1.0) / std::max(dist.length(), 0.01));
+	auto impulse = dist * (fNewBombExplosionPower * victimCar->fMass / 1000.0 * std::min((Game::fFragDerbyBombMaxDistance - dist.length()) * 2.0 / Game::fFragDerbyBombMaxDistance, 1.0) / std::max(dist.length(), 0.01));
 	for (int i = 0; i < 3; i++) {
 		victimCar->vVelocity[i] += impulse[i];
 		victimCar->vAngVelocity[i] += impulse[i] * fNewBombExplosionAngVelocityMult;

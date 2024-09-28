@@ -29,42 +29,6 @@ int GetCarDataID(int dbId) {
 	return newCarMatchupArrayDBToData[dbId+128];
 }
 
-int GetCarDBID(int dataId) {
-	static int matchups[1024];
-	static bool bOnce = true;
-	if (bOnce) {
-		for (auto& i : matchups) {
-			i = -1;
-		}
-		bOnce = false;
-	}
-
-	if (matchups[dataId] != -1) return matchups[dataId];
-
-	auto db = GetLiteDB();
-	for (int i = 0; i < 255; i++) {
-		auto table = db->GetTable(std::format("FlatOut2.Cars.Car[{}]", i).c_str());
-		auto str = (const char*)table->GetPropertyPointer("DataPath");
-		if (str == std::format("data/Cars/Car_{}/", dataId)) {
-			matchups[dataId] = i;
-			return i;
-		}
-	}
-	return -1;
-}
-
-int GetCarByName(const std::string& name) {
-	auto db = GetLiteDB();
-	for (int i = 0; i < 255; i++) {
-		auto table = db->GetTable(std::format("FlatOut2.Cars.Car[{}]", i).c_str());
-		auto str = (const char*)table->GetPropertyPointer("Name");
-		if (str == name) {
-			return i;
-		}
-	}
-	return -1;
-}
-
 void ApplyCarLimitAdjuster() {
 	newCarMatchupArrayDataToDB = new int[8192];
 	newCarMatchupArrayDBToData = new int[8192]; // +512

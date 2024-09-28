@@ -1,4 +1,4 @@
-tGameSetting aGameSettings[] = {
+tGameSetting aNewGameSettings[] = {
 		{ "Version", "Settings", (void*)0x849300, 0, 0, 1e+06 },
 		{ "Game", "ImperialUnits", (void*)0x849494, 1, 0, 0 },
 		{ "Game", "OverlayGauges", (void*)0x849498, 1, 0, 0 },
@@ -16,7 +16,7 @@ tGameSetting aGameSettings[] = {
 		{ "Game", "Soundtrack", &nIngameSoundtrack, 0, 0, 1 },
 		{ "Game", "DerbySoundtrack", &nIngameDerbySoundtrack, 0, 0, 1 },
 		{ "Game", "FO1Soundtrack", &nIngameFO1Soundtrack, 0, 0, 1 },
-		{ "Game", "StuntShowSoundtrack", &nIngameStuntShowSoundtrack, 0, 0, 1 },
+		{ "Game", "StuntModeSoundtrack", &nIngameStuntShowSoundtrack, 0, 0, 1 },
 		{ "Game", "MenuSoundtrack", &nMenuSoundtrack, 0, 0, 1 },
 		{ "Game", "OpponentCount", &nOpponentCountType, 0, 0, 3 },
 		{ "Game", "OpponentStrength", &nAIFudgeDisabled, 0, 0, 2 },
@@ -130,7 +130,7 @@ void ApplyCustomSettingsPatches() {
 			0x459758,
 	};
 	for (auto& addr : aCategoryAddresses) {
-		NyaHookLib::Patch(addr, &aGameSettings[0].category);
+		NyaHookLib::Patch(addr, &aNewGameSettings[0].category);
 	}
 	uintptr_t aNameAddresses[] = {
 			0x458842,
@@ -142,7 +142,7 @@ void ApplyCustomSettingsPatches() {
 			0x459342,
 	};
 	for (auto& addr : aNameAddresses) {
-		NyaHookLib::Patch(addr, &aGameSettings[0].name);
+		NyaHookLib::Patch(addr, &aNewGameSettings[0].name);
 	}
 	uintptr_t aValueAddresses[] = {
 			0x45884F,
@@ -154,13 +154,13 @@ void ApplyCustomSettingsPatches() {
 			0x459350,
 	};
 	for (auto& addr : aValueAddresses) {
-		NyaHookLib::Patch(addr, &aGameSettings[0].value);
+		NyaHookLib::Patch(addr, &aNewGameSettings[0].value);
 	}
-	NyaHookLib::Patch(0x45885C, &aGameSettings[0].type);
-	NyaHookLib::Patch(0x4588AE, &aGameSettings[0].minValue);
-	NyaHookLib::Patch(0x458976, &aGameSettings[0].minValue);
-	NyaHookLib::Patch(0x4588A8, &aGameSettings[0].maxValue);
-	NyaHookLib::Patch(0x458957, &aGameSettings[0].maxValue);
+	NyaHookLib::Patch(0x45885C, &aNewGameSettings[0].type);
+	NyaHookLib::Patch(0x4588AE, &aNewGameSettings[0].minValue);
+	NyaHookLib::Patch(0x458976, &aNewGameSettings[0].minValue);
+	NyaHookLib::Patch(0x4588A8, &aNewGameSettings[0].maxValue);
+	NyaHookLib::Patch(0x458957, &aNewGameSettings[0].maxValue);
 
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4582AB, &SetNewDefaultOptions);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D12B0, &SetNewDefaultOptions);

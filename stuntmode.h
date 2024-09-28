@@ -8,12 +8,6 @@ bool bStuntModeGhosting = false;
 double fStuntModeTimeTwoWheeling = 0;
 double fStuntModeLastReset = 0;
 
-enum eAirControlMode {
-	AIRCONTROL_DEFAULT,
-	AIRCONTROL_ON,
-	AIRCONTROL_YAWONLY,
-	AIRCONTROL_OFF
-};
 int nStuntModeAirControlMode = AIRCONTROL_DEFAULT;
 bool bStuntModeHandling = true;
 
@@ -180,7 +174,7 @@ bool IsAirControlOn() {
 
 void AddScore(const wchar_t* str, float amount) {
 	auto playerScore = GetPlayerScore<PlayerScoreArcadeRace>(1);
-	AddArcadeRaceScore(str, 0, pGame, amount * fStuntModeSameyMultiplier, playerScore->nUnknownScoringRelated);
+	Game::AddArcadeRaceScore(str, 0, pGame, amount * fStuntModeSameyMultiplier, playerScore->nUnknownScoringRelated);
 }
 
 void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
@@ -201,21 +195,21 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 
 	// below map resets since we've disabled the out of map reset
 	if (car->mMatrix[13] < -50 && fStuntModeLastReset > 3) {
-		int eventData[9] = {EVENT_RESPAWN_PLAYER, 0, (int)pPlayer->nPlayerId, 0xFFFF, 0};
-		PostEvent(eventData);
+		auto data = tEventData(EVENT_PLAYER_RESPAWN, pPlayer->nPlayerId);
+		pEventManager->SendEvent(&data);
 		ResetStuntTricks();
 		fStuntModeLastReset = 0;
 
-		AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeCheesePenalty, playerScore->nUnknownScoringRelated);
+		Game::AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeCheesePenalty, playerScore->nUnknownScoringRelated);
 	}
 
 	if (pPlayer->nGhosting && !bStuntModeGhosting && fStuntModeLastReset > 3 && !bStuntModeRagdolled && playerScore->fScore >= -nStuntModeResetPenalty) {
-		AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeResetPenalty, playerScore->nUnknownScoringRelated);
+		Game::AddArcadeRaceScore(L"RESET PENALTY", 0, pGame, nStuntModeResetPenalty, playerScore->nUnknownScoringRelated);
 	}
 	bStuntModeGhosting = pPlayer->nGhosting;
 
 	if (car->nIsRagdolled && !bStuntModeRagdolled) {
-		AddArcadeRaceScore(L"CRASH OUT!", 0, pGame, nStuntModeCrashOutBonus, playerScore->nUnknownScoringRelated);
+		Game::AddArcadeRaceScore(L"CRASH OUT!", 0, pGame, nStuntModeCrashOutBonus, playerScore->nUnknownScoringRelated);
 	}
 	bStuntModeRagdolled = car->nIsRagdolled;
 
@@ -226,7 +220,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 	}
 	else {
 		if (fStuntModeTimeTwoWheeling > fStuntModeMinTwoWheelTime) {
-			AddArcadeRaceScore(L"TWO WHEELING", 0, pGame, fStuntModeTwoWheelMultiplier * fStuntModeTimeTwoWheeling,
+			Game::AddArcadeRaceScore(L"TWO WHEELING", 0, pGame, fStuntModeTwoWheelMultiplier * fStuntModeTimeTwoWheeling,
 							   playerScore->nUnknownScoringRelated);
 		}
 		fStuntModeTimeTwoWheeling = 0;
@@ -373,7 +367,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 				fStuntModeGrindingDistance += vel.length() * fDeltaTime;
 			}
 			else if (fStuntModeGrindingTimer > 0.5 && fStuntModeGrindingDistance > 10) {
-				AddArcadeRaceScore(L"GRINDING", 0, pGame,
+				Game::AddArcadeRaceScore(L"GRINDING", 0, pGame,
 								   fStuntModeGrindMultiplier * abs(fStuntModeGrindingDistance),
 								   playerScore->nUnknownScoringRelated);
 				fStuntModeGrindingTimer = 0;

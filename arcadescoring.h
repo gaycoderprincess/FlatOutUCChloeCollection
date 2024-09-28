@@ -21,12 +21,9 @@ void AddFragDerbyScore(int amount) {
 	if (pScoreManager->nSurvivorId == score->nPlayerId) amount *= 2;
 	score->nScore1 += amount * score->fScoreMultiplier;
 
-	int eventData[9] = {};
-	eventData[0] = 6060;
-	eventData[2] = score->nPlayerId + 1; // PlayerScoreDerby->4 = 0
-	eventData[3] = 0xFFFF;
-	eventData[4] = amount;
-	PostEvent(eventData);
+	auto eventData = tEventData(EVENT_PLAYER_UPDATE_FRAGDERBY_SCORE, score->nPlayerId + 1);
+	eventData.data[3] = amount;
+	pEventManager->PostEvent(&eventData);
 }
 
 void __fastcall MoreFragDerbyRewards(uint32_t a1) {
@@ -116,9 +113,8 @@ void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 	// otherwise check for platinum score
 	else if (numPoints >= platTarget && !bAchievedPlatinumThisRace) {
 		CreatePopup(a1[2686], a3);
-		// sfx
-		int eventData[9] = {4033, 0, 0, 0xFFFF, 0};
-		SendEvent(*(void**)0x9298FB4, eventData);
+		auto data = tEventData(EVENT_SFX_ARCADE_AWARD);
+		pEventManager->SendEvent(&data);
 		bAchievedPlatinumThisRace = true;
 	}
 }

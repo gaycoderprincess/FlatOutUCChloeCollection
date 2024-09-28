@@ -15,29 +15,6 @@ auto GetStringNarrow(const std::wstring& string) {
 	return converter.to_bytes(string);
 }
 
-uintptr_t GetCarDataPath_call = 0x4C6340;
-int __attribute__((naked)) __fastcall GetCarDataPath(int dbCar, bool isMenuCar) {
-	__asm__ (
-		"mov eax, ecx\n\t"
-		"push edx\n\t"
-		"call %0\n\t"
-		"pop edx\n\t"
-		"ret\n\t"
-			:
-			:  "m" (GetCarDataPath_call)
-	);
-}
-
-uintptr_t GetScriptParameter_call = 0x5DB370;
-int __attribute__((naked)) __fastcall GetScriptParameter(void* a1) {
-	__asm__ (
-		"mov eax, ecx\n\t"
-		"jmp %0\n\t"
-			:
-			:  "m" (GetScriptParameter_call)
-	);
-}
-
 int GetNumSkinsForCar(int id) {
 	int tmp[2];
 	auto path = "data/cars/car_" + std::to_string(GetCarDataPath(id, false)) + "/skin";
@@ -214,10 +191,7 @@ int IsCarLocked(void* a1) {
 	}
 	auto pGarage = *ppData;
 
-	uint32_t data[2];
-	data[0] = (uint32_t)a1;
-	data[1] = 2;
-	auto id = GetScriptParameter(data);
+	auto id = (int)luaL_checknumber(a1, 2);
 	if (id > 48) { // 46 and 47 are Bonecracker and Grinder
 		id = GetUnlockIDForCustomCar(id, true);
 	}
@@ -894,7 +868,7 @@ void CustomLUAFunctions(void* a1, void* a2, int a3) {
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 
-	static auto sVersionString = "Chloe's Collection v1.37 - Camera Rotation Edition";
+	static auto sVersionString = "Chloe's Collection v1.38 - Full Color Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

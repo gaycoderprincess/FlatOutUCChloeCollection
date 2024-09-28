@@ -36,10 +36,10 @@ void SetSoundtrack() {
 		LoadSoundtrack(0);
 
 		if (nLastMenuSoundtrack >= 0) {
-			int eventData[9] = {EVENT_MUSIC_STOP, 0, 0xFFFF, 0};
-			PostEvent(eventData);
-			int eventData2[9] = {EVENT_MUSIC_PLAY_TITLE, 0, 0xFFFF, 0};
-			PostEvent(eventData2);
+			auto data = tEventData(EVENT_MUSIC_STOP);
+			pEventManager->SendEvent(&data);
+			data = tEventData(EVENT_MUSIC_PLAY_TITLE);
+			pEventManager->SendEvent(&data);
 		}
 
 		nLastMenuSoundtrack = nMenuSoundtrack;
@@ -94,7 +94,7 @@ void ApplySoundtrackPatches() {
 	nIngameDerbySoundtrack = defaultDerby;
 	nIngameStuntShowSoundtrack = defaultStuntShow;
 
-	for (auto& setting : aGameSettings) {
+	for (auto& setting : aNewGameSettings) {
 		if (setting.value == &nMenuSoundtrack) setting.maxValue = aMenuPlaylists.size()-1;
 		if (setting.value == &nIngameSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameFO1Soundtrack) setting.maxValue = aPlaylists.size()-1;

@@ -9,8 +9,7 @@
 #include "nya_commonhooklib.h"
 #include "nya_commonmath.h"
 
-#include "game.h"
-#include "languages.h"
+#include "fouc.h"
 
 void WriteLog(const std::string& str) {
 	static auto file = std::ofstream("FlatOutUCChloeCollection_gcp.log");
@@ -312,6 +311,10 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			}
 
 			NyaHookLib::Patch(0x6F38DC+0x54, &MenuCameraRotation);
+
+			//NyaHookLib::Patch(0x4D4B7A + 1, "Canal");
+			//NyaHookLib::Patch(0x4D4B75 + 1, "Canal1");
+			//NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D6332, 0x4D5CDC);
 		} break;
 		default:
 			break;
