@@ -6,7 +6,7 @@ Companion plugin for my Ultimate Carnage modpack, [Chloe's Collection](https://d
 
 Building is done on an Arch Linux system with CLion and vcpkg being used for the build process.
 
-Before you begin, clone [nya-common](https://github.com/gaycoderprincess/nya-common) to a folder next to this one, so it can be found.
+Before you begin, clone [nya-common](https://github.com/gaycoderprincess/nya-common) and [nya-common-fouc](https://github.com/gaycoderprincess/nya-common-fouc) to folders next to this one, so they can be found.
 
 Required packages: `mingw-w64-gcc vcpkg`
 
