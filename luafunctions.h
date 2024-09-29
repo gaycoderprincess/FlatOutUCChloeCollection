@@ -775,6 +775,11 @@ int ChloeTuning_SetActiveCarForMultiplayer(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_SetIsInMultiplayer(void* a1) {
+	bIsInMultiplayer = luaL_checknumber(a1, 1);
+	return 0;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -870,6 +875,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetAirControlMode, "ChloeCollection_SetAirControlMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceStuntMode, "ChloeCollection_WasLastRaceStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsInMultiplayer, "ChloeCollection_SetIsInMultiplayer");
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 
