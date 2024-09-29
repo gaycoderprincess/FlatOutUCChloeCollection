@@ -60,7 +60,7 @@ int __attribute__((naked)) FreeLoadingScreenHookedASM() {
 
 bool bLoadingScreenPressEnter = false;
 void OnLoadInGame() {
-	if (bIsInMultiplayer) return;
+	if (bIsInMultiplayer || nLoadingSkip) return;
 
 	bLoadingScreenPressEnter = true;
 	while (!GetCopyrightSkipButton()) {
