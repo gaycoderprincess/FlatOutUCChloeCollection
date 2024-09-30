@@ -59,6 +59,7 @@ int __attribute__((naked)) FreeLoadingScreenHookedASM() {
 }
 
 bool bLoadingScreenPressEnter = false;
+bool bLoadingScreenResetPressEnter = false;
 void OnLoadInGame() {
 	if (bIsInMultiplayer || nLoadingSkip) return;
 
@@ -72,6 +73,7 @@ void OnLoadInGame() {
 		pLoadingScreen->Draw();
 		Sleep(10);
 	}
+	bLoadingScreenResetPressEnter = true;
 }
 
 void OnLoadMenu() {
@@ -88,6 +90,12 @@ void OnLoadMenu() {
 }
 
 void __fastcall LoadingScreenPressEnter(int* pElement) {
+	if (bLoadingScreenPressEnter) bLoadingScreenResetPressEnter = false;
+
+	if (pElement[6] == PRESS_START && bLoadingScreenResetPressEnter) {
+		pElement[6] = LOADINGSCREEN_LOADING;
+		bLoadingScreenResetPressEnter = false;
+	}
 	if (pElement[6] == LOADINGSCREEN_LOADING && bLoadingScreenPressEnter) {
 		pElement[6] = PRESS_START;
 		bLoadingScreenPressEnter = false;
