@@ -39,7 +39,7 @@ int ChloeSkins_GetNumSkinsForCar(void* a1) {
 
 int ChloeSkins_GetSkinAuthor(void* a1) {
 	static auto config = toml::parse_file("Config/CarSkins.toml");
-	std::wstring author = config["car" + std::to_string(GetCarDataID((int)luaL_checknumber(a1, 1)))]["skin" + std::to_string((int)luaL_checknumber(a1, 2))].value_or(L"");
+	std::wstring author = config["car_" + std::to_string(GetCarDataID((int)luaL_checknumber(a1, 1)))]["skin" + std::to_string((int)luaL_checknumber(a1, 2))].value_or(L"");
 	if (!author.empty()) author = L"Skin Author: " + author;
 	lua_pushlstring(a1, author.c_str(), (author.length() + 1) * 2);
 	return 1;
@@ -62,7 +62,7 @@ int ChloeSkins_IsSkinCustom(void* a1) {
 	while (skinId > numSkins) {
 		skinId -= numSkins;
 	}
-	std::wstring author = config["car" + std::to_string(GetCarDataID(carId))]["skin" + std::to_string(skinId)].value_or(L"");
+	std::wstring author = config["car_" + std::to_string(GetCarDataID(carId))]["skin" + std::to_string(skinId)].value_or(L"");
 	lua_pushboolean(a1, !author.empty());
 	return 1;
 }
@@ -85,9 +85,9 @@ int ChloeSkins_GetSkinName(void* a1) {
 	while (skinId > numSkins) {
 		skinId -= numSkins;
 	}
-	std::wstring string = config["car" + std::to_string(GetCarDataID(carId))]["skin" + std::to_string(skinId) + "name"].value_or(L"");
+	std::wstring string = config["car_" + std::to_string(GetCarDataID(carId))]["skin" + std::to_string(skinId) + "name"].value_or(L"");
 	if (string.empty()) string = L"Skin " + std::to_wstring(skinId);
-	//std::wstring author = config["car" + std::to_string(GetCarDataID(carId))]["skin" + std::to_string(skinId)].value_or(L"");
+	//std::wstring author = config["car_" + std::to_string(GetCarDataID(carId))]["skin" + std::to_string(skinId)].value_or(L"");
 	//if (!author.empty()) string += L" - " + author;
 	//if (!author.empty()) string = L"© " + string;
 	lua_pushlstring(a1, string.c_str(), (string.length() + 1) * 2);
@@ -150,7 +150,7 @@ int GetUnlockIDForCustomCar(int id, bool warn) {
 	static auto config = toml::parse_file("Config/CarUnlocks.toml");
 	int replacementId = config["db_override"]["car" + std::to_string(id)].value_or(-1);
 	if (replacementId < 0) {
-		replacementId = config["main"]["car" + std::to_string(GetCarDataID(id))].value_or(-1);
+		replacementId = config["main"]["car_" + std::to_string(GetCarDataID(id))].value_or(-1);
 		if (replacementId >= 0) {
 			replacementId = GetCarDBID(replacementId);
 		}
@@ -172,7 +172,7 @@ void GenerateUnlockList() {
 				if (j == pGame->UnlockCar[i]) continue; // don't duplicate
 				aCustomCarUnlockList.push_back(j);
 			}
-			else if (config["main"]["car" + std::to_string(j)].value_or(-1) == GetCarDataID(pGame->UnlockCar[i])) {
+			else if (config["main"]["car_" + std::to_string(j)].value_or(-1) == GetCarDataID(pGame->UnlockCar[i])) {
 				int dbId = GetCarDBID(j);
 				if (dbId == pGame->UnlockCar[i]) continue; // don't duplicate
 
