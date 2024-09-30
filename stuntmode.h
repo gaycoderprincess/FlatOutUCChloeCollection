@@ -551,7 +551,7 @@ void ApplyStuntModePatches(bool apply) {
 		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x9090);
 	}
 	else {
-		NyaHookLib::Patch<uint64_t>(0x4DC005, 0x2B01E80000012068);
+		NyaHookLib::Patch<uint64_t>(0x4DC005, 0x2D21E80000012068);
 		NyaHookLib::Patch<uint16_t>(0x4DC192, 0x4D75);
 		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x2275);
 	}
