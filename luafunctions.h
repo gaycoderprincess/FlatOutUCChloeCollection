@@ -17,7 +17,7 @@ auto GetStringNarrow(const std::wstring& string) {
 
 int GetNumSkinsForCar(int id) {
 	int tmp[2];
-	auto path = "data/cars/car_" + std::to_string(GetCarDataPath(id, false)) + "/skin";
+	auto path = "data/cars/car_" + std::to_string(GetCarDataID(id)) + "/skin";
 	for (int i = 0; i < 255; i++) {
 		auto file = (path + std::to_string(i+1) + ".dds");
 		if (!BFSManager_DoesFileExist(*(void**)0x846688, file.c_str(), tmp)) {
@@ -42,6 +42,30 @@ int ChloeSkins_GetSkinAuthor(void* a1) {
 	std::wstring author = config["car" + std::to_string(GetCarDataID((int)luaL_checknumber(a1, 1)))]["skin" + std::to_string((int)luaL_checknumber(a1, 2))].value_or(L"");
 	if (!author.empty()) author = L"Skin Author: " + author;
 	lua_pushlstring(a1, author.c_str(), (author.length() + 1) * 2);
+	return 1;
+}
+
+int ChloeSkins_GetSkinName(void* a1) {
+	static auto config = toml::parse_file("Config/CarSkins.toml");
+	int carId = (int)luaL_checknumber(a1, 1);
+	int skinId = (int)luaL_checknumber(a1, 2);
+	bool wrapAround = luaL_checknumber(a1, 3);
+	int numSkins = GetNumSkinsForCar(carId);
+	if (!wrapAround && (skinId < 1 || skinId > numSkins)) {
+		std::wstring string = L"---";
+		lua_pushlstring(a1, string.c_str(), (string.length() + 1) * 2);
+		return 1;
+	}
+	// wrap around
+	while (skinId < 1) {
+		skinId += numSkins;
+	}
+	while (skinId > numSkins) {
+		skinId -= numSkins;
+	}
+	std::wstring string = config["car" + std::to_string(GetCarDataID(carId))]["skin" + std::to_string(skinId) + "name"].value_or(L"");
+	if (string.empty()) string = L"Skin " + std::to_wstring(skinId);
+	lua_pushlstring(a1, string.c_str(), (string.length() + 1) * 2);
 	return 1;
 }
 
@@ -825,6 +849,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetNumSkinsForCurrentCar, "ChloeSkins_GetNumSkinsForCurrentCar");
 	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetNumSkinsForCar, "ChloeSkins_GetNumSkinsForCar");
 	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetSkinAuthor, "ChloeSkins_GetSkinAuthor");
+	RegisterLUAFunction(a1, (void*)&ChloeSkins_GetSkinName, "ChloeSkins_GetSkinName");
 	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetNumUnlockCustomCar, "ChloeUnlocks_GetNumUnlockCustomCar");
 	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetUnlockCustomCar, "ChloeUnlocks_GetUnlockCustomCar");
 	RegisterLUAFunction(a1, (void*)&ChloeInput_OpenInputWindow, "ChloeInput_OpenInputWindow");
