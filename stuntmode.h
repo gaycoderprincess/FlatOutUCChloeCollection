@@ -544,6 +544,8 @@ void ApplyStuntModePatches(bool apply) {
 	// disable airtime reset and derby oob reset
 	NyaHookLib::Patch<uint8_t>(0x43D69E, apply ? 0xEB : 0x75);
 
+	static uint64_t _0x4DC005Backup = *(uint64_t*)0x4DC005; // this is going to change as part of it calls my malloc hook
+
 	if (apply && bStuntModeSimpleUI) {
 		// load FragDerbyOnline HUD
 		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4DC005, 0x4DC186);
@@ -551,7 +553,7 @@ void ApplyStuntModePatches(bool apply) {
 		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x9090);
 	}
 	else {
-		NyaHookLib::Patch<uint64_t>(0x4DC005, 0x2D21E80000012068);
+		NyaHookLib::Patch<uint64_t>(0x4DC005, _0x4DC005Backup);
 		NyaHookLib::Patch<uint16_t>(0x4DC192, 0x4D75);
 		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x2275);
 	}
