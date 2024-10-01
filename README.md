@@ -1,6 +1,6 @@
 # FlatOut: Ultimate Carnage Chloe Collection
 
-Companion plugin for my Ultimate Carnage modpack, [Chloe's Collection](https://drive.google.com/file/d/1RIL51RqftjqZuQAnDhhrocU1EbgtbVvB/view?usp=sharing).
+Companion plugin for my Ultimate Carnage modpack, [Chloe's Collection](https://drive.google.com/file/d/1VUIg8KMdLLHVxDa6iCgBCZUUktKwDk5v/view).
 
 ## Building
 
