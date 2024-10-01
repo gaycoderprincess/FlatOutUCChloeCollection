@@ -213,6 +213,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// uploading race results is lang entry 246 (0xF6), called at 4AF733 for event 3015, from event 7025
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x465270, 0x46543C); // no highscore updating
 			NyaHookLib::Patch<uint8_t>(0x4675E6, 0xEB); // no uploading race results
+			NyaHookLib::Patch<uint8_t>(0x492B0F, 0xEB); // no new lap record popup
 
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x465F46, 0x467312); // disable video recording
 

@@ -930,7 +930,7 @@ void CustomLUAFunctions(void* a1) {
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 
-	static auto sVersionString = "Chloe's Collection v1.39 - Loading Screen Art Edition";
+	static auto sVersionString = "Chloe's Collection v1.40 - Skin Selector Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

@@ -558,6 +558,9 @@ void ApplyStuntModePatches(bool apply) {
 		NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x2275);
 	}
 
+	// disable wrong way
+	NyaHookLib::Patch<uint64_t>(0x4DF94E, apply ? 0x0E606800000E32E9 : 0x0E606809298FD8A1);
+
 	// disable visual damage
 	NyaHookLib::Patch<uint8_t>(0x427A40, apply ? 0xEB : 0x74); // body
 	NyaHookLib::Patch<uint8_t>(0x427A76, apply ? 0xEB : 0x7E); // panels
