@@ -1,7 +1,4 @@
 int nArcadeCareerCarSkin = 1;
-int nForceAllAICarsNextRace = -1;
-int nForceAllAICarsNextRaceDuo[2] = {-1, -1};
-int nForceAICountNextRace = -1;
 uint32_t nCurrentMenuCar = 0;
 std::vector<int> aCustomCarUnlockList;
 
@@ -92,27 +89,6 @@ int ChloeSkins_GetSkinName(void* a1) {
 	//if (!author.empty()) string = L"© " + string;
 	lua_pushlstring(a1, string.c_str(), (string.length() + 1) * 2);
 	return 1;
-}
-
-int GetOpponentCount() {
-	int count = 11;
-	switch (nOpponentCountType) {
-		case 0:
-			count = 7;
-			break;
-		case 1:
-			count = 11;
-			break;
-		case 2:
-			count = nNumAIProfiles;
-			break;
-		case 3:
-			count = 31;
-			break;
-		default:
-			break;
-	}
-	return count;
 }
 
 int ChloeCollection_HasWelcomeScreenDisplayed(void* a1) {
@@ -829,6 +805,18 @@ int ChloeCollection_SetIsInMultiplayer(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_GetRandom(void* a1) {
+	int r = rand() % (int)luaL_checknumber(a1, 1);
+	lua_pushnumber(a1, r);
+	return 1;
+}
+
+int ChloeCollection_GetAIName(void* a1) {
+	auto str = (std::wstring)GetAIName(luaL_checknumber(a1, 1));
+	lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	return 1;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -927,6 +915,8 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceStuntMode, "ChloeCollection_WasLastRaceStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsInMultiplayer, "ChloeCollection_SetIsInMultiplayer");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetRandom, "ChloeCollection_GetRandom");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAIName, "ChloeCollection_GetAIName");
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 

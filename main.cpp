@@ -34,10 +34,10 @@ void WriteLog(const std::string& str) {
 #include "cartuning.h"
 #include "carlimitadjuster.h"
 #include "skippablecopyright.h"
+#include "aiextender.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"
-#include "aiextender.h"
 #include "aiupgrades.h"
 #include "ailuahacks.h"
 #include "handlingmode.h"
@@ -302,6 +302,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			//NyaHookLib::Patch(0x4D4B7A + 1, "Canal");
 			//NyaHookLib::Patch(0x4D4B75 + 1, "Canal1");
 			//NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D6332, 0x4D5CDC);
+
+			srand(time(0));
 		} break;
 		default:
 			break;

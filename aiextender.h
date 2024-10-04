@@ -1,3 +1,28 @@
+int nForceAllAICarsNextRace = -1;
+int nForceAllAICarsNextRaceDuo[2] = {-1, -1};
+int nForceAICountNextRace = -1;
+
+int GetOpponentCount() {
+	int count = 11;
+	switch (nOpponentCountType) {
+		case 0:
+			count = 7;
+			break;
+		case 1:
+			count = 11;
+			break;
+		case 2:
+			count = nNumAIProfiles;
+			break;
+		case 3:
+			count = 31;
+			break;
+		default:
+			break;
+	}
+	return count;
+}
+
 uintptr_t MoreAIProfilesASM_jmp = 0x4698D3;
 float __attribute__((naked)) MoreAIProfilesASM() {
 	__asm__ (
