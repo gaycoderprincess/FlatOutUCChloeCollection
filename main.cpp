@@ -302,10 +302,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::Patch(0x6F38DC+0x54, &MenuCameraRotation);
 
-			//NyaHookLib::Patch(0x4D4B7A + 1, "Canal");
-			//NyaHookLib::Patch(0x4D4B75 + 1, "Canal1");
-			//NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4D6332, 0x4D5CDC);
-
 			srand(time(0));
 		} break;
 		default:

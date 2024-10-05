@@ -1,3 +1,9 @@
+void DrawDebugMenuViewerOption(const std::string& name, const std::string& desc = "") {
+	if (DrawMenuOption(name, desc, false, false, true)) {
+		ChloeMenuLib::SetEnterHint("");
+	}
+}
+
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -6,10 +12,11 @@ void ProcessDebugMenu() {
 	}
 
 	DrawMenuOption("Game State:", "", true);
-	DrawMenuOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy", false, false);
+
 	auto prerace = GetLiteDB()->GetTable("GameFlow.PreRace");
-	DrawMenuOption(std::format("Career Class - {}", prerace->GetPropertyAsInt("Class", 0)), "", false, false);
-	DrawMenuOption(std::format("Career Cup - {}", prerace->GetPropertyAsInt("Cup", 0)), "", false, false);
+	DrawDebugMenuViewerOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy");
+	DrawDebugMenuViewerOption(std::format("Career Class - {}", prerace->GetPropertyAsInt("Class", 0)));
+	DrawDebugMenuViewerOption(std::format("Career Cup - {}", prerace->GetPropertyAsInt("Cup", 0)));
 
 	ChloeMenuLib::EndMenu();
 }

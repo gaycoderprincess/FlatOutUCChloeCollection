@@ -157,9 +157,17 @@ void __fastcall SetCustomAIProfiles(Player* pPlayer) {
 	if (!strcmp(nodeName, "AI6_RaySmith")) {
 		bRayAltProfileState = false;
 		int chance = 10;
-		if (prerace->GetPropertyAsInt("Class", 0) == 2 && prerace->GetPropertyAsInt("Cup", 0) == 9) chance = 100; // 100% chance in race finals
-		if (prerace->GetPropertyAsInt("Class", 0) == 3 && prerace->GetPropertyAsInt("Cup", 0) == 10) chance = 100; // 100% chance in street finals
-		if (prerace->GetPropertyAsInt("Class", 0) == 4) chance = 100; // 100% chance in grand finals
+		if (pGame->nGameMode == GM_CAREER) {
+			if (prerace->GetPropertyAsInt("Class", 0) == 2 && prerace->GetPropertyAsInt("Cup", 0) == 9) {
+				chance = 100; // 100% chance in race finals
+			}
+			if (prerace->GetPropertyAsInt("Class", 0) == 3 && prerace->GetPropertyAsInt("Cup", 0) == 10) {
+				chance = 100; // 100% chance in street finals
+			}
+			if (prerace->GetPropertyAsInt("Class", 0) == 4) {
+				chance = 100; // 100% chance in grand finals
+			}
+		}
 		if ((pPlayer->nAIClassId == 1 || pPlayer->nAIClassId == 2) && (bForceRayAltProfile || rand() % 100 < chance)) {
 			bRayAltProfileState = true;
 			NyaHookLib::Patch(0x40953D + 1, "%s.Class[%d]Alt");
