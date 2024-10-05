@@ -10,6 +10,7 @@
 #include "nya_commonmath.h"
 
 #include "fouc.h"
+#include "chloemenulib.h"
 
 void WriteLog(const std::string& str) {
 	static auto file = std::ofstream("FlatOutUCChloeCollection_gcp.log");
@@ -50,6 +51,7 @@ void WriteLog(const std::string& str) {
 #include "verboseerrors.h"
 #include "bombexplosion.h"
 #include "testhud.h"
+#include "debugmenu.h"
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
 void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
@@ -249,6 +251,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyStuntModeAirControlPatch();
 			ApplySoundTweaks();
 			ApplyTestHUDPatches();
+			ApplyDebugMenuPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
 			// carnage total score is set +0x3CC off player profile

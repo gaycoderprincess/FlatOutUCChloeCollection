@@ -30,6 +30,7 @@ target_include_directories(FlatOutUCChloeCollection PUBLIC ../nya-common/3rdpart
 target_include_directories(FlatOutUCChloeCollection PUBLIC ../nya-common/3rdparty/imgui)
 target_include_directories(FlatOutUCChloeCollection PUBLIC ../nya-common/3rdparty/imgui/backends)
 target_include_directories(FlatOutUCChloeCollection PUBLIC ../nya-common-fouc)
+target_include_directories(FlatOutUCChloeCollection PUBLIC ../FlatOutUCMenuLib/include)
 target_link_options(FlatOutUCChloeCollection PRIVATE "-Wl,--exclude-all-symbols")
 set_target_properties(FlatOutUCChloeCollection PROPERTIES PREFIX "")
 set_target_properties(FlatOutUCChloeCollection PROPERTIES SUFFIX "_gcp.asi")

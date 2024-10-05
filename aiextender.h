@@ -143,6 +143,45 @@ void __attribute__((naked)) __fastcall AICarDataIDsASM() {
 	);
 }
 
+bool bRayAltProfileState = false;
+bool bForceRayAltProfile = false;
+void __fastcall SetCustomAIProfiles(Player* pPlayer) {
+	NyaHookLib::Patch(0x40953D + 1, "%s.Class[%d]");
+	NyaHookLib::Patch(0x409400 + 1, "%s[%d].Class[%d]");
+
+	int id = pPlayer->nAIId - 1;
+	auto table = GetLiteDB()->GetTable("FlatOut2.Profiles");
+	auto prerace = GetLiteDB()->GetTable("GameFlow.PreRace");
+	auto profileNode = table->GetPropertyAsNode("Profile", id);
+	auto nodeName = profileNode->GetName();
+	if (!strcmp(nodeName, "AI6_RaySmith")) {
+		bRayAltProfileState = false;
+		int chance = 10;
+		if (prerace->GetPropertyAsInt("Class", 0) == 2 && prerace->GetPropertyAsInt("Cup", 0) == 9) chance = 100; // 100% chance in race finals
+		if (prerace->GetPropertyAsInt("Class", 0) == 3 && prerace->GetPropertyAsInt("Cup", 0) == 10) chance = 100; // 100% chance in street finals
+		if (prerace->GetPropertyAsInt("Class", 0) == 4) chance = 100; // 100% chance in grand finals
+		if ((pPlayer->nAIClassId == 1 || pPlayer->nAIClassId == 2) && (bForceRayAltProfile || rand() % 100 < chance)) {
+			bRayAltProfileState = true;
+			NyaHookLib::Patch(0x40953D + 1, "%s.Class[%d]Alt");
+			NyaHookLib::Patch(0x409400 + 1, "%s[%d].Class[%d]Alt");
+		}
+	}
+}
+
+uintptr_t CustomAIProfilesASM_jmp = 0x409457;
+void __attribute__((naked)) __fastcall CustomAIProfilesASM() {
+	__asm__ (
+		"fst dword ptr [esi+0x97C]\n\t"
+		"pushad\n\t"
+		"mov ecx, esi\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (CustomAIProfilesASM_jmp), "i" (SetCustomAIProfiles)
+	);
+}
+
 void ApplyAIExtenderPatches() {
 	auto config = toml::parse_file("Config/AIConfig.toml");
 	nNumAIProfiles = config["main"]["NumAIProfiles"].value_or(11);
@@ -158,4 +197,6 @@ void ApplyAIExtenderPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x428841, &GhostForMoreOpponentsASM);
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x409302, &AICarDataIDsASM);
+
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x409451, &CustomAIProfilesASM);
 }
