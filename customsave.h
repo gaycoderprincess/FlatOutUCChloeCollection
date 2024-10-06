@@ -18,6 +18,51 @@ struct tCarTuning {
 	float tmp[16];
 };
 
+enum ePlaytimeType {
+	PLAYTIME_TOTAL,
+	PLAYTIME_MENU,
+	PLAYTIME_INGAME,
+	PLAYTIME_INGAME_SINGLEPLAYER,
+	PLAYTIME_INGAME_MULTIPLAYER,
+	PLAYTIME_INGAME_CAREER,
+	PLAYTIME_INGAME_CARNAGE,
+	PLAYTIME_INGAME_SINGLE,
+	PLAYTIME_INGAME_ALLRACE,
+	PLAYTIME_INGAME_RACE,
+	PLAYTIME_INGAME_PONGRACE,
+	PLAYTIME_INGAME_ARCADERACE,
+	PLAYTIME_INGAME_BEATTHEBOMB,
+	PLAYTIME_INGAME_ALLDERBY,
+	PLAYTIME_INGAME_WRECKINGDERBY,
+	PLAYTIME_INGAME_LMSDERBY,
+	PLAYTIME_INGAME_FRAGDERBY,
+	PLAYTIME_INGAME_STUNT,
+	PLAYTIME_INGAME_STUNTSHOW,
+	NUM_PLAYTIME_TYPES
+};
+
+const char* aPlaytimeTypeNames[] = {
+	"Total",
+	"Menus",
+	"In-game",
+	"Singleplayer",
+	"Multiplayer",
+	"Career",
+	"Carnage Mode",
+	"Single Events",
+	"All Races",
+	"Race",
+	"Head-On Race",
+	"Carnage Race",
+	"Beat the Bomb",
+	"Derbies",
+	"Wrecking Derby",
+	"Survivor Derby",
+	"Deathmatch Derby",
+	"Stunts",
+	"Stunt Show",
+};
+
 struct tCustomSaveStructure {
 	wchar_t playerName[32];
 	bool bWelcomeScreenDisplayed;
@@ -30,6 +75,7 @@ struct tCustomSaveStructure {
 	uint32_t gameProgress;
 	uint8_t playerPortrait;
 	tCarTuning aCarTunings[256];
+	double playtime[NUM_PLAYTIME_TYPES];
 
 	static inline bool bOverrideAllArcadeScores = false;
 
@@ -101,4 +147,96 @@ void InitCustomSave() {
 	NyaHookLib::Patch<uint8_t>(0x4879E7, 0xEB);
 	NyaHookLib::Patch(0x487A2B + 1, &gCustomSave.playerName);
 	NyaHookLib::Patch(0x48767E + 1, &gCustomSave.playerName);
+}
+
+void ProcessPlayStats() {
+	if (!pGame) return;
+	if (pLoadingScreen) return;
+
+	static CNyaTimer gTimer;
+	gTimer.Process();
+
+	auto time = gTimer.fDeltaTime;
+	gCustomSave.playtime[PLAYTIME_TOTAL] += time;
+	if (pGame->nGameState == GAME_STATE_RACE) {
+		gCustomSave.playtime[PLAYTIME_INGAME] += time;
+
+		if (!bIsInMultiplayer && pGame->nGameMode != GM_ONLINE_MULTIPLAYER) {
+			gCustomSave.playtime[PLAYTIME_INGAME_SINGLEPLAYER] += time;
+		}
+
+		switch (pGame->nGameMode) {
+			case GM_CAREER:
+				gCustomSave.playtime[PLAYTIME_INGAME_CAREER] += time;
+				break;
+			case GM_ARCADE_CAREER:
+				gCustomSave.playtime[PLAYTIME_INGAME_CARNAGE] += time;
+				break;
+			case GM_SINGLE_RACE:
+				gCustomSave.playtime[PLAYTIME_INGAME_SINGLE] += time;
+				break;
+			// GFWL multiplayer
+			case GM_ONLINE_MULTIPLAYER:
+				gCustomSave.playtime[PLAYTIME_INGAME_MULTIPLAYER] += time;
+				break;
+			default:
+				break;
+		}
+
+		switch (pGame->nDerbyType) {
+			case DERBY_LMS:
+				gCustomSave.playtime[PLAYTIME_INGAME_LMSDERBY] += time;
+				gCustomSave.playtime[PLAYTIME_INGAME_ALLDERBY] += time;
+				break;
+			case DERBY_WRECKING:
+				gCustomSave.playtime[PLAYTIME_INGAME_WRECKINGDERBY] += time;
+				gCustomSave.playtime[PLAYTIME_INGAME_ALLDERBY] += time;
+				break;
+			case DERBY_FRAG:
+				gCustomSave.playtime[PLAYTIME_INGAME_FRAGDERBY] += time;
+				gCustomSave.playtime[PLAYTIME_INGAME_ALLDERBY] += time;
+				break;
+			default:
+				break;
+		}
+
+		if (bIsInMultiplayer) {
+			gCustomSave.playtime[PLAYTIME_INGAME_MULTIPLAYER] += time;
+		}
+
+		if (bIsStuntMode) {
+			gCustomSave.playtime[PLAYTIME_INGAME_STUNTSHOW] += time;
+		}
+		else if (pGame->nDerbyType == DERBY_NONE) {
+			switch (pGame->nGameRules) {
+				case GR_DEFAULT:
+					gCustomSave.playtime[PLAYTIME_INGAME_RACE] += time;
+					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+					break;
+				case GR_PONGRACE:
+					gCustomSave.playtime[PLAYTIME_INGAME_PONGRACE] += time;
+					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+					break;
+				case GR_ARCADE_RACE:
+					gCustomSave.playtime[PLAYTIME_INGAME_ARCADERACE] += time;
+					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+					break;
+				case GR_BEAT_THE_BOMB:
+					gCustomSave.playtime[PLAYTIME_INGAME_BEATTHEBOMB] += time;
+					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+					break;
+				case GR_STUNT:
+					gCustomSave.playtime[PLAYTIME_INGAME_STUNT] += time;
+					break;
+			}
+		}
+	}
+	else if (pGame->nGameState == GAME_STATE_MENU) {
+		gCustomSave.playtime[PLAYTIME_MENU] += time;
+	}
+
+	static auto lastGameState = pGame->nGameState;
+	if (lastGameState == GAME_STATE_RACE && pGame->nGameState == GAME_STATE_MENU) {
+		gCustomSave.Save();
+	}
 }

@@ -1,5 +1,6 @@
 void HookLoop() {
 	ProcessCustomInputWindow();
+	ProcessPlayStats();
 	CommonMain();
 }
 

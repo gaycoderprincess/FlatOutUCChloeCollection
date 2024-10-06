@@ -1,5 +1,3 @@
-bool bIsInMultiplayer = false;
-
 bool GetCopyrightSkipButton() {
 	if ((GetAsyncKeyState(VK_RETURN) & 0x8000) != 0) return true;
 	for (int i = 0; i < XUSER_MAX_COUNT; i++) {

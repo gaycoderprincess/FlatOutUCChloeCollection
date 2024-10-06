@@ -1,4 +1,3 @@
-bool bIsStuntMode = false;
 int nStuntModeTime = 5 * 60 * 1000; // 5 minutes
 float fStuntModeJumpYaw = 0;
 float fStuntModeJumpRoll = 0;

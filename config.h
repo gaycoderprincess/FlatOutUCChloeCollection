@@ -100,3 +100,6 @@ float fArcadeRacePositionMultiplierStunt[32] = {
 		1,
 };
 float fArcadeRacePositionMultiplier[32];
+
+bool bIsStuntMode = false;
+bool bIsInMultiplayer = false;

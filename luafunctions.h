@@ -817,6 +817,65 @@ int ChloeCollection_GetAIName(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_GetCarMatchup(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	int dataId = GetCarDataID(id);
+	static auto config = toml::parse_file("Config/CarMatchups.toml");
+
+	auto name = GetCarName(id);
+	auto matchupName = config["named"][name].value_or("");
+	if (matchupName[0]) {
+		auto carByName = GetCarByName(matchupName);
+		if (carByName >= 0 && carByName > id) {
+			lua_pushnumber(a1, carByName);
+			return 1;
+		}
+	}
+
+	for (int i = 0; i < 512; i++) {
+		if (config["main"]["car_" + std::to_string(i)].value_or(-1) == dataId) {
+			int dbId = GetCarDBID(i);
+			if (dbId >= 0) {
+				lua_pushnumber(a1, dbId);
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+int ChloeCollection_GetCarMatchupInverse(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	int dataId = GetCarDataID(id);
+	static auto config = toml::parse_file("Config/CarMatchups.toml");
+	auto matchup = config["main"]["car_" + std::to_string(dataId)].value_or(-1);
+	if (matchup >= 0) {
+		lua_pushnumber(a1, GetCarDBID(matchup));
+		return 1;
+	}
+	else {
+		auto name = GetCarName(id);
+		auto matchupName = config["named"][name].value_or("");
+		if (matchupName[0]) {
+			auto carByName = GetCarByName(matchupName);
+			if (carByName >= 0 && carByName < id) {
+				lua_pushnumber(a1, carByName);
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+int ChloeSPStats_GetPlaytimeOfType(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (id < 0 || id >= NUM_PLAYTIME_TYPES) {
+		return 0;
+	}
+	lua_pushnumber(a1, gCustomSave.playtime[id]);
+	return 1;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -917,8 +976,32 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsInMultiplayer, "ChloeCollection_SetIsInMultiplayer");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetRandom, "ChloeCollection_GetRandom");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAIName, "ChloeCollection_GetAIName");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarMatchup, "ChloeCollection_GetCarMatchup");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarMatchupInverse, "ChloeCollection_GetCarMatchupInverse");
+	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
+
+	RegisterLUAEnum(a1, PLAYTIME_TOTAL, "PLAYTIME_TOTAL");
+	RegisterLUAEnum(a1, PLAYTIME_MENU, "PLAYTIME_MENU");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME, "PLAYTIME_INGAME");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_CAREER, "PLAYTIME_INGAME_CAREER");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_CARNAGE, "PLAYTIME_INGAME_CARNAGE");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_SINGLE, "PLAYTIME_INGAME_SINGLE");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_ALLRACE, "PLAYTIME_INGAME_ALLRACE");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_RACE, "PLAYTIME_INGAME_RACE");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_PONGRACE, "PLAYTIME_INGAME_PONGRACE");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_ARCADERACE, "PLAYTIME_INGAME_ARCADERACE");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_BEATTHEBOMB, "PLAYTIME_INGAME_BEATTHEBOMB");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_WRECKINGDERBY, "PLAYTIME_INGAME_WRECKINGDERBY");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_LMSDERBY, "PLAYTIME_INGAME_LMSDERBY");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_FRAGDERBY, "PLAYTIME_INGAME_FRAGDERBY");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_ALLDERBY, "PLAYTIME_INGAME_ALLDERBY");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_STUNT, "PLAYTIME_INGAME_STUNT");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_STUNTSHOW, "PLAYTIME_INGAME_STUNTSHOW");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_MULTIPLAYER, "PLAYTIME_INGAME_MULTIPLAYER");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_SINGLEPLAYER, "PLAYTIME_INGAME_SINGLEPLAYER");
+	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
 	static auto sVersionString = "Chloe's Collection v1.41 - Driver Comments Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
