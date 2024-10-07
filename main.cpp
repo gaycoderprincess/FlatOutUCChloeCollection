@@ -53,14 +53,22 @@ void WriteLog(const std::string& str) {
 #include "testhud.h"
 #include "debugmenu.h"
 
+void SetArcadeCareerCar() {
+	if (nArcadeCareerCarVariant) {
+		pGame->nInstantActionCar = GetCarMatchup(pGame->nInstantActionCar);
+	}
+	pGame->nInstantActionCarSkin = nArcadeCareerCarSkin;
+}
+
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
 void __attribute__((naked)) __fastcall ArcadeCareerCarSkinASM() {
 	__asm__ (
-		"mov edx, %1\n\t"
-		"mov [ebp+0x4DC], edx\n\t"
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
 		"jmp %0\n\t"
 			:
-			: "m" (ArcadeCareerCarSkinASM_jmp), "m" (nArcadeCareerCarSkin)
+			: "m" (ArcadeCareerCarSkinASM_jmp), "i" (SetArcadeCareerCar)
 	);
 }
 

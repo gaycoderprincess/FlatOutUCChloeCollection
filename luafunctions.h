@@ -1,4 +1,5 @@
 int nArcadeCareerCarSkin = 1;
+int nArcadeCareerCarVariant = 0;
 uint32_t nCurrentMenuCar = 0;
 std::vector<int> aCustomCarUnlockList;
 
@@ -22,6 +23,30 @@ int GetNumSkinsForCar(int id) {
 		}
 	}
 	return 1;
+}
+
+int GetCarMatchup(int id) {
+	int dataId = GetCarDataID(id);
+	static auto config = toml::parse_file("Config/CarMatchups.toml");
+
+	auto name = GetCarName(id);
+	auto matchupName = config["named"][name].value_or("");
+	if (matchupName[0]) {
+		auto carByName = GetCarByName(matchupName);
+		if (carByName >= 0 && carByName > id) {
+			return carByName;
+		}
+	}
+
+	for (int i = 0; i < 512; i++) {
+		if (config["main"]["car_" + std::to_string(i)].value_or(-1) == dataId) {
+			int dbId = GetCarDBID(i);
+			if (dbId >= 0) {
+				return dbId;
+			}
+		}
+	}
+	return -1;
 }
 
 int GetCarInverseMatchup(int id) {
@@ -203,8 +228,12 @@ int ChloeUnlocks_GetUnlockCustomCar(void* a1) {
 }
 
 int ChloeArcade_SetCarSkin(void* a1) {
-	GenerateUnlockList();
 	nArcadeCareerCarSkin = luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeArcade_SetCarVariant(void* a1) {
+	nArcadeCareerCarVariant = luaL_checknumber(a1, 1);
 	return 0;
 }
 
@@ -850,28 +879,10 @@ int ChloeCollection_GetAIName(void* a1) {
 }
 
 int ChloeCollection_GetCarMatchup(void* a1) {
-	int id = luaL_checknumber(a1, 1);
-	int dataId = GetCarDataID(id);
-	static auto config = toml::parse_file("Config/CarMatchups.toml");
-
-	auto name = GetCarName(id);
-	auto matchupName = config["named"][name].value_or("");
-	if (matchupName[0]) {
-		auto carByName = GetCarByName(matchupName);
-		if (carByName >= 0 && carByName > id) {
-			lua_pushnumber(a1, carByName);
-			return 1;
-		}
-	}
-
-	for (int i = 0; i < 512; i++) {
-		if (config["main"]["car_" + std::to_string(i)].value_or(-1) == dataId) {
-			int dbId = GetCarDBID(i);
-			if (dbId >= 0) {
-				lua_pushnumber(a1, dbId);
-				return 1;
-			}
-		}
+	auto matchup = GetCarMatchup(luaL_checknumber(a1, 1));
+	if (matchup >= 0) {
+		lua_pushnumber(a1, matchup);
+		return 1;
 	}
 	return 0;
 }
@@ -932,6 +943,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_HasPlatinumOnEvent, "ChloeArcade_HasPlatinumOnEvent");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetPlatinumTargetForLevel, "ChloeArcade_SetPlatinumTargetForLevel");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetCarSkin, "ChloeArcade_SetCarSkin");
+	RegisterLUAFunction(a1, (void*)&ChloeArcade_SetCarVariant, "ChloeArcade_SetCarVariant");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_ForceAllAICars, "ChloeArcade_ForceAllAICars");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_ForceAllAICarsDuo, "ChloeArcade_ForceAllAICarsDuo");
 	RegisterLUAFunction(a1, (void*)&ChloeArcade_ForceAICarCount, "ChloeArcade_ForceAICarCount");

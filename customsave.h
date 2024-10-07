@@ -55,11 +55,11 @@ const char* aPlaytimeTypeNames[] = {
 	"Head-On Race",
 	"Carnage Race",
 	"Beat the Bomb",
-	"Derbies",
+	"All Derbies",
 	"Wrecking Derby",
 	"Survivor Derby",
 	"Deathmatch Derby",
-	"Stunts",
+	"All Stunts",
 	"Stunt Show",
 };
 
