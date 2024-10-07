@@ -24,6 +24,26 @@ int GetNumSkinsForCar(int id) {
 	return 1;
 }
 
+int GetCarInverseMatchup(int id) {
+	int dataId = GetCarDataID(id);
+	static auto config = toml::parse_file("Config/CarMatchups.toml");
+	auto matchup = config["main"]["car_" + std::to_string(dataId)].value_or(-1);
+	if (matchup >= 0) {
+		return GetCarDBID(matchup);
+	}
+	else {
+		auto name = GetCarName(id);
+		auto matchupName = config["named"][name].value_or("");
+		if (matchupName[0]) {
+			auto carByName = GetCarByName(matchupName);
+			if (carByName >= 0 && carByName < id) {
+				return carByName;
+			}
+		}
+	}
+	return -1;
+}
+
 int ChloeSkins_GetNumSkinsForCurrentCar(void* a1) {
 	lua_pushnumber(a1, GetNumSkinsForCar(nCurrentMenuCar));
 	return 1;
@@ -143,16 +163,28 @@ void GenerateUnlockList() {
 
 	static auto config = toml::parse_file("Config/CarUnlocks.toml");
 	for (int i = 0; i < pGame->NumUnlockCar; i++) {
-		for (int j = 0; j < 512; j++) {
-			if (config["db_override"]["car" + std::to_string(j)].value_or(-1) == pGame->UnlockCar[i]) {
-				if (j == pGame->UnlockCar[i]) continue; // don't duplicate
+		auto unlockCar = pGame->UnlockCar[i];
+		auto unlockCarName = GetCarName(unlockCar);
+		auto unlockCarDataID = GetCarDataID(unlockCar);
+
+		int numCars = GetNumCars();
+		for (int j = 0; j < numCars; j++) {
+			if (j == unlockCar) continue; // don't duplicate
+
+			auto matchupName = (std::string)config["named"][GetCarName(j)].value_or("");
+			if (matchupName[0] && matchupName == unlockCarName) {
+				if (GetCarInverseMatchup(j) >= 0) continue; // don't add fo2 variants
 				aCustomCarUnlockList.push_back(j);
 			}
-			else if (config["main"]["car_" + std::to_string(j)].value_or(-1) == GetCarDataID(pGame->UnlockCar[i])) {
-				int dbId = GetCarDBID(j);
-				if (dbId == pGame->UnlockCar[i]) continue; // don't duplicate
+		}
 
-				if (dbId >= 0) aCustomCarUnlockList.push_back(dbId);
+		for (int j = 0; j < 512; j++) {
+			if (config["main"]["car_" + std::to_string(j)].value_or(-1) == unlockCarDataID) {
+				int dbId = GetCarDBID(j);
+				if (dbId < 0) continue;
+				if (dbId == unlockCar) continue; // don't duplicate
+				if (GetCarInverseMatchup(dbId) >= 0) continue; // don't add fo2 variants
+				aCustomCarUnlockList.push_back(dbId);
 			}
 		}
 	}
@@ -845,24 +877,10 @@ int ChloeCollection_GetCarMatchup(void* a1) {
 }
 
 int ChloeCollection_GetCarMatchupInverse(void* a1) {
-	int id = luaL_checknumber(a1, 1);
-	int dataId = GetCarDataID(id);
-	static auto config = toml::parse_file("Config/CarMatchups.toml");
-	auto matchup = config["main"]["car_" + std::to_string(dataId)].value_or(-1);
+	auto matchup = GetCarInverseMatchup(luaL_checknumber(a1, 1));
 	if (matchup >= 0) {
-		lua_pushnumber(a1, GetCarDBID(matchup));
+		lua_pushnumber(a1, matchup);
 		return 1;
-	}
-	else {
-		auto name = GetCarName(id);
-		auto matchupName = config["named"][name].value_or("");
-		if (matchupName[0]) {
-			auto carByName = GetCarByName(matchupName);
-			if (carByName >= 0 && carByName < id) {
-				lua_pushnumber(a1, carByName);
-				return 1;
-			}
-		}
 	}
 	return 0;
 }

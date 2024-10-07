@@ -239,4 +239,5 @@ void ProcessPlayStats() {
 	if (lastGameState == GAME_STATE_RACE && pGame->nGameState == GAME_STATE_MENU) {
 		gCustomSave.Save();
 	}
+	lastGameState = pGame->nGameState;
 }
