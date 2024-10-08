@@ -52,6 +52,7 @@ void WriteLog(const std::string& str) {
 #include "bombexplosion.h"
 #include "testhud.h"
 #include "debugmenu.h"
+#include "fo2sharedtextures.h"
 
 void SetArcadeCareerCar() {
 	if (nArcadeCareerCarVariant) {
@@ -260,6 +261,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplySoundTweaks();
 			ApplyTestHUDPatches();
 			ApplyDebugMenuPatches();
+			ApplyFO2SharedTexturesPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
 			// carnage total score is set +0x3CC off player profile
