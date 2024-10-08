@@ -312,6 +312,12 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::Patch(0x6F38DC+0x54, &MenuCameraRotation);
 
+			// increase VisibilitySet grid extents for rally trophy tracks
+			static float fNegExtents = -5000.0;
+			static float fPosExtents = 5000.0;
+			NyaHookLib::Patch(0x57AD5F + 2,&fNegExtents);
+			NyaHookLib::Patch(0x57AD8E + 2,&fPosExtents);
+
 			srand(time(0));
 		} break;
 		default:
