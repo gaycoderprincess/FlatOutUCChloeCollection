@@ -188,6 +188,39 @@ float __fastcall MenuCameraRotation(void* a1) {
 	return value;
 }
 
+void SetTrackVisibility() {
+	bool increased = false;
+	bool increasedNegY = false;
+	if (pGame->nGameState == GAME_STATE_RACE) {
+		increased = DoesTrackValueExist(pGame->nLevelId, "IncreasedVisibility");
+		increasedNegY = DoesTrackValueExist(pGame->nLevelId, "IncreasedNegYVisibility");
+	}
+
+	// increase VisibilitySet grid extents for rally trophy tracks
+	// rally russia extends to about 4600 for reference
+	static float fNegExtentsExtended = -5000.0;
+	static float fPosExtentsExtended = 5000.0;
+	static float fNegExtents = -4096.0;
+	static float fPosExtents = 4096.0;
+	static float fNegYExtentsExtended = -100.0;
+	static float fNegYExtents = -50.0;
+	NyaHookLib::Patch(0x57AD5F + 2, increased ? &fNegExtentsExtended : &fNegExtents);
+	NyaHookLib::Patch(0x57AD8E + 2, increased ? &fPosExtentsExtended : &fPosExtents);
+	NyaHookLib::Patch(0x57AD6A + 2, increasedNegY ? &fNegYExtentsExtended : &fNegYExtents);
+}
+
+uintptr_t InitVisibilityASM_jmp = 0x55AAB9;
+void __attribute__((naked)) __fastcall InitVisibilityASM() {
+	__asm__ (
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (InitVisibilityASM_jmp), "i" (SetTrackVisibility)
+	);
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -312,11 +345,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::Patch(0x6F38DC+0x54, &MenuCameraRotation);
 
-			// increase VisibilitySet grid extents for rally trophy tracks
-			static float fNegExtents = -5000.0;
-			static float fPosExtents = 5000.0;
-			NyaHookLib::Patch(0x57AD5F + 2,&fNegExtents);
-			NyaHookLib::Patch(0x57AD8E + 2,&fPosExtents);
+			InitVisibilityASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitVisibilityASM);
 
 			srand(time(0));
 		} break;
