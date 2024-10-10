@@ -221,6 +221,15 @@ void __attribute__((naked)) __fastcall InitVisibilityASM() {
 	);
 }
 
+void __attribute__((naked)) __fastcall NoTimeTrialGracePeriodASM() {
+	__asm__ (
+		"mov dword ptr [eax+0x58], 1\n\t"
+		"pop ebx\n"
+		"add esp, 0x2C\n"
+		"ret\n\t"
+	);
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -346,6 +355,12 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			NyaHookLib::Patch(0x6F38DC+0x54, &MenuCameraRotation);
 
 			InitVisibilityASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitVisibilityASM);
+
+			// never read VS_dynamicScale for cars
+			// not sure if this ever does anything otherwise but it makes the FO2 Chili crash for some reason???
+			NyaHookLib::Patch<uint8_t>(0x631C88, 0xEB);
+
+			//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4A35C3, &NoTimeTrialGracePeriodASM);
 
 			srand(time(0));
 		} break;
