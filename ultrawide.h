@@ -263,9 +263,9 @@ void PatchIngameUIScale(bool patch) {
 
 void PatchTextJustify(bool patch) {
 	// disabled during stunts for now
-	PatchIngameUIScale((pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT) || pLoadingScreen);
+	PatchIngameUIScale((pGameFlow->nGameState == GAME_STATE_RACE && pGameFlow->nGameRules != GR_STUNT) || pLoadingScreen);
 
-	bool isInGame = (pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT && *(float*)0x716034 == 480.0f) || pLoadingScreen;
+	bool isInGame = (pGameFlow->nGameState == GAME_STATE_RACE && pGameFlow->nGameRules != GR_STUNT && *(float*)0x716034 == 480.0f) || pLoadingScreen;
 
 	static bool bLast = false;
 	if (bLast != (patch && isInGame)) {
@@ -328,7 +328,7 @@ void __attribute__((naked)) __fastcall TextJustifyUndoASM() {
 
 void __fastcall TextScale(Font* pFont) {
 	// disabled during stunts for now
-	PatchIngameUIScale((pGame->nGameState == GAME_STATE_RACE && pGame->nGameRules != GR_STUNT) || pLoadingScreen);
+	PatchIngameUIScale((pGameFlow->nGameState == GAME_STATE_RACE && pGameFlow->nGameRules != GR_STUNT) || pLoadingScreen);
 
 	//pFont->fScaleX = pFont->fScaleY * fAspectRatio;
 }

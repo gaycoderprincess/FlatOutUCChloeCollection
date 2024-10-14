@@ -150,7 +150,7 @@ void InitCustomSave() {
 }
 
 void ProcessPlayStats() {
-	if (!pGame) return;
+	if (!pGameFlow) return;
 	if (pLoadingScreen) return;
 
 	static CNyaTimer gTimer;
@@ -158,14 +158,14 @@ void ProcessPlayStats() {
 
 	auto time = gTimer.fDeltaTime;
 	gCustomSave.playtime[PLAYTIME_TOTAL] += time;
-	if (pGame->nGameState == GAME_STATE_RACE) {
+	if (pGameFlow->nGameState == GAME_STATE_RACE) {
 		gCustomSave.playtime[PLAYTIME_INGAME] += time;
 
-		if (!bIsInMultiplayer && pGame->nGameMode != GM_ONLINE_MULTIPLAYER) {
+		if (!bIsInMultiplayer && pGameFlow->nGameMode != GM_ONLINE_MULTIPLAYER) {
 			gCustomSave.playtime[PLAYTIME_INGAME_SINGLEPLAYER] += time;
 		}
 
-		switch (pGame->nGameMode) {
+		switch (pGameFlow->nGameMode) {
 			case GM_CAREER:
 				gCustomSave.playtime[PLAYTIME_INGAME_CAREER] += time;
 				break;
@@ -183,7 +183,7 @@ void ProcessPlayStats() {
 				break;
 		}
 
-		switch (pGame->nDerbyType) {
+		switch (pGameFlow->nDerbyType) {
 			case DERBY_LMS:
 				gCustomSave.playtime[PLAYTIME_INGAME_LMSDERBY] += time;
 				gCustomSave.playtime[PLAYTIME_INGAME_ALLDERBY] += time;
@@ -207,8 +207,8 @@ void ProcessPlayStats() {
 		if (bIsStuntMode) {
 			gCustomSave.playtime[PLAYTIME_INGAME_STUNTSHOW] += time;
 		}
-		else if (pGame->nDerbyType == DERBY_NONE) {
-			switch (pGame->nGameRules) {
+		else if (pGameFlow->nDerbyType == DERBY_NONE) {
+			switch (pGameFlow->nGameRules) {
 				case GR_DEFAULT:
 					gCustomSave.playtime[PLAYTIME_INGAME_RACE] += time;
 					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
@@ -231,13 +231,13 @@ void ProcessPlayStats() {
 			}
 		}
 	}
-	else if (pGame->nGameState == GAME_STATE_MENU) {
+	else if (pGameFlow->nGameState == GAME_STATE_MENU) {
 		gCustomSave.playtime[PLAYTIME_MENU] += time;
 	}
 
-	static auto lastGameState = pGame->nGameState;
-	if (lastGameState == GAME_STATE_RACE && pGame->nGameState == GAME_STATE_MENU) {
+	static auto lastGameState = pGameFlow->nGameState;
+	if (lastGameState == GAME_STATE_RACE && pGameFlow->nGameState == GAME_STATE_MENU) {
 		gCustomSave.Save();
 	}
-	lastGameState = pGame->nGameState;
+	lastGameState = pGameFlow->nGameState;
 }

@@ -24,13 +24,13 @@ auto GetCarTuning(int car) {
 	return data;
 }
 auto GetCurrentCarTuning() {
-	int activeCar = pGame->Profile.nActiveCar - 1;
+	int activeCar = pGameFlow->Profile.nActiveCar - 1;
 	if (bEnableCarTuningForMultiplayer && nCarTuningCurrectCarForMultiplayer >= 0) activeCar = nCarTuningCurrectCarForMultiplayer;
 	return GetCarTuning(activeCar);
 }
 
 void __fastcall DoCarTuning(Car* pCar, float* pStackHandling) {
-	if (!bEnableCarTuningForMultiplayer && pGame->nGameMode != GM_CAREER && pGame->nGameMode != GM_TEST && pGame->nGameRules != GR_TEST) return;
+	if (!bEnableCarTuningForMultiplayer && pGameFlow->nGameMode != GM_CAREER && pGameFlow->nGameMode != GM_TEST && pGameFlow->nGameRules != GR_TEST) return;
 	auto player = pCar->pPlayer;
 	if (player->nPlayerType != PLAYERTYPE_LOCAL) return;
 

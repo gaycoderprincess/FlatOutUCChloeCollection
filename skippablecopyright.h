@@ -76,7 +76,7 @@ void OnLoadInGame() {
 
 void OnLoadMenu() {
 	// skip the first load in the copyright screen
-	if (pGame->nGameState == GAME_STATE_NONE) return;
+	if (pGameFlow->nGameState == GAME_STATE_NONE) return;
 
 	// skip the first load into the main menu
 	static bool bInitialLoad = true;

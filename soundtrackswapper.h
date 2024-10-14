@@ -16,7 +16,7 @@ void SetSoundtrack() {
 
 	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aMenuPlaylists[nMenuSoundtrack].filename.c_str());
 
-	if (auto game = pGame) {
+	if (auto game = pGameFlow) {
 		static int nLastSoundtrackId = -1;
 
 		int soundtrackId = nIngameSoundtrack;

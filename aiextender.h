@@ -41,12 +41,12 @@ void __stdcall InitAIHooked(void* a1, int count) {
 	if (count >= 7) {
 		count = GetOpponentCount();
 		if (bIsStuntMode) count = 0;
-		if (pGame->nGameRules == GR_STUNT) count = 7;
+		if (pGameFlow->nGameRules == GR_STUNT) count = 7;
 		if (nForceAICountNextRace >= 0) {
 			count = nForceAICountNextRace;
 			nForceAICountNextRace = -1;
 		}
-		if (pGame->nGameMode == GM_CAREER && count > 11) {
+		if (pGameFlow->nGameMode == GM_CAREER && count > 11) {
 			count = 11;
 		}
 	}
@@ -157,7 +157,7 @@ void __fastcall SetCustomAIProfiles(Player* pPlayer) {
 	if (!strcmp(nodeName, "AI6_RaySmith")) {
 		bRayAltProfileState = false;
 		int chance = 10;
-		if (pGame->nGameMode == GM_CAREER) {
+		if (pGameFlow->nGameMode == GM_CAREER) {
 			if (prerace->GetPropertyAsInt("Class", 0) == 2 && prerace->GetPropertyAsInt("Cup", 0) == 9) {
 				chance = 100; // 100% chance in race finals
 			}

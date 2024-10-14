@@ -187,8 +187,8 @@ void GenerateUnlockList() {
 	aCustomCarUnlockList.clear();
 
 	static auto config = toml::parse_file("Config/CarUnlocks.toml");
-	for (int i = 0; i < pGame->NumUnlockCar; i++) {
-		auto unlockCar = pGame->UnlockCar[i];
+	for (int i = 0; i < pGameFlow->NumUnlockCar; i++) {
+		auto unlockCar = pGameFlow->UnlockCar[i];
 		auto unlockCarName = GetCarName(unlockCar);
 		auto unlockCarDataID = GetCarDataID(unlockCar);
 

@@ -56,9 +56,9 @@ void WriteLog(const std::string& str) {
 
 void SetArcadeCareerCar() {
 	if (nArcadeCareerCarVariant) {
-		pGame->nInstantActionCar = GetCarMatchup(pGame->nInstantActionCar);
+		pGameFlow->nInstantActionCar = GetCarMatchup(pGameFlow->nInstantActionCar);
 	}
-	pGame->nInstantActionCarSkin = nArcadeCareerCarSkin;
+	pGameFlow->nInstantActionCarSkin = nArcadeCareerCarSkin;
 }
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;
@@ -130,7 +130,7 @@ float __fastcall NoAILookahead(void* a1, uintptr_t a2) {
 
 // disable ai lookahead on fo1 tracks
 void SetAILookahead() {
-	if (auto game = pGame) {
+	if (auto game = pGameFlow) {
 		if (game->nGameState != GAME_STATE_RACE) return;
 		bool isFO1Track = DoesTrackValueExist(game->nLevelId, "UseLowAILookahead");
 
@@ -191,9 +191,9 @@ float __fastcall MenuCameraRotation(void* a1) {
 void SetTrackVisibility() {
 	bool increased = false;
 	bool increasedNegY = false;
-	if (pGame->nGameState == GAME_STATE_RACE) {
-		increased = DoesTrackValueExist(pGame->nLevelId, "IncreasedVisibility");
-		increasedNegY = DoesTrackValueExist(pGame->nLevelId, "IncreasedNegYVisibility");
+	if (pGameFlow->nGameState == GAME_STATE_RACE) {
+		increased = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedVisibility");
+		increasedNegY = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedNegYVisibility");
 	}
 
 	// increase VisibilitySet grid extents for rally trophy tracks

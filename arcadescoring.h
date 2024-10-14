@@ -12,8 +12,8 @@ void SetArcadeRaceMultiplierPointer(float* values) {
 void AddFragDerbyScore(int amount) {
 	//if (!nFragDerbyCrashRewards) return;
 	if (amount <= 0) return;
-	if (pGame->nGameRules != GR_DEFAULT && pGame->nGameRules != GR_DERBY) return;
-	if (pGame->nDerbyType != DERBY_FRAG) return;
+	if (pGameFlow->nGameRules != GR_DEFAULT && pGameFlow->nGameRules != GR_DERBY) return;
+	if (pGameFlow->nDerbyType != DERBY_FRAG) return;
 
 	auto score = GetPlayerScore<PlayerScoreDerby>(1);
 	if (!score) return;
@@ -89,13 +89,13 @@ int nArcadePlatinumCurrentLevelX = 0;
 int nArcadePlatinumCurrentLevelY = 0;
 bool bAchievedPlatinumThisRace = false;
 void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
-	if (!bArcadePlatinumEnabled || pGame->nGameMode != GM_ARCADE_CAREER) {
+	if (!bArcadePlatinumEnabled || pGameFlow->nGameMode != GM_ARCADE_CAREER) {
 		if (pArcadePlatinumImage) pArcadePlatinumImage->bVisible = false;
 		return;
 	}
 
-	auto silverTarget = pGame->nArcadeTargets[1];
-	auto goldTarget = pGame->nArcadeTargets[0];
+	auto silverTarget = pGameFlow->nArcadeTargets[1];
+	auto goldTarget = pGameFlow->nArcadeTargets[0];
 	auto platTarget = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
 	if (platTarget <= 0) return;
 
