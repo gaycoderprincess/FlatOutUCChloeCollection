@@ -17,7 +17,8 @@ void SetAILookahead() {
 	}
 }
 
-float fWaterPlaneSoundY = 0;
+bool bInvisWaterPlane = false;
+float fWaterPlaneY = 0;
 void SetTrackVisibility() {
 	bool increased = false;
 	bool increasedNegY = false;
@@ -34,12 +35,13 @@ void SetTrackVisibility() {
 		camWaterPlaneY = waterPlaneY + 1.0;
 		NyaHookLib::Patch(0x4405FE + 2, &waterPlaneY);
 		NyaHookLib::Patch(0x5076EB + 2, &camWaterPlaneY);
-		fWaterPlaneSoundY = waterPlaneY;
+		fWaterPlaneY = waterPlaneY;
 
-		bool invisWaterPlane = DoesTrackValueExist(pGameFlow->nLevelId, "ForceInvisibleWaterPlane");
-		NyaHookLib::Patch<uint64_t>(0x44056E, invisWaterPlane ? 0x8D8D909090909090 : 0x8D8D000000CA840F); // collision
-		NyaHookLib::Patch<uint16_t>(0x5076E9, invisWaterPlane ? 0x9090 : 0x1974); // camera
-		NyaHookLib::Patch<uint16_t>(0x414DB9, invisWaterPlane ? 0x9090 : 0x7F74); // sound
+		bInvisWaterPlane = DoesTrackValueExist(pGameFlow->nLevelId, "ForceInvisibleWaterPlane");
+		NyaHookLib::Patch<uint64_t>(0x44056E, bInvisWaterPlane ? 0x8D8D909090909090 : 0x8D8D000000CA840F); // collision
+		NyaHookLib::Patch<uint64_t>(0x562B2D, bInvisWaterPlane && waterPlaneY == 0.0 ? 0x3D80909090909090 : 0x3D80000002D3840F); // radgoll collision
+		NyaHookLib::Patch<uint16_t>(0x5076E9, bInvisWaterPlane ? 0x9090 : 0x1974); // camera
+		NyaHookLib::Patch<uint16_t>(0x414DB9, bInvisWaterPlane ? 0x9090 : 0x7F74); // sound
 	}
 
 	// increase VisibilitySet grid extents for rally trophy tracks
@@ -115,7 +117,7 @@ void __attribute__((naked)) __fastcall WaterPlaneSoundYASM() {
 		"cmp byte ptr [esi+0x2DC], 0\n\t"
 		"jmp %0\n\t"
 			:
-			: "m" (WaterPlaneSoundYASM_jmp), "m" (fWaterPlaneSoundY)
+			: "m" (WaterPlaneSoundYASM_jmp), "m" (fWaterPlaneY)
 	);
 }
 

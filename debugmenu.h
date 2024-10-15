@@ -35,6 +35,9 @@ void ProcessDebugMenu() {
 	DrawDebugMenuViewerOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy");
 	DrawDebugMenuViewerOption(std::format("Career Class - {}", prerace->GetPropertyAsInt("Class", 0)));
 	DrawDebugMenuViewerOption(std::format("Career Cup - {}", prerace->GetPropertyAsInt("Cup", 0)));
+	DrawDebugMenuViewerOption(std::format("Buoyancy Factor - {}", fLastBuoyancyResult));
+	DrawDebugMenuViewerOption(std::format("Water Drag Factor - {}", fLastWaterDragResult));
+	DrawDebugMenuViewerOption(std::format("Water Submerged Amount - {}", fLastWaterSubmergedResult));
 
 	ChloeMenuLib::EndMenu();
 }

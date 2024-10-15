@@ -51,9 +51,10 @@ void WriteLog(const std::string& str) {
 #include "verboseerrors.h"
 #include "bombexplosion.h"
 #include "testhud.h"
-#include "debugmenu.h"
 #include "fo2sharedtextures.h"
 #include "trackextender.h"
+#include "buoyancy.h"
+#include "debugmenu.h"
 
 void SetArcadeCareerCar() {
 	if (nArcadeCareerCarVariant) {
@@ -245,6 +246,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyDebugMenuPatches();
 			ApplyFO2SharedTexturesPatches();
 			ApplyTrackExtenderPatches();
+			ApplyBuoyancyPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
 			// carnage total score is set +0x3CC off player profile
