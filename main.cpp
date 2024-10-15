@@ -53,6 +53,7 @@ void WriteLog(const std::string& str) {
 #include "testhud.h"
 #include "debugmenu.h"
 #include "fo2sharedtextures.h"
+#include "trackextender.h"
 
 void SetArcadeCareerCar() {
 	if (nArcadeCareerCarVariant) {
@@ -120,25 +121,6 @@ void SetExplosionEffects() {
 	}
 }
 
-float __fastcall NoAILookahead(void* a1, uintptr_t a2) {
-	auto ai = *(Player**)(a2 + 0x1C);
-	ai->fLookAheadMin = 10.0;
-	ai->fLookAheadMax = 10.0;
-	ai->fLookAheadModifier = 0.1;
-	return 10.0;
-}
-
-// disable ai lookahead on fo1 tracks
-void SetAILookahead() {
-	if (auto game = pGameFlow) {
-		if (game->nGameState != GAME_STATE_RACE) return;
-		bool isFO1Track = DoesTrackValueExist(game->nLevelId, "UseLowAILookahead");
-
-		//NyaHookLib::Patch<uint64_t>(0x406CF3, isFO1Track ? 0x818B90000000DEE9 : 0x818B000000DD840F);
-		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x406FE0, isFO1Track ? (uintptr_t)&NoAILookahead : 0x406E50);
-	}
-}
-
 void CustomSetterThread() {
 	SetSoundtrack();
 	SetPlayerModel();
@@ -186,48 +168,6 @@ float __fastcall MenuCameraRotation(void* a1) {
 	if (IsKeyPressed(VK_PRIOR)) value += 1;
 	value += GetPadKeyState(NYA_PAD_KEY_RSTICK_X) / 32767.0;
 	return value;
-}
-
-void SetTrackVisibility() {
-	bool increased = false;
-	bool increasedNegY = false;
-	if (pGameFlow->nGameState == GAME_STATE_RACE) {
-		increased = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedVisibility");
-		increasedNegY = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedNegYVisibility");
-	}
-
-	// increase VisibilitySet grid extents for rally trophy tracks
-	// rally russia extends to about 4600 for reference
-	static float fNegExtentsExtended = -5000.0;
-	static float fPosExtentsExtended = 5000.0;
-	static float fNegExtents = -4096.0;
-	static float fPosExtents = 4096.0;
-	static float fNegYExtentsExtended = -100.0;
-	static float fNegYExtents = -50.0;
-	NyaHookLib::Patch(0x57AD5F + 2, increased ? &fNegExtentsExtended : &fNegExtents);
-	NyaHookLib::Patch(0x57AD8E + 2, increased ? &fPosExtentsExtended : &fPosExtents);
-	NyaHookLib::Patch(0x57AD6A + 2, increasedNegY ? &fNegYExtentsExtended : &fNegYExtents);
-}
-
-uintptr_t InitVisibilityASM_jmp = 0x55AAB9;
-void __attribute__((naked)) __fastcall InitVisibilityASM() {
-	__asm__ (
-		"pushad\n\t"
-		"call %1\n\t"
-		"popad\n\t"
-		"jmp %0\n\t"
-			:
-			: "m" (InitVisibilityASM_jmp), "i" (SetTrackVisibility)
-	);
-}
-
-void __attribute__((naked)) __fastcall NoTimeTrialGracePeriodASM() {
-	__asm__ (
-		"mov dword ptr [eax+0x58], 1\n\t"
-		"pop ebx\n"
-		"add esp, 0x2C\n"
-		"ret\n\t"
-	);
 }
 
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
@@ -304,6 +244,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyTestHUDPatches();
 			ApplyDebugMenuPatches();
 			ApplyFO2SharedTexturesPatches();
+			ApplyTrackExtenderPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
 			// carnage total score is set +0x3CC off player profile
@@ -354,13 +295,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::Patch(0x6F38DC+0x54, &MenuCameraRotation);
 
-			InitVisibilityASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitVisibilityASM);
-
 			// never read VS_dynamicScale for cars
 			// not sure if this ever does anything otherwise but it makes the FO2 Chili crash for some reason???
 			NyaHookLib::Patch<uint8_t>(0x631C88, 0xEB);
-
-			//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4A35C3, &NoTimeTrialGracePeriodASM);
 
 			srand(time(0));
 		} break;
