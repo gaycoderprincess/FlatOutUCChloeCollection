@@ -222,7 +222,19 @@ void __attribute__((naked)) PlayerModelTypesASM() {
 // -0.382, 0.2, 0.027 in fo1
 float fFO1DriverLocOffset[3] = { (-0.39) - (-0.382), 0.29 - 0.2, (-0.14) - 0.027 };
 
+// rally trophy cooper driverloc:
+// -0.28 0.27 0.07 in fo2
+// -0.265, 0.415, -0.03 in rt
+float fRTDriverLocOffset[3] = { (-0.28) - (-0.265), 0.27 - 0.415, 0.07 - (-0.03) };
+
 void __fastcall SetDriverLocOffset(Player* pPlayer, Car* pCar) {
+	int carFolderId = GetCarDataID(pPlayer->nCarId);
+	if (carFolderId >= 400 && carFolderId < 500) {
+		for (int i = 0; i < 3; i++) {
+			pCar->vDriverLoc[i] += fRTDriverLocOffset[i];
+		}
+	}
+
 	if (pPlayer->nCharacterTypeId == 2 || pPlayer->nCharacterTypeId == 3) {
 		for (int i = 0; i < 3; i++) {
 			pCar->vDriverLoc[i] -= fFO1DriverLocOffset[i];
