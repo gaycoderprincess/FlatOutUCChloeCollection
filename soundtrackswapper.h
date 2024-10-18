@@ -16,12 +16,14 @@ void SetSoundtrack() {
 
 	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aMenuPlaylists[nMenuSoundtrack].filename.c_str());
 
-	if (auto game = pGameFlow) {
+	if (pGameFlow && pGameFlow->nGameState == GAME_STATE_RACE) {
 		static int nLastSoundtrackId = -1;
 
 		int soundtrackId = nIngameSoundtrack;
-		if (game->nLevelId >= TRACK_FO1TOWN2A) soundtrackId = nIngameFO1Soundtrack;
-		if (game->nGameRules == GR_DERBY || game->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
+		if (DoesTrackValueExist(pGameFlow->nLevelId, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
+		if (DoesTrackValueExist(pGameFlow->nLevelId, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
+		if (DoesTrackValueExist(pGameFlow->nLevelId, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
+		if (pGameFlow->nGameRules == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
 		if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
 
 		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId].filename.c_str());
@@ -65,6 +67,8 @@ void ApplySoundtrackPatches() {
 	int defaultMenu = config["main"]["default_menu"].value_or(1) - 1;
 	int defaultIngame = config["main"]["default_race"].value_or(1) - 1;
 	int defaultFO1 = config["main"]["default_fo1_race"].value_or(1) - 1;
+	int defaultTT = config["main"]["default_tt_race"].value_or(1) - 1;
+	int defaultRT = config["main"]["default_rt_race"].value_or(1) - 1;
 	int defaultDerby = config["main"]["default_derby"].value_or(1) - 1;
 	int defaultStuntShow = config["main"]["default_stuntshow"].value_or(1) - 1;
 	for (int i = 0; i < numPlaylists; i++) {
@@ -86,11 +90,15 @@ void ApplySoundtrackPatches() {
 	if (defaultMenu < 0 || defaultMenu >= aMenuPlaylists.size()) defaultMenu = 0;
 	if (defaultIngame < 0 || defaultIngame >= aPlaylists.size()) defaultIngame = 0;
 	if (defaultFO1 < 0 || defaultFO1 >= aPlaylists.size()) defaultFO1 = 0;
+	if (defaultTT < 0 || defaultTT >= aPlaylists.size()) defaultTT = 0;
+	if (defaultRT < 0 || defaultRT >= aPlaylists.size()) defaultRT = 0;
 	if (defaultDerby < 0 || defaultDerby >= aPlaylists.size()) defaultDerby = 0;
 	if (defaultStuntShow < 0 || defaultStuntShow >= aPlaylists.size()) defaultStuntShow = 0;
 	nMenuSoundtrack = defaultMenu;
 	nIngameSoundtrack = defaultIngame;
 	nIngameFO1Soundtrack = defaultFO1;
+	nIngameTTSoundtrack = defaultTT;
+	nIngameRTSoundtrack = defaultRT;
 	nIngameDerbySoundtrack = defaultDerby;
 	nIngameStuntShowSoundtrack = defaultStuntShow;
 
@@ -98,6 +106,8 @@ void ApplySoundtrackPatches() {
 		if (setting.value == &nMenuSoundtrack) setting.maxValue = aMenuPlaylists.size()-1;
 		if (setting.value == &nIngameSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameFO1Soundtrack) setting.maxValue = aPlaylists.size()-1;
+		if (setting.value == &nIngameTTSoundtrack) setting.maxValue = aPlaylists.size()-1;
+		if (setting.value == &nIngameRTSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameDerbySoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameStuntShowSoundtrack) setting.maxValue = aPlaylists.size()-1;
 	}
