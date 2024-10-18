@@ -54,6 +54,7 @@ void WriteLog(const std::string& str) {
 #include "fo2sharedtextures.h"
 #include "trackextender.h"
 #include "buoyancy.h"
+#include "nonetwork.h"
 #include "debugmenu.h"
 
 void SetArcadeCareerCar() {
@@ -200,15 +201,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			NyaHookLib::Patch(0x4DEC01 + 1, aiDamageMeter);
 			NyaHookLib::Patch(0x4DEC2A + 1, aiDamageMeter);
 
-			// highscoremanager read at:
-			// 00492ACD when finishing a lap
-			// 00465305 and 004703A0 when quitting
-			// 00468FE8 when loaded into menu
-			// uploading race results is lang entry 246 (0xF6), called at 4AF733 for event 3015, from event 7025
-			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x465270, 0x46543C); // no highscore updating
-			NyaHookLib::Patch<uint8_t>(0x4675E6, 0xEB); // no uploading race results
-			NyaHookLib::Patch<uint8_t>(0x492B0F, 0xEB); // no new lap record popup
-
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x465F46, 0x467312); // disable video recording
 
 			NyaFO2Hooks::PlaceD3DHooks();
@@ -247,6 +239,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyFO2SharedTexturesPatches();
 			ApplyTrackExtenderPatches();
 			ApplyBuoyancyPatches();
+			ApplyNoNetworkPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
 			// carnage total score is set +0x3CC off player profile
