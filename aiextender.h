@@ -103,7 +103,7 @@ void __attribute__((naked)) __fastcall GetAINameASM() {
 }
 
 void __fastcall GhostForMoreOpponents(Player* pPlayer) {
-	if (GetOpponentCount() > 7) {
+	if (GetOpponentCount() > 7 || DoesTrackValueExist(pGameFlow->nLevelId, "AlwaysUseStartingGhost")) {
 		auto eventData = tEventData(EVENT_PLAYER_RESPAWN_GHOST);
 		eventData.data[3] = 500;
 		pPlayer->TriggerEvent(&eventData);
