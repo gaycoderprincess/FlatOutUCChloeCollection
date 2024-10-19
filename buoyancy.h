@@ -20,9 +20,15 @@ float fLastWaterSubmergedResult = 0;
 
 NyaVec3 vWaterAngPush;
 float GetAverageAmountSubmerged(NyaMat4x4 matrix, NyaVec3 min, NyaVec3 max) {
+	if (!pEnvironment->bWaterPlane && !bInvisWaterPlane) return 0;
+
 	vWaterAngPush = {0,0,0};
 
 	auto step = (max - min) / 2.0;
+	if (step.x <= 0) return 0;
+	if (step.y <= 0) return 0;
+	if (step.z <= 0) return 0;
+
 	NyaVec3 stepRatio;
 	if (step.z > step.x && step.z > step.y) {
 		stepRatio.x = step.x / step.z;
@@ -78,32 +84,31 @@ float GetAverageAmountSubmerged(NyaMat4x4 matrix, NyaVec3 min, NyaVec3 max) {
 }
 
 bool ProcessBuoyancy(float mass, NyaVec3* outVel, NyaVec3* outAngVel, float amountSubmerged) {
-	if ((pEnvironment->bWaterPlane || bInvisWaterPlane) && amountSubmerged > 0) {
-		fLastWaterSubmergedResult = amountSubmerged;
+	if (amountSubmerged <= 0) return false;
 
-		float force = 100.0 / fBuoyancyTarget * 9.81 * mass;
+	fLastWaterSubmergedResult = amountSubmerged;
 
-		float delta = 0.01;
-		fLastBuoyancyResult = amountSubmerged * force * delta;
-		float impulseRatio = fLastBuoyancyResult / (9.81 * mass * delta);
-		outVel->y += fLastBuoyancyResult * (1.0 / mass);
-		NyaVec3 angForce = {0,fLastBuoyancyResult,0};
-		*outAngVel += vWaterAngPush.Cross(angForce) * (1.0 / mass) * fBuoyancyAngMult;
+	float force = 100.0 / fBuoyancyTarget * 9.81 * mass;
 
-		fLastWaterDragResult = 1.0 - (fWaterDrag * impulseRatio);
+	float delta = 0.01;
+	fLastBuoyancyResult = amountSubmerged * force * delta;
+	float impulseRatio = fLastBuoyancyResult / (9.81 * mass * delta);
+	outVel->y += fLastBuoyancyResult * (1.0 / mass);
+	NyaVec3 angForce = {0,fLastBuoyancyResult,0};
+	*outAngVel += vWaterAngPush.Cross(angForce) * (1.0 / mass) * fBuoyancyAngMult;
 
-		// basic NaN check
-		if (fLastWaterDragResult <= 1.0 && !(fLastWaterDragResult > 1.0) && fLastWaterDragResult > 0.0) {
-			*outVel *= fLastWaterDragResult;
-			*outAngVel *= fLastWaterDragResult;
-		}
+	fLastWaterDragResult = 1.0 - (fWaterDrag * impulseRatio);
 
-		if (impulseRatio > 0.5 && outVel->y < -5) {
-			outVel->y = -5;
-		}
-		return true;
+	// basic NaN check
+	if (fLastWaterDragResult <= 1.0 && !(fLastWaterDragResult > 1.0) && fLastWaterDragResult > 0.0) {
+		*outVel *= fLastWaterDragResult;
+		*outAngVel *= fLastWaterDragResult;
 	}
-	return false;
+
+	if (impulseRatio > 0.5 && outVel->y < -5) {
+		outVel->y = -5;
+	}
+	return true;
 }
 
 void __fastcall PropBuoyancy(DynamicObject* pProp) {
