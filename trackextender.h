@@ -19,7 +19,7 @@ void SetAILookahead() {
 
 bool bInvisWaterPlane = false;
 float fWaterPlaneY = 0;
-void SetTrackVisibility() {
+void SetTrackCustomProperties() {
 	bool increased = false;
 	bool increasedNegY = false;
 	if (pGameFlow->nGameState == GAME_STATE_RACE) {
@@ -42,6 +42,18 @@ void SetTrackVisibility() {
 		NyaHookLib::Patch<uint64_t>(0x562B2D, bInvisWaterPlane && waterPlaneY == 0.0 ? 0x3D80909090909090 : 0x3D80000002D3840F); // radgoll collision
 		NyaHookLib::Patch<uint16_t>(0x5076E9, bInvisWaterPlane ? 0x9090 : 0x1974); // camera
 		NyaHookLib::Patch<uint16_t>(0x414DB9, bInvisWaterPlane ? 0x9090 : 0x7F74); // sound
+
+		bool disableReplays = increased;
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AD957, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4ADAA3, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4ADB02, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE0B0, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE0EC, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE158, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE1BE, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE229, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE279, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE33A, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
 	}
 
 	// increase VisibilitySet grid extents for rally trophy tracks
@@ -57,15 +69,15 @@ void SetTrackVisibility() {
 	NyaHookLib::Patch(0x57AD6A + 2, increasedNegY ? &fNegYExtentsExtended : &fNegYExtents);
 }
 
-uintptr_t InitVisibilityASM_jmp = 0x55AAB9;
-void __attribute__((naked)) __fastcall InitVisibilityASM() {
+uintptr_t InitTrackASM_jmp = 0x55AAB9;
+void __attribute__((naked)) __fastcall InitTrackASM() {
 	__asm__ (
 		"pushad\n\t"
 		"call %1\n\t"
 		"popad\n\t"
 		"jmp %0\n\t"
 			:
-			: "m" (InitVisibilityASM_jmp), "i" (SetTrackVisibility)
+			: "m" (InitTrackASM_jmp), "i" (SetTrackCustomProperties)
 	);
 }
 
@@ -122,7 +134,7 @@ void __attribute__((naked)) __fastcall WaterPlaneSoundYASM() {
 }
 
 void ApplyTrackExtenderPatches() {
-	InitVisibilityASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitVisibilityASM);
+	InitTrackASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitTrackASM);
 	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55EF38, &ForceWaterPlaneASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x414DB0, &WaterPlaneSoundYASM);
 }
