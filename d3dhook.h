@@ -1,6 +1,7 @@
 void HookLoop() {
 	ProcessCustomInputWindow();
 	ProcessPlayStats();
+	ProcessPacenotes();
 	CommonMain();
 }
 

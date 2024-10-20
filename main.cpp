@@ -47,6 +47,7 @@ void WriteLog(const std::string& str) {
 #include "customhud.h"
 #include "setupskip.h"
 #include "windowedmode.h"
+#include "pacenotes.h"
 #include "d3dhook.h"
 #include "verboseerrors.h"
 #include "bombexplosion.h"

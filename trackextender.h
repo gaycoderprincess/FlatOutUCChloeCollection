@@ -54,6 +54,8 @@ void SetTrackCustomProperties() {
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE229, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE279, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE33A, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
+
+		LoadPacenotes();
 	}
 
 	// increase VisibilitySet grid extents for rally trophy tracks
