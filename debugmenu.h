@@ -122,6 +122,17 @@ void ProcessDebugMenu() {
 	DrawDebugMenuViewerOption(std::format("Buoyancy Factor - {}", fLastBuoyancyResult));
 	DrawDebugMenuViewerOption(std::format("Water Drag Factor - {}", fLastWaterDragResult));
 	DrawDebugMenuViewerOption(std::format("Water Submerged Amount - {}", fLastWaterSubmergedResult));
+	DrawDebugMenuViewerOption(std::format("Player Score Pointer - {:X}", (uint32_t)GetPlayerScore<PlayerScoreRace>(1)));
+	if (auto ply = GetPlayer(0)) {
+		auto track = pTrackAI->pTrack;
+		auto start = track->aStartpoints[0].fPosition;
+		auto end = track->aSplitpoints[track->nNumSplitpoints-1].fPosition;
+		auto plyPos = ply->pCar->GetMatrix()->p;
+		DrawDebugMenuViewerOption(std::format("Start Point - {} {} {}", start[0], start[1], start[2]));
+		DrawDebugMenuViewerOption(std::format("End Point - {} {} {}", end[0], end[1], end[2]));
+		DrawDebugMenuViewerOption(std::format("Player Point - {} {} {}", plyPos[0], plyPos[1], plyPos[2]));
+		DrawDebugMenuViewerOption(std::format("Player Progress - {}%", GetPlayerProgressInStage()*100));
+	}
 
 	ChloeMenuLib::EndMenu();
 }
