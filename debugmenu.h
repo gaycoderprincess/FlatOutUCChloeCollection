@@ -105,7 +105,7 @@ void ProcessDebugMenu() {
 					SavePacenotes();
 				}
 			}
-			DrawDebugMenuViewerOption(std::format("Next Pacenote - {}", nNextPacenote+1));
+			DrawDebugMenuViewerOption(std::format("Last Played Pacenote - {}", nLastPacenote+1));
 		}
 		else {
 			DrawDebugMenuViewerOption("Not in a race");

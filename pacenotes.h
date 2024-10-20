@@ -6,7 +6,7 @@ struct tPacenoteSpeech {
 	std::string speechFile;
 	std::string speechFileFallback;
 	IDirect3DTexture9* pTexture = nullptr;
-	bool textureLoaded = false;
+	int textureType = -1;
 
 	static NyaAudio::NyaSound PlaySpeech(const std::string& file) {
 		if (file.empty()) return 0;
@@ -36,9 +36,20 @@ struct tPacenoteSpeech {
 	}
 
 	void LoadTexture() {
-		if (textureLoaded) return;
-		pTexture = ::LoadTexture(("data/textures/pacenotes/" + speechFile + ".png").c_str());
-		textureLoaded = true;
+		if (textureType == nPacenoteVisualType) return;
+		if (pTexture) {
+			pTexture->Release();
+			pTexture = nullptr;
+		}
+
+		std::string pacenotePath = "data/textures/pacenotes/";
+		if (nPacenoteVisualType == 2) pacenotePath = "data/textures/pacenotes_teddyator/";
+
+		pTexture = ::LoadTexture((pacenotePath + speechFile + ".png").c_str());
+		if (!pTexture) {
+			pTexture = ::LoadTexture((pacenotePath + speechFileFallback + ".png").c_str());
+		}
+		textureType = nPacenoteVisualType;
 	}
 };
 
@@ -67,20 +78,20 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Tightens", "Tightens"},
 		{"Water Splash (placeholder)", "WaterSplash"},
 		{"Careful", "Careful"},
-		{"Careful - Bridge", "CarefulBridge"},
-		{"Careful - Tunnel", "CarefulTunnel"},
+		{"Careful - Bridge", "CarefulBridge", "Careful"},
+		{"Careful - Tunnel", "CarefulTunnel", "Careful"},
 		{"Careful - Water (placeholder)", "CarefulWater", "Careful"},
 		{"Caution", "Caution"},
-		{"Caution - Ditch", "CautionDitch"},
-		{"Caution - Logs", "Cautionlogs"},
-		{"Caution - Post", "CautionPost"},
-		{"Caution - Rocks", "CautionRocks"},
+		{"Caution - Ditch", "CautionDitch", "Caution"},
+		{"Caution - Logs", "Cautionlogs", "Caution"},
+		{"Caution - Post", "CautionPost", "Caution"},
+		{"Caution - Rocks", "CautionRocks", "Caution"},
 		{"Caution - Water (placeholder)", "CautionWater", "Caution"},
 		{"Don't Cut", "Dontcut"},
-		{"Don't Cut - Ditch", "Dontcutditch"},
-		{"Don't Cut - Logs", "Dontcutlogs"},
-		{"Don't Cut - Post", "Dontcutpost"},
-		{"Don't Cut - Rocks", "Dontcutrocks"},
+		{"Don't Cut - Ditch", "Dontcutditch", "Dontcut"},
+		{"Don't Cut - Logs", "Dontcutlogs", "Dontcut"},
+		{"Don't Cut - Post", "Dontcutpost", "Dontcut"},
+		{"Don't Cut - Rocks", "Dontcutrocks", "Dontcut"},
 		{"Don't Cut - Water (placeholder)", "DontcutWater", "Dontcut"},
 		{"Finish", "Finish"},
 		{"Big Jump (placeholder)", "BigJump", "Jump"},
@@ -98,6 +109,10 @@ struct tPacenoteVisual {
 std::vector<tPacenoteVisual> aVisualPacenotes;
 
 void DrawVisualPacenotes() {
+	if (pLoadingScreen) return;
+	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+	if (pGameFlow->nRaceState != RACE_STATE_RACING) return;
+
 	float sizeX = 0.05 * GetAspectRatioInv();
 	float spacingX = sizeX * 2  * 1.1;
 	float sizeY = 0.05;
@@ -113,30 +128,87 @@ void DrawVisualPacenotes() {
 	}
 }
 
+struct tPacenotePlaying {
+	tPacenoteSpeech* speech = nullptr;
+	NyaAudio::NyaSound audio = 0;
+	double visualTimer = 0;
+	double visualAppearTimer = 0;
+	bool audioPlaying = false;
+	bool audioFinished = false;
+	bool audioSkipped = false;
+
+	static bool CanPlayAudio() {
+		if (pLoadingScreen || pGameFlow->nRaceState != RACE_STATE_RACING) return false;
+		auto ply = GetPlayer(0);
+		if (!ply) return false;
+		if (ply->pCar->nIsRagdolled) return false;
+		return true;
+	}
+
+	void Play(bool useFallback) {
+		audioPlaying = true;
+		audio = speech->Play(useFallback);
+		if (!audio) return;
+		visualTimer = 0;
+	}
+
+	void Process(bool isNextInQueue, bool canLinger) {
+		if (audioPlaying) {
+			visualTimer += gPacenoteTimer.fDeltaTime;
+		}
+		if (audioFinished && !canLinger) {
+			if (visualTimer < 2.5) visualTimer = 2.5;
+		}
+		visualAppearTimer += gPacenoteTimer.fDeltaTime;
+
+		if (speech->pTexture) {
+			double alpha = 1;
+			if (visualTimer > 2.5) alpha = std::lerp(1, 0, (visualTimer - 2.5) * 2);
+			if (alpha <= 0) alpha = 0;
+			if (alpha >= 1) alpha = 1;
+			aVisualPacenotes.push_back({speech->pTexture, alpha, visualAppearTimer});
+		}
+
+		if (CanPlayAudio() && isNextInQueue && !audioPlaying) {
+			audioPlaying = true;
+
+			// todo reimplement usefallback
+			audio = speech->Play(true);
+			if (!audio) {
+				audioFinished = true;
+			}
+		}
+		if (audio && NyaAudio::IsFinishedPlaying(audio)) {
+			NyaAudio::Delete(&audio);
+			audioFinished = true;
+		}
+	}
+};
+std::vector<tPacenotePlaying> aPacenoteQueue;
+
+void ClearPacenoteQueue() {
+	for (auto& data : aPacenoteQueue) {
+		if (data.audio) {
+			NyaAudio::Stop(data.audio);
+			NyaAudio::Delete(&data.audio);
+		}
+	}
+	aPacenoteQueue.clear();
+}
+
 struct tPacenote {
 	struct tData {
 		NyaVec3 pos;
 		int types[nMaxSpeechesPerPacenote];
 	} data;
-	NyaAudio::NyaSound audios[nMaxSpeechesPerPacenote];
-	bool audioMissing[nMaxSpeechesPerPacenote];
-	double visualTimer[nMaxSpeechesPerPacenote];
-	bool countVisualTimer[nMaxSpeechesPerPacenote];
-	bool drawVisuals;
-	double visualsAppearTime = 0;
+	bool played = false;
 
 	void Reset() {
 		data.pos = {0,0,0};
 		for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
 			data.types[i] = -1;
-			audios[i] = 0;
-			audioMissing[i] = false;
-
-			visualTimer[i] = 0;
-			countVisualTimer[i] = false;
 		}
-		drawVisuals = false;
-		visualsAppearTime = false;
+		played = false;
 	}
 	tPacenote() {
 		Reset();
@@ -166,88 +238,17 @@ struct tPacenote {
 		auto ply = GetPlayer(0)->pCar->GetMatrix()->p;
 		return (ply - data.pos).length() < fPacenoteRange;
 	}
-	void Play(int id, bool useFallback) {
-		if (id >= nMaxSpeechesPerPacenote) return;
+	void Play() {
+		if (played) return;
+		played = true;
 
-		auto speech = GetSpeech(id);
-		if (!speech) return;
-		audios[id] = speech->Play(useFallback);
-		if (!audios[id]) audioMissing[id] = true;
-		if (speech->pTexture) {
-			for (int i = 0; i < id; i++) {
-				if (visualTimer[i] < 2.5) {
-					visualTimer[i] = 2.5;
-				}
-			}
-		}
-		visualTimer[id] = 0;
-		countVisualTimer[id] = true;
-		drawVisuals = true;
-	}
-	void DrawVisual(int id) {
-		auto speech = GetSpeech(id);
-		if (!speech) return;
-		if (!speech->pTexture) return;
-		auto timer = visualTimer[id];
-		if (timer > 3) return;
-
-		double alpha = 1;
-		if (timer > 2.5) alpha = std::lerp(1, 0, (timer - 2.5) * 2);
-		aVisualPacenotes.push_back({speech->pTexture, alpha, visualsAppearTime});
-	}
-	void StopAllSounds() {
-		for (auto& audio : audios) {
-			if (!audio) continue;
-			NyaAudio::Delete(&audio);
-		}
-	}
-	bool CanPlayAudio() {
-		if (pLoadingScreen || pGameFlow->nRaceState != RACE_STATE_RACING) return false;
-		auto ply = GetPlayer(0);
-		if (!ply) return false;
-		if (ply->pCar->nIsRagdolled) return false;
-		return true;
-	}
-	void Process() {
-		if (drawVisuals) {
-			visualsAppearTime += gPacenoteTimer.fDeltaTime;
-		}
-
-		auto canPlayAudio = CanPlayAudio();
 		for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
-			if (pLoadingScreen || pGameFlow->nRaceState != RACE_STATE_RACING) {
-				visualTimer[i] = 0;
-				countVisualTimer[i] = false;
-				drawVisuals = false;
-				visualsAppearTime = 0;
-			}
-			if (countVisualTimer[i]) {
-				visualTimer[i] += gPacenoteTimer.fDeltaTime;
-			}
-			if (!canPlayAudio && drawVisuals) {
-				countVisualTimer[i] = true;
-			}
+			auto speech = GetSpeech(i);
+			if (!speech) continue;
 
-			if (drawVisuals) {
-				DrawVisual(i);
-			}
-
-			std::string oldSpeechFile;
-			if (auto speech = GetSpeech(i)) {
-				oldSpeechFile = speech->speechFile;
-			}
-
-			if ((audioMissing[i] || (audios[i] && NyaAudio::IsFinishedPlaying(audios[i]))) && canPlayAudio) {
-				NyaAudio::Delete(&audios[i]);
-				audioMissing[i] = false;
-				bool useFallback = true;
-				if (auto speech = GetSpeech(i+1)) {
-					if (oldSpeechFile == speech->speechFileFallback || oldSpeechFile == "Jump" && speech->speechFileFallback == "JumpMaybe") {
-						useFallback = false;
-					}
-				}
-				Play(i+1, useFallback);
-			}
+			tPacenotePlaying note;
+			note.speech = speech;
+			aPacenoteQueue.push_back(note);
 		}
 	}
 };
@@ -293,10 +294,9 @@ void SavePacenotes() {
 	}
 }
 
-int nNextPacenote = 0;
+int nLastPacenote = 0;
 void LoadPacenotes() {
 	aPacenotes.clear();
-	nNextPacenote = 0;
 
 	std::ifstream fin(GetPacenoteFilename(), std::ios::in | std::ios::binary );
 	if (!fin.is_open()) return;
@@ -321,22 +321,34 @@ void ProcessPacenotes() {
 	}
 
 	gPacenoteTimer.Process();
-	for (auto& note : aPacenoteSpeeches) {
-		note.LoadTexture();
+	bool isNextInQueue = true;
+	for (auto& note : aPacenoteQueue) {
+		note.Process(isNextInQueue, aPacenoteQueue.size() == 1);
+		if (!note.audioFinished) isNextInQueue = false;
 	}
-	for (auto& note : aPacenotes) {
-		note.Process();
+	if (!aPacenoteQueue.empty()) {
+		auto& note = aPacenoteQueue[0];
+		if (note.audioFinished && note.visualTimer >= 3) {
+			aPacenoteQueue.erase(aPacenoteQueue.begin());
+		}
 	}
 	EjectPacenote.Process();
 
-	DrawVisualPacenotes();
+	if (nPacenoteVisualType) DrawVisualPacenotes();
 	aVisualPacenotes.clear();
 
 	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
 	if (aPacenotes.empty()) return;
+	for (auto& note : aPacenoteSpeeches) {
+		note.LoadTexture();
+	}
+
 	if (pLoadingScreen || !GetPlayer(0)) return;
-	if (pGameFlow->nRaceState == RACE_STATE_COUNTDOWN) {
-		nNextPacenote = 0;
+	if (pGameFlow->nRaceState != RACE_STATE_RACING) {
+		ClearPacenoteQueue();
+		for (auto& note : aPacenotes) {
+			note.played = false;
+		}
 	}
 	else {
 		static bool bLastEjected = false;
@@ -346,32 +358,10 @@ void ProcessPacenotes() {
 		}
 		bLastEjected = bEjected;
 
-		// forward
-		if (nNextPacenote <= aPacenotes.size()) {
-			auto note = &aPacenotes[nNextPacenote];
-			if (note->IsInRange()) {
-				nNextPacenote++;
-				note->Play(0, true);
-			}
-		}
-
-		// reverse
-		for (int i = 0; i < nNextPacenote - 1; i++) {
-			auto note = &aPacenotes[i];
-
-			// make all old sprites disappear
-			for (auto& timer : note->visualTimer) {
-				if (timer < 2.5) timer = 2.5;
-			}
-			for (auto& count : note->countVisualTimer) {
-				count = true;
-			}
-			note->StopAllSounds();
-
-			if (note->IsInRange()) {
-				nNextPacenote = i + 1;
-				note->Play(0, true);
-				break;
+		for (auto& note : aPacenotes) {
+			if (!note.played && note.IsInRange()) {
+				note.Play();
+				nLastPacenote = &note - &aPacenotes[0];
 			}
 		}
 	}

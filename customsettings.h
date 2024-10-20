@@ -74,6 +74,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Audio", "IngameSfxVolume", (void*)0x849550, 0, 0, 100 },
 		{ "Audio", "PacenoteVolume", &nPacenoteVolume, 0, 0, 100 },
 		{ "Audio", "PacenoteType", &nPacenoteType, 0, 0, 1 },
+		{ "Audio", "PacenoteVisualType", &nPacenoteVisualType, 0, 0, 2 },
 		{ "Audio", "DopplerEffects", (void*)0x849554, 1, 0, 0 },
 		{ "Audio", "ChannelMode", (void*)0x84955C, 0, 0, 2 },
 		{ "Network", "Port", (void*)0x849560, 0, 0, 65536 },

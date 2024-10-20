@@ -32,6 +32,7 @@ uint32_t nAirControlFlipType = 0;
 uint32_t nLoadingSkip = 0;
 uint32_t nPacenoteVolume = 50;
 uint32_t nPacenoteType = 0;
+uint32_t nPacenoteVisualType = 1;
 int nFragDerbyRewardSlam = 100;
 int nFragDerbyRewardSuperFlip = 250;
 int nFragDerbyRewardPowerHit = 250;
