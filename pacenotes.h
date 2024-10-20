@@ -2,9 +2,11 @@ const float fPacenoteRange = 20.0;
 const int nMaxSpeechesPerPacenote = 8;
 
 struct tPacenoteSpeech {
-	const std::string speechName;
-	const std::string speechFile;
-	const std::string speechFileFallback;
+	std::string speechName;
+	std::string speechFile;
+	std::string speechFileFallback;
+	IDirect3DTexture9* pTexture = nullptr;
+	bool textureLoaded = false;
 
 	static NyaAudio::NyaSound PlaySpeech(const std::string& file) {
 		if (file.empty()) return 0;
@@ -32,6 +34,12 @@ struct tPacenoteSpeech {
 		if (!sound && useFallback) return PlaySpeech(speechFileFallback);
 		return sound;
 	}
+
+	void LoadTexture() {
+		if (textureLoaded) return;
+		pTexture = ::LoadTexture(("data/textures/pacenotes/" + speechFile + ".png").c_str());
+		textureLoaded = true;
+	}
 };
 
 tPacenoteSpeech aPacenoteSpeeches[] = {
@@ -42,11 +50,11 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Left 5", "Left5"},
 		{"Left Hairpin", "LeftHairPin"},
 		{"Left Turn", "LeftTurn"},
-		{"Right 1", "Rightone"},
-		{"Right 2", "Righttwo"},
-		{"Right 3", "Rightthree"},
-		{"Right 4", "Rightfour"},
-		{"Right 5", "Rightfive"},
+		{"Right 1", "Right1"},
+		{"Right 2", "Right2"},
+		{"Right 3", "Right3"},
+		{"Right 4", "Right4"},
+		{"Right 5", "Right5"},
 		{"Right Hairpin", "RightHairPin"},
 		{"Right Turn", "RightTurn"},
 		{"Into (placeholder)", "Into"},
@@ -75,7 +83,35 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Don't Cut - Rocks", "Dontcutrocks"},
 		{"Don't Cut - Water (placeholder)", "DontcutWater", "Dontcut"},
 		{"Finish", "Finish"},
+		{"Big Jump (placeholder)", "BigJump", "Jump"},
+		{"Jumps (placeholder)", "Jumps", "Jump"},
+		{"Double Caution (placeholder)", "DoubleCaution", "Caution"},
 };
+
+CNyaTimer gPacenoteTimer;
+
+struct tPacenoteVisual {
+	IDirect3DTexture9* pTexture;
+	double alpha;
+	double appearTime;
+};
+std::vector<tPacenoteVisual> aVisualPacenotes;
+
+void DrawVisualPacenotes() {
+	float sizeX = 0.05 * GetAspectRatioInv();
+	float spacingX = sizeX * 2  * 1.1;
+	float sizeY = 0.05;
+	float posX = 0.5;
+	float posY = 0.2;
+	for (auto& note : aVisualPacenotes) {
+		double realAlpha = note.alpha;
+		if (note.appearTime < 0.25) realAlpha *= (note.appearTime * 4);
+		DrawRectangle(posX - sizeX, posX + sizeX, posY - sizeY, posY + sizeY, {255,255,255,(uint8_t)(realAlpha * 255)}, 0, note.pTexture);
+		double moveAmount = note.alpha * 2;
+		if (moveAmount > 1) moveAmount = 1;
+		posX += moveAmount * spacingX;
+	}
+}
 
 struct tPacenote {
 	struct tData {
@@ -84,6 +120,10 @@ struct tPacenote {
 	} data;
 	NyaAudio::NyaSound audios[nMaxSpeechesPerPacenote];
 	bool audioMissing[nMaxSpeechesPerPacenote];
+	double visualTimer[nMaxSpeechesPerPacenote];
+	bool countVisualTimer[nMaxSpeechesPerPacenote];
+	bool drawVisuals;
+	double visualsAppearTime = 0;
 
 	void Reset() {
 		data.pos = {0,0,0};
@@ -91,7 +131,12 @@ struct tPacenote {
 			data.types[i] = -1;
 			audios[i] = 0;
 			audioMissing[i] = false;
+
+			visualTimer[i] = 0;
+			countVisualTimer[i] = false;
 		}
+		drawVisuals = false;
+		visualsAppearTime = false;
 	}
 	tPacenote() {
 		Reset();
@@ -123,21 +168,76 @@ struct tPacenote {
 	}
 	void Play(int id, bool useFallback) {
 		if (id >= nMaxSpeechesPerPacenote) return;
-		if (nPacenoteVolume == 0) return;
 
 		auto speech = GetSpeech(id);
 		if (!speech) return;
 		audios[id] = speech->Play(useFallback);
 		if (!audios[id]) audioMissing[id] = true;
+		if (speech->pTexture) {
+			for (int i = 0; i < id; i++) {
+				if (visualTimer[i] < 2.5) {
+					visualTimer[i] = 2.5;
+				}
+			}
+		}
+		visualTimer[id] = 0;
+		countVisualTimer[id] = true;
+		drawVisuals = true;
+	}
+	void DrawVisual(int id) {
+		auto speech = GetSpeech(id);
+		if (!speech) return;
+		if (!speech->pTexture) return;
+		auto timer = visualTimer[id];
+		if (timer > 3) return;
+
+		double alpha = 1;
+		if (timer > 2.5) alpha = std::lerp(1, 0, (timer - 2.5) * 2);
+		aVisualPacenotes.push_back({speech->pTexture, alpha, visualsAppearTime});
+	}
+	void StopAllSounds() {
+		for (auto& audio : audios) {
+			if (!audio) continue;
+			NyaAudio::Delete(&audio);
+		}
+	}
+	bool CanPlayAudio() {
+		if (pLoadingScreen || pGameFlow->nRaceState != RACE_STATE_RACING) return false;
+		auto ply = GetPlayer(0);
+		if (!ply) return false;
+		if (ply->pCar->nIsRagdolled) return false;
+		return true;
 	}
 	void Process() {
+		if (drawVisuals) {
+			visualsAppearTime += gPacenoteTimer.fDeltaTime;
+		}
+
+		auto canPlayAudio = CanPlayAudio();
 		for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
+			if (pLoadingScreen || pGameFlow->nRaceState != RACE_STATE_RACING) {
+				visualTimer[i] = 0;
+				countVisualTimer[i] = false;
+				drawVisuals = false;
+				visualsAppearTime = 0;
+			}
+			if (countVisualTimer[i]) {
+				visualTimer[i] += gPacenoteTimer.fDeltaTime;
+			}
+			if (!canPlayAudio && drawVisuals) {
+				countVisualTimer[i] = true;
+			}
+
+			if (drawVisuals) {
+				DrawVisual(i);
+			}
+
 			std::string oldSpeechFile;
 			if (auto speech = GetSpeech(i)) {
 				oldSpeechFile = speech->speechFile;
 			}
 
-			if (audioMissing[i] || (audios[i] && NyaAudio::IsFinishedPlaying(audios[i]))) {
+			if ((audioMissing[i] || (audios[i] && NyaAudio::IsFinishedPlaying(audios[i]))) && canPlayAudio) {
 				NyaAudio::Delete(&audios[i]);
 				audioMissing[i] = false;
 				bool useFallback = true;
@@ -220,38 +320,59 @@ void ProcessPacenotes() {
 		bInited = true;
 	}
 
+	gPacenoteTimer.Process();
+	for (auto& note : aPacenoteSpeeches) {
+		note.LoadTexture();
+	}
 	for (auto& note : aPacenotes) {
 		note.Process();
 	}
 	EjectPacenote.Process();
 
+	DrawVisualPacenotes();
+	aVisualPacenotes.clear();
+
 	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
 	if (aPacenotes.empty()) return;
 	if (pLoadingScreen || !GetPlayer(0)) return;
-
-	static bool bLastEjected = false;
-	bool bEjected = GetPlayer(0)->pCar->nIsRagdolled;
-	if (!bLastEjected && bEjected) {
-		EjectPacenote.Play();
+	if (pGameFlow->nRaceState == RACE_STATE_COUNTDOWN) {
+		nNextPacenote = 0;
 	}
-	bLastEjected = bEjected;
-
-	// forward
-	if (nNextPacenote <= aPacenotes.size()) {
-		auto note = &aPacenotes[nNextPacenote];
-		if (note->IsInRange()) {
-			nNextPacenote++;
-			note->Play(0, true);
+	else {
+		static bool bLastEjected = false;
+		bool bEjected = GetPlayer(0)->pCar->nIsRagdolled;
+		if (!bLastEjected && bEjected) {
+			EjectPacenote.Play();
 		}
-	}
+		bLastEjected = bEjected;
 
-	// reverse
-	for (int i = 0; i < nNextPacenote - 1; i++) {
-		auto note = &aPacenotes[i];
-		if (note->IsInRange()) {
-			nNextPacenote = i + 1;
-			note->Play(0, true);
-			break;
+		// forward
+		if (nNextPacenote <= aPacenotes.size()) {
+			auto note = &aPacenotes[nNextPacenote];
+			if (note->IsInRange()) {
+				nNextPacenote++;
+				note->Play(0, true);
+			}
+		}
+
+		// reverse
+		for (int i = 0; i < nNextPacenote - 1; i++) {
+			auto note = &aPacenotes[i];
+
+			// make all old sprites disappear
+			for (auto& timer : note->visualTimer) {
+				if (timer < 2.5) timer = 2.5;
+			}
+			for (auto& count : note->countVisualTimer) {
+				count = true;
+			}
+			note->StopAllSounds();
+
+			if (note->IsInRange()) {
+				nNextPacenote = i + 1;
+				note->Play(0, true);
+				break;
+			}
 		}
 	}
 }
