@@ -136,7 +136,7 @@ void __attribute__((naked)) __fastcall PropBuoyancyASM() {
 
 void __fastcall CarBuoyancy(Car* pCar) {
 	// no car water physics for stone skipping or you'll auto-reset
-	if (pGameFlow->nStuntType == STUNT_STONESKIPPING) return;
+	if (pGameFlow->nStuntType == STUNT_STONESKIPPING && pCar->nIsRagdolled) return;
 
 	if (ProcessBuoyancy(pCar->fMass, pCar->GetVelocity(), pCar->GetAngVelocity(), GetAverageAmountSubmerged(*pCar->GetMatrix(), pCar->vCollisionFullMin, pCar->vCollisionFullMax))) {
 		pCar->pPlayer->nTimeInAir = 0; // remove nitro gain for airtime when in water
