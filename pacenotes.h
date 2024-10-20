@@ -128,6 +128,8 @@ void DrawVisualPacenotes() {
 	}
 }
 
+std::string sLastPlayedPacenoteSpeech;
+
 struct tPacenotePlaying {
 	tPacenoteSpeech* speech = nullptr;
 	NyaAudio::NyaSound audio = 0;
@@ -135,7 +137,6 @@ struct tPacenotePlaying {
 	double visualAppearTimer = 0;
 	bool audioPlaying = false;
 	bool audioFinished = false;
-	bool audioSkipped = false;
 
 	static bool CanPlayAudio() {
 		if (pLoadingScreen || pGameFlow->nRaceState != RACE_STATE_RACING) return false;
@@ -172,8 +173,12 @@ struct tPacenotePlaying {
 		if (CanPlayAudio() && isNextInQueue && !audioPlaying) {
 			audioPlaying = true;
 
-			// todo reimplement usefallback
-			audio = speech->Play(true);
+			// hack for repeats of fallback speeches
+			bool useFallback = true;
+			if (sLastPlayedPacenoteSpeech == speech->speechFileFallback || (sLastPlayedPacenoteSpeech == "Jump" && speech->speechFileFallback == "JumpMaybe")) useFallback = false;
+			sLastPlayedPacenoteSpeech = speech->speechFile;
+
+			audio = speech->Play(useFallback);
 			if (!audio) {
 				audioFinished = true;
 			}
@@ -346,6 +351,7 @@ void ProcessPacenotes() {
 	if (pLoadingScreen || !GetPlayer(0)) return;
 	if (pGameFlow->nRaceState != RACE_STATE_RACING) {
 		ClearPacenoteQueue();
+		sLastPlayedPacenoteSpeech = "";
 		for (auto& note : aPacenotes) {
 			note.played = false;
 		}
