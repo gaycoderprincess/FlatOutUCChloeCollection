@@ -404,6 +404,8 @@ void ProcessPacenotes() {
 		float markerYSize = 0.008;
 		float markerOutlineXSize = markerXSize * 1.2;
 		float markerOutlineYSize = markerYSize * 1.2;
+		float markerPlayerOutlineXSize = markerXSize * 1.5;
+		float markerPlayerOutlineYSize = markerYSize * 1.5;
 		float lineXSize = 0.025 * GetAspectRatioInv();
 		float lineYSize = 0.0025;
 		float top = y - ySize;
@@ -437,6 +439,7 @@ void ProcessPacenotes() {
 		auto tmp = *(NyaDrawing::CNyaRGBA32*)&GetPlayer(0)->nArrowColor;
 		auto color = NyaDrawing::CNyaRGBA32(tmp.b, tmp.g, tmp.r, tmp.a);
 		float playerY = std::lerp(bottom, top, GetPlayerProgressInStage());
+		DrawRectangle(x - markerPlayerOutlineXSize, x + markerPlayerOutlineXSize, playerY - markerPlayerOutlineYSize, playerY + markerPlayerOutlineYSize, {255,255,255,255}, 1);
 		DrawRectangle(x - markerOutlineXSize, x + markerOutlineXSize, playerY - markerOutlineYSize, playerY + markerOutlineYSize, {0,0,0,255}, 1);
 		DrawRectangle(x - markerXSize, x + markerXSize, playerY - markerYSize, playerY + markerYSize, color, 1);
 	}
