@@ -36,6 +36,7 @@ void WriteLog(const std::string& str) {
 #include "playermodels.h"
 #include "skippablecopyright.h"
 #include "aiextender.h"
+#include "pacenotes.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"
@@ -47,7 +48,6 @@ void WriteLog(const std::string& str) {
 #include "customhud.h"
 #include "setupskip.h"
 #include "windowedmode.h"
-#include "pacenotes.h"
 #include "d3dhook.h"
 #include "verboseerrors.h"
 #include "bombexplosion.h"
@@ -243,16 +243,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyNoNetworkPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
-			// carnage total score is set +0x3CC off player profile
-			// cleared at 487934, 48831B, also with a memset somewhere
-			// added together with the normal car count:
-			// 0048836E
-			// 004883A3
-			// 004883DB
-			// 00488416
-			// 00488451
-			// events are unlocked at 0046504A
 			InitCustomSave();
+			LoadPacenoteConfigs();
 
 			// crash exiting an fo1 level at 60d294
 			// d3ddevice+0x7F8 seems to be the end of a fixed size array

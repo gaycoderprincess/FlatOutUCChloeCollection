@@ -1,6 +1,18 @@
 const float fPacenoteRange = 20.0;
 const int nMaxSpeechesPerPacenote = 8;
 
+struct tPacenoteType {
+	std::wstring name;
+	std::string folder;
+};
+std::vector<tPacenoteType> aPacenoteSpeechTypes;
+std::vector<tPacenoteType> aPacenoteVisualTypes;
+
+bool AreVisualPacenotesEnabled() {
+	if (nPacenoteVisualType < aPacenoteVisualTypes.size()) return !aPacenoteVisualTypes[nPacenoteVisualType].folder.empty();
+	return false;
+}
+
 struct tPacenoteSpeech {
 	std::string speechName;
 	std::string speechFile;
@@ -11,16 +23,8 @@ struct tPacenoteSpeech {
 	static NyaAudio::NyaSound PlaySpeech(const std::string& file) {
 		if (file.empty()) return 0;
 
-		std::string folder;
-		switch (nPacenoteType) {
-			// RT finnish
-			case 1:
-				folder = "rt_fin";
-			// RT english
-			case 0:
-			default:
-				folder = "rt_eng";
-		}
+		std::string folder = "rt_eng";
+		if (nPacenoteType < aPacenoteSpeechTypes.size()) folder = aPacenoteSpeechTypes[nPacenoteType].folder;
 
 		auto sound = NyaAudio::LoadFile(("data/sound/rally/" + folder + "/" + file + ".wav").c_str());
 		if (!sound) return 0;
@@ -36,15 +40,18 @@ struct tPacenoteSpeech {
 	}
 
 	void LoadTexture() {
+		if (!AreVisualPacenotesEnabled()) {
+			textureType = nPacenoteVisualType;
+			return;
+		}
+
 		if (textureType == nPacenoteVisualType) return;
 		if (pTexture) {
 			pTexture->Release();
 			pTexture = nullptr;
 		}
 
-		std::string pacenotePath = "data/textures/pacenotes/";
-		if (nPacenoteVisualType == 2) pacenotePath = "data/textures/pacenotes_teddyator/";
-
+		std::string pacenotePath = "data/textures/" + aPacenoteVisualTypes[nPacenoteVisualType].folder + "/";
 		pTexture = ::LoadTexture((pacenotePath + speechFile + ".png").c_str());
 		if (!pTexture) {
 			pTexture = ::LoadTexture((pacenotePath + speechFileFallback + ".png").c_str());
@@ -357,7 +364,7 @@ void ProcessPacenotes() {
 	}
 	EjectPacenote.Process();
 
-	if (nPacenoteVisualType) DrawVisualPacenotes();
+	if (AreVisualPacenotesEnabled()) DrawVisualPacenotes();
 	aVisualPacenotes.clear();
 
 	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
@@ -435,3 +442,35 @@ void ProcessPacenotes() {
 	}
 }
 
+void LoadPacenoteConfigs() {
+	static auto config = toml::parse_file("Config/Pacenotes.toml");
+	int numPacenoteSpeech = config["main"]["pacenote_speech_count"].value_or(1);
+	int numPacenoteVisual = config["main"]["pacenote_visual_count"].value_or(1);
+	int defaultSpeech = config["main"]["default_speech"].value_or(1) - 1;
+	int defaultVisual = config["main"]["default_visual"].value_or(1) - 1;
+	for (int i = 0; i < numPacenoteSpeech; i++) {
+		tPacenoteType type;
+		type.name = config[std::format("pacenotespeech{}", i+1)]["name"].value_or(L"");
+		type.folder = config[std::format("pacenotespeech{}", i+1)]["folder"].value_or("");
+		if (type.name.empty()) continue;
+		if (type.folder.empty()) continue;
+		aPacenoteSpeechTypes.push_back(type);
+	}
+	for (int i = 0; i < numPacenoteVisual; i++) {
+		tPacenoteType type;
+		type.name = config[std::format("pacenotevisual{}", i+1)]["name"].value_or(L"");
+		type.folder = config[std::format("pacenotevisual{}", i+1)]["folder"].value_or("");
+		if (type.name.empty()) continue;
+		//if (type.folder.empty()) continue;
+		aPacenoteVisualTypes.push_back(type);
+	}
+	if (defaultSpeech < 0 || defaultSpeech >= aPacenoteSpeechTypes.size()) defaultSpeech = 0;
+	if (defaultVisual < 0 || defaultVisual >= aPacenoteVisualTypes.size()) defaultVisual = 0;
+	nPacenoteType = defaultSpeech;
+	nPacenoteVisualType = defaultVisual;
+
+	for (auto& setting : aNewGameSettings) {
+		if (setting.value == &nPacenoteType) setting.maxValue = aPacenoteSpeechTypes.size()-1;
+		if (setting.value == &nPacenoteVisualType) setting.maxValue = aPacenoteVisualTypes.size()-1;
+	}
+}

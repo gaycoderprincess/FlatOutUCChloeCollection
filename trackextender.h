@@ -56,7 +56,15 @@ void SetTrackCustomProperties() {
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AE33A, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
 
 		LoadPacenotes();
-		NyaHookLib::Patch<uint32_t>(0x4F0F40, !aPacenotes.empty() ? 0x830018C2 : 0x83EC8B55); // disable map for rally stages
+
+		bool noMap = !aPacenotes.empty() && !bIsInMultiplayer;
+		
+		// just disabling the map doesn't work - that sets some render flags for shadows to work correctly
+		// so disabling the markers instead, rally stages don't have minimap textures anyway
+		// disable player markers for rally stages
+		NyaHookLib::Patch<uint64_t>(0x4F1575, noMap ? 0x03EB9000000575E9 : 0x03EB000005748E0F);
+		// disable local player marker
+		NyaHookLib::Patch<uint64_t>(0x4F210A, noMap ? 0x909090000000BCE9 : 0x00014024848B168B);
 	}
 
 	// increase VisibilitySet grid extents for rally trophy tracks

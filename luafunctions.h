@@ -616,6 +616,30 @@ int ChloeOST_GetNumMenuSoundtracks(void* a1) {
 	return 1;
 }
 
+int ChloePacenotes_GetSpeechName(void* a1) {
+	auto name = aPacenoteSpeechTypes[(int)luaL_checknumber(a1, 1)].name;
+	if (name.empty()) return 0;
+	lua_pushlstring(a1, name.c_str(), (name.length() + 1) * 2);
+	return 1;
+}
+
+int ChloePacenotes_GetVisualName(void* a1) {
+	auto name = aPacenoteVisualTypes[(int)luaL_checknumber(a1, 1)].name;
+	if (name.empty()) return 0;
+	lua_pushlstring(a1, name.c_str(), (name.length() + 1) * 2);
+	return 1;
+}
+
+int ChloePacenotes_GetNumSpeechTypes(void* a1) {
+	lua_pushnumber(a1, aPacenoteSpeechTypes.size());
+	return 1;
+}
+
+int ChloePacenotes_GetNumVisualTypes(void* a1) {
+	lua_pushnumber(a1, aPacenoteVisualTypes.size());
+	return 1;
+}
+
 int ChloeCollection_CheckCheatCode(void* a1) {
 	auto str = lua_tolstring(a1, 1, nullptr);
 	if (!wcscmp(str, L"pressplay")) {
@@ -984,6 +1008,10 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetMenuSoundtrackName, "ChloeOST_GetMenuSoundtrackName");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumSoundtracks, "ChloeOST_GetNumSoundtracks");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, "ChloeOST_GetNumMenuSoundtracks");
+	RegisterLUAFunction(a1, (void*)&ChloePacenotes_GetSpeechName, "ChloePacenotes_GetSpeechName");
+	RegisterLUAFunction(a1, (void*)&ChloePacenotes_GetVisualName, "ChloePacenotes_GetVisualName");
+	RegisterLUAFunction(a1, (void*)&ChloePacenotes_GetNumSpeechTypes, "ChloePacenotes_GetNumSpeechTypes");
+	RegisterLUAFunction(a1, (void*)&ChloePacenotes_GetNumVisualTypes, "ChloePacenotes_GetNumVisualTypes");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarDataID, "ChloeCollection_GetCarDataID");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarDBID, "ChloeCollection_GetCarDBID");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarByName, "ChloeCollection_GetCarByName");
@@ -1033,7 +1061,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_SINGLEPLAYER, "PLAYTIME_INGAME_SINGLEPLAYER");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.47 - Rally Pacenotes Edition";
+	static auto sVersionString = "Chloe's Collection v1.47 - FlatOut Rally Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
