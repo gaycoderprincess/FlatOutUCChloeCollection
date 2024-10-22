@@ -939,6 +939,11 @@ int ChloeCollection_SetCareerTimeTrialCar(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_SetCareerTimeTrialUpgrades(void* a1) {
+	bCareerTimeTrialUpgrades = luaL_checknumber(a1, 1);
+	return 0;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1048,6 +1053,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarMatchupInverse, "ChloeCollection_GetCarMatchupInverse");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrial, "ChloeCollection_SetCareerTimeTrial");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialCar, "ChloeCollection_SetCareerTimeTrialCar");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialUpgrades, "ChloeCollection_SetCareerTimeTrialUpgrades");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
