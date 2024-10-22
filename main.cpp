@@ -37,6 +37,7 @@ void WriteLog(const std::string& str) {
 #include "skippablecopyright.h"
 #include "aiextender.h"
 #include "pacenotes.h"
+#include "careertimetrial.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"
