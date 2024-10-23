@@ -343,6 +343,57 @@ float GetPlayerProgressInStage() {
 	return GetCoordProgressInStage(GetPlayer(0)->pCar->GetMatrix()->p);
 }
 
+double Get1080pToAspectX(double x) {
+	auto f = x / 1920.0;
+	f *= 16.0 / 9.0;
+	f /= GetAspectRatio();
+	return f;
+}
+
+double Get1080pToAspectY(double y) {
+	return y / 1080.0;
+}
+
+void DrawRectangle_1080pScaled(float left, float top, float xSize, float ySize, NyaDrawing::CNyaRGBA32 rgb) {
+	auto l = Get1080pToAspectX(left);
+	auto r = Get1080pToAspectX(left + xSize);
+	auto t = Get1080pToAspectY(top);
+	auto b = Get1080pToAspectY(top + ySize);
+	DrawRectangle(l,r,t,b,rgb);
+}
+
+void DrawPlayerOnRallyMap(Player* ply) {
+	if (!ply) return;
+	auto pos = ply->pCar->GetMatrix()->p;
+	auto replayPos = NyaVec3(500,-25,500);
+	if (ply->nGhosting && (pos - replayPos).length() < 1) return; // ignore empty replay ghosts
+
+	// 1 pixel off so it has less chance to look wrong
+	int top = 160;
+	int bottom = 811;
+
+	//float markerYSize = 0.008;
+	float markerYSize = 0.0065;
+	float markerXSize = markerYSize * GetAspectRatioInv();
+	float markerOutlineXSize = markerXSize * 1.2;
+	float markerOutlineYSize = markerYSize * 1.2;
+	float markerPlayerOutlineXSize = markerXSize * 1.5;
+	float markerPlayerOutlineYSize = markerYSize * 1.5;
+
+	float x = Get1080pToAspectX(111.5);
+
+	//NyaDrawing::CNyaRGBA32 localPlayerHighlightColor = {241,99,33,255};
+	//NyaDrawing::CNyaRGBA32 localPlayerHighlightColor = {255,255,0,255};
+	NyaDrawing::CNyaRGBA32 localPlayerHighlightColor = {241,193,45,255};
+
+	auto y = Get1080pToAspectY(std::lerp(bottom, top, GetCoordProgressInStage(pos)));
+	auto tmp = *(NyaDrawing::CNyaRGBA32*)&ply->nArrowColor;
+	auto color = NyaDrawing::CNyaRGBA32(tmp.b, tmp.g, tmp.r, tmp.a);
+	if (ply->nPlayerId == 1) DrawRectangle(x - markerPlayerOutlineXSize, x + markerPlayerOutlineXSize, y - markerPlayerOutlineYSize, y + markerPlayerOutlineYSize, localPlayerHighlightColor, 1);
+	DrawRectangle(x - markerOutlineXSize, x + markerOutlineXSize, y - markerOutlineYSize, y + markerOutlineYSize, {0,0,0,255}, 1);
+	DrawRectangle(x - markerXSize, x + markerXSize, y - markerYSize, y + markerYSize, color, 1);
+}
+
 void ProcessPacenotes() {
 	static bool bInited = false;
 	if (!bInited) {
@@ -396,52 +447,46 @@ void ProcessPacenotes() {
 			}
 		}
 
-		float x = 0.1 * GetAspectRatioInv();
-		float y = 0.45;
-		float xSize = 0.0025 * GetAspectRatioInv();
-		float ySize = 0.3;
-		float markerXSize = 0.008 * GetAspectRatioInv();
-		float markerYSize = 0.008;
-		float markerOutlineXSize = markerXSize * 1.2;
-		float markerOutlineYSize = markerYSize * 1.2;
-		float markerPlayerOutlineXSize = markerXSize * 1.5;
-		float markerPlayerOutlineYSize = markerYSize * 1.5;
-		float lineXSize = 0.025 * GetAspectRatioInv();
-		float lineYSize = 0.0025;
-		float top = y - ySize;
-		float bottom = y + ySize;
-		DrawRectangle(x - xSize, x + xSize, top, bottom, {0,0,0,255});
-		DrawRectangle(x - lineXSize, x + lineXSize, top - lineYSize, top + lineYSize, {0,0,0,255});
-		DrawRectangle(x - lineXSize, x + lineXSize, bottom - lineYSize, bottom + lineYSize, {0,0,0,255});
+		// left transparent bg
+		DrawRectangle_1080pScaled(81, 159, 18, 653, {0,0,0,50});
+		// right transparent bg
+		DrawRectangle_1080pScaled(99, 159, 24, 653, {255,255,255,50});
 
+		auto playerProgress = GetPlayerProgressInStage();
+
+		// left filled bg
+		DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(std::lerp(811,160,playerProgress)), Get1080pToAspectY(811), {241,99,33,255});
+
+		// splitpoints
 		auto track = pTrackAI->pTrack;
 		for (int i = 0; i < track->nNumSplitpoints; i++) {
 			auto pos = track->aSplitpoints[i].fPosition;
+
+			// 1 pixel off so it has less chance to look wrong
+			int top = 160;
+			int bottom = 811;
+
 			auto y = std::lerp(bottom, top, GetCoordProgressInStage({pos[0],pos[1],pos[2]}));
-			DrawRectangle(x - lineXSize, x + lineXSize, y - lineYSize, y + lineYSize, {0,0,0,255});
+			DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(y-1), Get1080pToAspectY(y+1), {0,0,0,127});
 		}
+
+		// top line
+		DrawRectangle_1080pScaled(81, 159, 42, 2, {22,22,22,255});
+		// bottom line
+		DrawRectangle_1080pScaled(81, 810, 42, 2, {22,22,22,255});
+		// left line
+		DrawRectangle_1080pScaled(81, 161-1, 2, 649+1, {22,22,22,255});
+		// right line
+		DrawRectangle_1080pScaled(97, 161-1, 2, 649+1, {22,22,22,255});
+		// right top line
+		DrawRectangle_1080pScaled(121, 161-1, 2, 5, {22,22,22,255});
+		// right bottom line
+		DrawRectangle_1080pScaled(121, 806, 2, 4+1, {22,22,22,255});
 
 		for (int i = 1; i < 32; i++) {
-			auto ply = GetPlayer(i);
-			if (!ply) continue;
-			auto pos = ply->pCar->GetMatrix()->p;
-			auto replayPos = NyaVec3(500,-25,500);
-			if (ply->nGhosting && (pos - replayPos).length() < 1) continue; // ignore empty replay ghosts
-
-			float playerY = std::lerp(bottom, top, GetCoordProgressInStage(pos));
-			auto tmp = *(NyaDrawing::CNyaRGBA32*)&ply->nArrowColor;
-			auto color = NyaDrawing::CNyaRGBA32(tmp.b, tmp.g, tmp.r, tmp.a);
-			DrawRectangle(x - markerOutlineXSize, x + markerOutlineXSize, playerY - markerOutlineYSize, playerY + markerOutlineYSize, {0,0,0,255}, 1);
-			DrawRectangle(x - markerXSize, x + markerXSize, playerY - markerYSize, playerY + markerYSize, color, 1);
+			DrawPlayerOnRallyMap(GetPlayer(i));
 		}
-
-		// always draw local player on top
-		auto tmp = *(NyaDrawing::CNyaRGBA32*)&GetPlayer(0)->nArrowColor;
-		auto color = NyaDrawing::CNyaRGBA32(tmp.b, tmp.g, tmp.r, tmp.a);
-		float playerY = std::lerp(bottom, top, GetPlayerProgressInStage());
-		DrawRectangle(x - markerPlayerOutlineXSize, x + markerPlayerOutlineXSize, playerY - markerPlayerOutlineYSize, playerY + markerPlayerOutlineYSize, {255,255,255,255}, 1);
-		DrawRectangle(x - markerOutlineXSize, x + markerOutlineXSize, playerY - markerOutlineYSize, playerY + markerOutlineYSize, {0,0,0,255}, 1);
-		DrawRectangle(x - markerXSize, x + markerXSize, playerY - markerYSize, playerY + markerYSize, color, 1);
+		DrawPlayerOnRallyMap(GetPlayer(0));
 	}
 }
 
