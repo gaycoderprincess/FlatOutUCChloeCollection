@@ -11,6 +11,7 @@ auto GetCarTuning(int car) {
 		data->fBrakeBias = brakeBalance[0];
 		data->fNitroModifier = 0.5;
 		data->fEngineModifier = 0.5;
+		data->fSuspensionStiffness = 0.5;
 		data->initialized = true;
 	}
 
@@ -20,6 +21,8 @@ auto GetCarTuning(int car) {
 	if (data->fBrakeBias > 1) data->fBrakeBias = 1;
 	if (data->fEngineModifier < 0) data->fEngineModifier = 0;
 	if (data->fEngineModifier > 1) data->fEngineModifier = 1;
+	if (data->fSuspensionStiffness < 0) data->fSuspensionStiffness = 0;
+	if (data->fSuspensionStiffness > 1) data->fSuspensionStiffness = 1;
 
 	return data;
 }
@@ -30,7 +33,7 @@ auto GetCurrentCarTuning() {
 }
 
 void __fastcall DoCarTuning(Car* pCar, float* pStackHandling) {
-	if (!bEnableCarTuningForMultiplayer && pGameFlow->nGameMode != GM_CAREER && pGameFlow->nGameMode != GM_TEST && pGameFlow->nGameRules != GR_TEST) return;
+	if (!bEnableCarTuningForMultiplayer && pGameFlow->nGameMode != GM_CAREER && pGameFlow->nGameMode != GM_TEST && pGameFlow->nGameRulesIngame != GR_TEST) return;
 	auto player = pCar->pPlayer;
 	if (player->nPlayerType != PLAYERTYPE_LOCAL) return;
 
@@ -39,51 +42,40 @@ void __fastcall DoCarTuning(Car* pCar, float* pStackHandling) {
 	auto& fNitroStorage = *(float*)0x764C48;
 	auto& fNitroAcceleration = *(float*)0x764C4C;
 	auto& fBrakeBalance = *(float*)0x84963C;
-	//auto& fPeakPower = *(float*)0x764C2C;
-	//auto& fPeakPowerRpm = *(float*)0x764C28;
-	//auto& fPeakTorque = *(float*)0x764C34;
-	//auto& fPeakTorqueRpm = *(float*)0x764C30;
-	//auto& fZeroPowerRpm = *(float*)0x764C40;
-	//auto& fRedLineRpm = *(float*)0x764C38;
-	//auto& fAeroDrag = *(float*)0x84961C;
+	auto& fFrontDefaultCompression = *(float*)0x764E84;
+	auto& fFrontBumpDamp = *(float*)0x764E88;
+	auto& fFrontReboundDamp = *(float*)0x764E8C;
+	auto& fRearDefaultCompression = *(float*)0x764EC4;
+	auto& fRearBumpDamp = *(float*)0x764EC8;
+	auto& fRearReboundDamp = *(float*)0x764ECC;
 
-	// testing with the nucleon + uncapped speed limit:
-	// engine high - top speed 270
-	// engine mid - top speed 260
-	// engine low - top speed 230 no nitro, 260 w nitro
+	auto nitroModifier = sqrt(tuning->fNitroModifier + 0.5);
+	auto suspModifier1 = sqrt(tuning->fSuspensionStiffness + 0.5);
+	auto suspModifier2 = sqrt(suspModifier1);
 
-	float nitroModifier = sqrt(tuning->fNitroModifier + 0.5);
-	//float engineModifier = tuning->fEngineModifier + 0.5;
-	//float engineModifierSmall = sqrt(engineModifier);
-	//float engineModifierVerySmall = sqrt(engineModifierSmall);
-	//float engineModifierLarge = engineModifier * engineModifier;
-	//float engineModifierVeryLarge = engineModifierLarge * engineModifierLarge;
-
-	//fPeakPower /= engineModifierVeryLarge;
-	//fAeroDrag *= engineModifierSmall;
-	//fPeakTorque *= engineModifierSmall;
-	//if (pStackHandling) {
-	//	auto& fSpeedLimit = pStackHandling[11];
-	//	fSpeedLimit /= engineModifierSmall;
-	//}
+	fFrontDefaultCompression /= suspModifier1;
+	fRearDefaultCompression /= suspModifier1;
+	fFrontBumpDamp /= suspModifier2;
+	fFrontReboundDamp /= suspModifier2;
+	fRearBumpDamp /= suspModifier2;
+	fRearReboundDamp /= suspModifier2;
 
 	fNitroStorage /= nitroModifier;
 	fNitroAcceleration *= nitroModifier;
 	fBrakeBalance = tuning->fBrakeBias;
-
-	//Car::CalculatePerformance((float*)0x764C5C, fPeakTorque, fPeakTorqueRpm, fPeakPower, fPeakPowerRpm, fZeroPowerRpm, fRedLineRpm);
 }
 
 uintptr_t CarTuningASM_jmp = 0x45E670;
 void __attribute__((naked)) CarTuningASM() {
 	__asm__ (
+		"call %0\n\t"
 		"pushad\n\t"
 		"mov ecx, ebx\n\t"
 		"sub ecx, 0x368\n\t"
 		"xor edx, edx\n\t"
 		"call %1\n\t"
 		"popad\n\t"
-		"jmp %0\n\t"
+		"ret\n\t"
 			:
 			:  "m" (CarTuningASM_jmp), "i" (DoCarTuning)
 	);
@@ -92,12 +84,13 @@ void __attribute__((naked)) CarTuningASM() {
 uintptr_t CarTuningASM2_jmp = 0x45E670;
 void __attribute__((naked)) CarTuningASM2() {
 	__asm__ (
+		"call %0\n\t"
 		"pushad\n\t"
 		"mov ecx, edi\n\t"
 		"lea edx, [esp+0x20+0x20+0x4]\n\t" // account for pushad and call
 		"call %1\n\t"
 		"popad\n\t"
-		"jmp %0\n\t"
+		"ret\n\t"
 			:
 			:  "m" (CarTuningASM2_jmp), "i" (DoCarTuning)
 	);

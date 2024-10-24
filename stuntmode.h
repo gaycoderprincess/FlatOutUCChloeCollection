@@ -168,7 +168,7 @@ void ResetStuntTricks() {
 
 bool IsAirControlOn() {
 	if (nStuntModeAirControlMode == AIRCONTROL_ON) return true;
-	if ((nStuntModeAirControlMode == AIRCONTROL_DEFAULT || nStuntModeAirControlMode == AIRCONTROL_YAWONLY) && bIsStuntMode && pGameFlow->nGameRules == GR_ARCADE_RACE) return true;
+	if ((nStuntModeAirControlMode == AIRCONTROL_DEFAULT || nStuntModeAirControlMode == AIRCONTROL_YAWONLY) && bIsStuntMode && pGameFlow->nGameRulesIngame == GR_ARCADE_RACE) return true;
 	return false;
 }
 
@@ -183,7 +183,7 @@ void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
 	}
 
 	if (!bIsStuntMode) return;
-	if (pGameFlow->nGameRules != GR_ARCADE_RACE) return;
+	if (pGameFlow->nGameRulesIngame != GR_ARCADE_RACE) return;
 	*(float*)0x765044 = nStuntModeAirtimeBonus;
 
 	// air control

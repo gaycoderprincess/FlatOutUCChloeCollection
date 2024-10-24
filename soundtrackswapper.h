@@ -23,7 +23,7 @@ void SetSoundtrack() {
 			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
 			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
 			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
-			if (pGameFlow->nGameRules == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
+			if (pGameFlow->nGameRulesIngame == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
 			if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
 		}
 

@@ -15,7 +15,8 @@ struct tCarTuning {
 	float fNitroModifier;
 	float fBrakeBias;
 	float fEngineModifier;
-	float tmp[16];
+	float fSuspensionStiffness;
+	float tmp[15];
 };
 
 enum ePlaytimeType {
@@ -208,8 +209,9 @@ void ProcessPlayStats() {
 			gCustomSave.playtime[PLAYTIME_INGAME_STUNTSHOW] += time;
 		}
 		else if (pGameFlow->nDerbyType == DERBY_NONE) {
-			switch (pGameFlow->nGameRules) {
+			switch (pGameFlow->nGameRulesIngame) {
 				case GR_DEFAULT:
+				case GR_RACE:
 					gCustomSave.playtime[PLAYTIME_INGAME_RACE] += time;
 					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
 					break;

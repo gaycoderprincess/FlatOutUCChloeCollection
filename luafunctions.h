@@ -875,6 +875,16 @@ int ChloeTuning_SetCarEngineModifier(void* a1) {
 	return 0;
 }
 
+int ChloeTuning_GetCarSuspensionStiffness(void* a1) {
+	lua_pushnumber(a1, GetCurrentCarTuning()->fSuspensionStiffness * 100);
+	return 1;
+}
+
+int ChloeTuning_SetCarSuspensionStiffness(void* a1) {
+	GetCurrentCarTuning()->fSuspensionStiffness = luaL_checknumber(a1, 1) / 100.0;
+	return 0;
+}
+
 int ChloeTuning_SetEnabledForMultiplayer(void* a1) {
 	bEnableCarTuningForMultiplayer = luaL_checknumber(a1, 1);
 	return 0;
@@ -962,6 +972,8 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetCarBrakeBias, "ChloeTuning_SetCarBrakeBias");
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarEngineModifier, "ChloeTuning_GetCarEngineModifier");
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetCarEngineModifier, "ChloeTuning_SetCarEngineModifier");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_GetCarSuspensionStiffness, "ChloeTuning_GetCarSuspensionStiffness");
+	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetCarSuspensionStiffness, "ChloeTuning_SetCarSuspensionStiffness");
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetEnabledForMultiplayer, "ChloeTuning_SetEnabledForMultiplayer");
 	RegisterLUAFunction(a1, (void*)&ChloeTuning_SetActiveCarForMultiplayer, "ChloeTuning_SetActiveCarForMultiplayer");
 	RegisterLUAFunction(a1, (void*)&ChloeWidescreen_GetAspect, "ChloeWidescreen_GetAspect");
