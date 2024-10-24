@@ -252,6 +252,7 @@ void PatchIngameUIScale(bool patch) {
 	NyaHookLib::Patch(0x4B3F60 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame race finish top bar
 	NyaHookLib::Patch(0x4B5A54 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame career timetrial finish top bar
 	NyaHookLib::Patch(0x4B73E4 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame highjump finish top bar
+	NyaHookLib::Patch(0x4C3B59 + 2, patch ? (uintptr_t)&f43AspectCorrection_flt : 0x6F7920); // ingame derby finish top bar
 
 	NyaHookLib::Patch(0x4CEF0B + 2, patch ? (uintptr_t)&f43AspectCorrection : 0x6F7918); // messagebox scale
 	NyaHookLib::Patch(0x4BAE6C + 2, patch ? (uintptr_t)&f43AspectCorrectionCenter_flt : 0x6F7D80); // messagebox pos

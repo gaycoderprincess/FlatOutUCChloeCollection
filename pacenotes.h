@@ -20,13 +20,21 @@ struct tPacenoteSpeech {
 	IDirect3DTexture9* pTexture = nullptr;
 	int textureType = -1;
 
+	static std::string GetSpeechPath(const std::string& file) {
+		std::string folder = "rt_eng";
+		if (nPacenoteType < aPacenoteSpeechTypes.size()) folder = aPacenoteSpeechTypes[nPacenoteType].folder;
+		return "data/sound/rally/" + folder + "/" + file + ".wav";
+	}
+
+	std::string GetName() const {
+		if (std::filesystem::exists(GetSpeechPath(speechFile))) return speechName;
+		return speechName + " (Placeholder)";
+	}
+
 	static NyaAudio::NyaSound PlaySpeech(const std::string& file) {
 		if (file.empty()) return 0;
 
-		std::string folder = "rt_eng";
-		if (nPacenoteType < aPacenoteSpeechTypes.size()) folder = aPacenoteSpeechTypes[nPacenoteType].folder;
-
-		auto sound = NyaAudio::LoadFile(("data/sound/rally/" + folder + "/" + file + ".wav").c_str());
+		auto sound = NyaAudio::LoadFile(GetSpeechPath(file).c_str());
 		if (!sound) return 0;
 		NyaAudio::SetVolume(sound, nPacenoteVolume / 100.0);
 		NyaAudio::Play(sound);
@@ -75,36 +83,36 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Right 5", "Right5"},
 		{"Right Hairpin", "RightHairPin"},
 		{"Right Turn", "RightTurn"},
-		{"Into (placeholder)", "Into"},
-		{"Crest (placeholder)", "Crest", "JumpMaybe"},
-		{"Over Crest (placeholder)", "OverCrest", "JumpMaybe"},
+		{"Into", "Into"},
+		{"Crest", "Crest", "JumpMaybe"},
+		{"Over Crest", "OverCrest", "JumpMaybe"},
 		{"Jump", "Jump"},
 		{"Jump Maybe", "JumpMaybe"},
 		{"Opens", "Opens"},
 		{"Straight", "Straight"},
 		{"Tightens", "Tightens"},
-		{"Water Splash (placeholder)", "WaterSplash"},
+		{"Water Splash", "WaterSplash"},
 		{"Careful", "Careful"},
 		{"Careful - Bridge", "CarefulBridge", "Careful"},
 		{"Careful - Tunnel", "CarefulTunnel", "Careful"},
-		{"Careful - Water (placeholder)", "CarefulWater", "Careful"},
+		{"Careful - Water", "CarefulWater", "Careful"},
 		{"Caution", "Caution"},
 		{"Caution - Ditch", "CautionDitch", "Caution"},
 		{"Caution - Logs", "Cautionlogs", "Caution"},
 		{"Caution - Post", "CautionPost", "Caution"},
 		{"Caution - Rocks", "CautionRocks", "Caution"},
-		{"Caution - Water (placeholder)", "CautionWater", "Caution"},
+		{"Caution - Water", "CautionWater", "Caution"},
 		{"Don't Cut", "Dontcut"},
 		{"Don't Cut - Ditch", "Dontcutditch", "Dontcut"},
 		{"Don't Cut - Logs", "Dontcutlogs", "Dontcut"},
 		{"Don't Cut - Post", "Dontcutpost", "Dontcut"},
 		{"Don't Cut - Rocks", "Dontcutrocks", "Dontcut"},
-		{"Don't Cut - Water (placeholder)", "DontcutWater", "Dontcut"},
+		{"Don't Cut - Water", "DontcutWater", "Dontcut"},
 		{"Finish", "Finish"},
-		{"Big Jump (placeholder)", "BigJump", "Jump"},
-		{"Jumps (placeholder)", "Jumps", "Jump"},
-		{"Double Caution (placeholder)", "DoubleCaution", "Caution"},
-		{"Long (placeholder)", "Long"},
+		{"Big Jump", "BigJump", "Jump"},
+		{"Jumps", "Jumps", "Jump"},
+		{"Double Caution", "DoubleCaution", "Caution"},
+		{"Long", "Long"},
 };
 
 CNyaTimer gPacenoteTimer;
@@ -234,7 +242,7 @@ struct tPacenote {
 	}
 	std::string GetSpeechName(int id) {
 		auto speech = GetSpeech(id);
-		if (speech) return speech->speechName;
+		if (speech) return speech->GetName();
 		return "None";
 	}
 	std::string GetDisplayName() {
@@ -273,7 +281,6 @@ struct tExtraPacenote {
 
 	void Play() {
 		if (nPacenoteVolume == 0) return;
-
 		audio = tPacenoteSpeech::PlaySpeech(speechFile);
 	}
 	void Process() {
@@ -389,6 +396,36 @@ void DrawPlayerOnRallyMap(Player* ply) {
 	auto y = Get1080pToAspectY(std::lerp(bottom, top, GetCoordProgressInStage(pos)));
 	auto tmp = *(NyaDrawing::CNyaRGBA32*)&ply->nArrowColor;
 	auto color = NyaDrawing::CNyaRGBA32(tmp.b, tmp.g, tmp.r, tmp.a);
+	if (pGameFlow->nGameMode == GM_CAREER && ply->nPlayerId > 1) {
+		switch (ply->nPlayerId) {
+			// gold
+			case 2:
+				color.r = 236;
+				color.g = 221;
+				color.b = 16;
+				break;
+			// silver
+			case 3:
+				color.r = 186;
+				color.g = 186;
+				color.b = 186;
+				break;
+			// bronze
+			case 4:
+				color.r = 175;
+				color.g = 100;
+				color.b = 0;
+				break;
+			// author
+			case 5:
+				color.r = 30;
+				color.g = 160;
+				color.b = 0;
+				break;
+			default:
+				break;
+		}
+	}
 	if (ply->nPlayerId == 1) DrawRectangle(x - markerPlayerOutlineXSize, x + markerPlayerOutlineXSize, y - markerPlayerOutlineYSize, y + markerPlayerOutlineYSize, localPlayerHighlightColor, 1);
 	DrawRectangle(x - markerOutlineXSize, x + markerOutlineXSize, y - markerOutlineYSize, y + markerOutlineYSize, {0,0,0,255}, 1);
 	DrawRectangle(x - markerXSize, x + markerXSize, y - markerYSize, y + markerYSize, color, 1);

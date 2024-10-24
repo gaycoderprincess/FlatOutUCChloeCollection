@@ -16,15 +16,16 @@ void SetSoundtrack() {
 
 	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aMenuPlaylists[nMenuSoundtrack].filename.c_str());
 
-	if (pGameFlow && pGameFlow->nGameState == GAME_STATE_RACE) {
-		static int nLastSoundtrackId = -1;
-
+	static int nLastSoundtrackId = -1;
+	if (pGameFlow && (pGameFlow->nGameState == GAME_STATE_RACE || nLastSoundtrackId < 0)) {
 		int soundtrackId = nIngameSoundtrack;
-		if (DoesTrackValueExist(pGameFlow->nLevelId, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
-		if (DoesTrackValueExist(pGameFlow->nLevelId, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
-		if (DoesTrackValueExist(pGameFlow->nLevelId, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
-		if (pGameFlow->nGameRules == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
-		if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
+		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
+			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
+			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
+			if (pGameFlow->nGameRules == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
+			if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
+		}
 
 		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId].filename.c_str());
 
