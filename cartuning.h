@@ -1,3 +1,4 @@
+bool bSkipTuningThisRace = false;
 bool bEnableCarTuningForMultiplayer = false;
 int nCarTuningCurrectCarForMultiplayer = -1;
 tCarTuning aMultiplayerCarTunings[256];
@@ -36,6 +37,7 @@ void __fastcall DoCarTuning(Car* pCar, float* pStackHandling) {
 	if (!bEnableCarTuningForMultiplayer && pGameFlow->nGameMode != GM_CAREER && pGameFlow->nGameMode != GM_TEST && pGameFlow->nGameRulesIngame != GR_TEST) return;
 	auto player = pCar->pPlayer;
 	if (player->nPlayerType != PLAYERTYPE_LOCAL) return;
+	if (!bEnableCarTuningForMultiplayer && bSkipTuningThisRace) return;
 
 	auto tuning = GetCarTuning(player->nCarId);
 
