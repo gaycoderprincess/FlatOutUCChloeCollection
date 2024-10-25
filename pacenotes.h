@@ -17,8 +17,14 @@ struct tPacenoteSpeech {
 	std::string speechName;
 	std::string speechFile;
 	std::string speechFileFallback;
+	std::string speechFileFallback2;
 	IDirect3DTexture9* pTexture = nullptr;
 	int textureType = -1;
+
+	bool IsNumber() {
+		if (speechName[0] >= '1' && speechName[0] <= '9') return true;
+		return false;
+	}
 
 	static std::string GetSpeechPath(const std::string& file) {
 		std::string folder = "rt_eng";
@@ -26,9 +32,21 @@ struct tPacenoteSpeech {
 		return "data/sound/rally/" + folder + "/" + file + ".wav";
 	}
 
+	bool IsPlaceholder() const {
+		return !std::filesystem::exists(GetSpeechPath(speechFile));
+	}
+
+	bool IsMissing() const {
+		if (std::filesystem::exists(GetSpeechPath(speechFile))) return false;
+		if (!speechFileFallback.empty() && std::filesystem::exists(GetSpeechPath(speechFileFallback))) return false;
+		if (!speechFileFallback.empty() && std::filesystem::exists(GetSpeechPath(speechFileFallback2))) return false;
+		return true;
+	}
+
 	std::string GetName() const {
-		if (std::filesystem::exists(GetSpeechPath(speechFile))) return speechName;
-		return speechName + " (Placeholder)";
+		if (IsMissing()) return speechName + " (Missing)";
+		if (IsPlaceholder()) return speechName + " (Placeholder)";
+		return speechName;
 	}
 
 	static NyaAudio::NyaSound PlaySpeech(const std::string& file) {
@@ -43,7 +61,8 @@ struct tPacenoteSpeech {
 
 	NyaAudio::NyaSound Play(bool useFallback) {
 		auto sound = PlaySpeech(speechFile);
-		if (!sound && useFallback) return PlaySpeech(speechFileFallback);
+		if (!sound && useFallback) sound = PlaySpeech(speechFileFallback);
+		if (!sound && useFallback) sound = PlaySpeech(speechFileFallback2);
 		return sound;
 	}
 
@@ -61,9 +80,8 @@ struct tPacenoteSpeech {
 
 		std::string pacenotePath = "data/textures/" + aPacenoteVisualTypes[nPacenoteVisualType].folder + "/";
 		pTexture = ::LoadTexture((pacenotePath + speechFile + ".png").c_str());
-		if (!pTexture) {
-			pTexture = ::LoadTexture((pacenotePath + speechFileFallback + ".png").c_str());
-		}
+		if (!pTexture) pTexture = ::LoadTexture((pacenotePath + speechFileFallback + ".png").c_str());
+		if (!pTexture) pTexture = ::LoadTexture((pacenotePath + speechFileFallback2 + ".png").c_str());
 		textureType = nPacenoteVisualType;
 	}
 };
@@ -113,6 +131,58 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Jumps", "Jumps", "Jump"},
 		{"Double Caution", "DoubleCaution", "Caution"},
 		{"Long", "Long"},
+		{"Careful - Dip", "CarefulDip", "Careful"},
+		{"Caution - Slowing", "CautionSlowing", "Caution"},
+		{"Caution - Bump", "CautionBump", "Caution"},
+		{"Caution - Bumps", "CautionBumps", "CautionBump", "Caution"},
+		{"Caution - Tree", "CautionTree", "Caution"},
+		{"Caution - Trees", "CautionTrees", "CautionTree", "Caution"},
+		{"Caution - Dip", "CautionDip", "Caution"},
+		{"Don't Cut - Bump", "DontcutBump", "Dontcut"},
+		{"Don't Cut - Bumps", "DontcutBumps", "DontcutBump", "Dontcut"},
+		{"Don't Cut - Tree", "DontcutTree", "Dontcut"},
+		{"Don't Cut - Trees", "DontcutTrees", "DontcutTree", "Dontcut"},
+		{"Bump", "Bump", "Crest", "JumpMaybe"},
+		{"Bumps", "Bumps", "Bump", "Jumps"},
+		{"Big Crest", "BigCrest", "Crest"},
+		{"Keep Left", "KeepLeft"},
+		{"Keep Right", "KeepRight"},
+		{"Keep Mid", "KeepMid"},
+		{"Water", "Water", "WaterSplash"},
+		{"Through Water", "ThroughWater", "Water", "WaterSplash"},
+		{"Left 6", "Left6", "Left5"},
+		{"Right 6", "Right6", "Right5"},
+		{"And", "And", "Into"},
+		{"Dip", "Dip"},
+		{"Downhill", "Downhill"},
+		{"Slowing", "Slowing"},
+		{"Open Hairpin Left", "OpenHairPinLeft", "LeftHairPin"},
+		{"Open Hairpin Right", "OpenHairPinRight", "RightHairPin"},
+		{"Flying Finish", "FlyingFinish", "Finish"},
+		{"Over Finish", "OverFinish", "Finish"},
+		{"Bad Camber", "BadCamber"},
+		{"Narrows", "Tightens"},
+		{"Onto Gravel", "OntoGravel"},
+		{"Onto Tar", "OntoTar"},
+		{"Onto Dirt", "OntoDirt"},
+		{"Cut", "Cut"},
+		{"40", "40"},
+		{"50", "50"},
+		{"60", "60"},
+		{"70", "70"},
+		{"80", "80"},
+		{"90", "90"},
+		{"100","100"},
+		{"110","110"},
+		{"120","120"},
+		{"130","130"},
+		{"140","140"},
+		{"150","150"},
+		{"160","160"},
+		{"170","170"},
+		{"180","180"},
+		{"190","190"},
+		{"200","200"},
 };
 
 CNyaTimer gPacenoteTimer;
@@ -148,11 +218,13 @@ std::string sLastPlayedPacenoteSpeech;
 
 struct tPacenotePlaying {
 	tPacenoteSpeech* speech = nullptr;
+	std::string speechFile;
 	NyaAudio::NyaSound audio = 0;
 	double visualTimer = 0;
 	double visualAppearTimer = 0;
 	bool audioPlaying = false;
 	bool audioFinished = false;
+	bool skipAudio = false;
 
 	static bool CanPlayAudio() {
 		if (pLoadingScreen || pGameFlow->nRaceState != RACE_STATE_RACING) return false;
@@ -160,13 +232,6 @@ struct tPacenotePlaying {
 		if (!ply) return false;
 		if (ply->pCar->nIsRagdolled) return false;
 		return true;
-	}
-
-	void Play(bool useFallback) {
-		audioPlaying = true;
-		audio = speech->Play(useFallback);
-		if (!audio) return;
-		visualTimer = 0;
 	}
 
 	void Process(bool isNextInQueue, bool canLinger) {
@@ -189,14 +254,27 @@ struct tPacenotePlaying {
 		if (CanPlayAudio() && isNextInQueue && !audioPlaying) {
 			audioPlaying = true;
 
-			// hack for repeats of fallback speeches
-			bool useFallback = true;
-			if (sLastPlayedPacenoteSpeech == speech->speechFileFallback || (sLastPlayedPacenoteSpeech == "Jump" && speech->speechFileFallback == "JumpMaybe")) useFallback = false;
-			sLastPlayedPacenoteSpeech = speech->speechFile;
-
-			audio = speech->Play(useFallback);
-			if (!audio) {
+			if (skipAudio) {
 				audioFinished = true;
+			}
+			else if (speechFile.empty()) {
+				// hack for repeats of fallback speeches
+				bool useFallback = true;
+				if (sLastPlayedPacenoteSpeech == speech->speechFileFallback || (sLastPlayedPacenoteSpeech == "Jump" && speech->speechFileFallback == "JumpMaybe")) {
+					useFallback = false;
+				}
+				sLastPlayedPacenoteSpeech = speech->speechFile;
+
+				audio = speech->Play(useFallback);
+				if (!audio) {
+					audioFinished = true;
+				}
+			}
+			else {
+				audio = tPacenoteSpeech::PlaySpeech(speechFile);
+				if (!audio) {
+					audioFinished = true;
+				}
 			}
 		}
 		if (audio && NyaAudio::IsFinishedPlaying(audio)) {
@@ -431,6 +509,49 @@ void DrawPlayerOnRallyMap(Player* ply) {
 	DrawRectangle(x - markerXSize, x + markerXSize, y - markerYSize, y + markerYSize, color, 1);
 }
 
+void DrawRallyHUD() {
+	// left transparent bg
+	DrawRectangle_1080pScaled(81, 159, 18, 653, {0,0,0,50});
+	// right transparent bg
+	DrawRectangle_1080pScaled(99, 159, 24, 653, {255,255,255,50});
+
+	auto playerProgress = GetPlayerProgressInStage();
+
+	// left filled bg
+	DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(std::lerp(811,160,playerProgress)), Get1080pToAspectY(811), {241,99,33,255});
+
+	// splitpoints
+	auto track = pTrackAI->pTrack;
+	for (int i = 0; i < track->nNumSplitpoints; i++) {
+		auto pos = track->aSplitpoints[i].fPosition;
+
+		// 1 pixel off so it has less chance to look wrong
+		int top = 160;
+		int bottom = 811;
+
+		auto y = std::lerp(bottom, top, GetCoordProgressInStage({pos[0],pos[1],pos[2]}));
+		DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(y-1), Get1080pToAspectY(y+1), {0,0,0,127});
+	}
+
+	// top line
+	DrawRectangle_1080pScaled(81, 159, 42, 2, {22,22,22,255});
+	// bottom line
+	DrawRectangle_1080pScaled(81, 810, 42, 2, {22,22,22,255});
+	// left line
+	DrawRectangle_1080pScaled(81, 161-1, 2, 649+1, {22,22,22,255});
+	// right line
+	DrawRectangle_1080pScaled(97, 161-1, 2, 649+1, {22,22,22,255});
+	// right top line
+	DrawRectangle_1080pScaled(121, 161-1, 2, 5, {22,22,22,255});
+	// right bottom line
+	DrawRectangle_1080pScaled(121, 806, 2, 4+1, {22,22,22,255});
+
+	for (int i = 1; i < 32; i++) {
+		DrawPlayerOnRallyMap(GetPlayer(i));
+	}
+	DrawPlayerOnRallyMap(GetPlayer(0));
+}
+
 void ProcessPacenotes() {
 	static bool bInited = false;
 	if (!bInited) {
@@ -484,46 +605,7 @@ void ProcessPacenotes() {
 			}
 		}
 
-		// left transparent bg
-		DrawRectangle_1080pScaled(81, 159, 18, 653, {0,0,0,50});
-		// right transparent bg
-		DrawRectangle_1080pScaled(99, 159, 24, 653, {255,255,255,50});
-
-		auto playerProgress = GetPlayerProgressInStage();
-
-		// left filled bg
-		DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(std::lerp(811,160,playerProgress)), Get1080pToAspectY(811), {241,99,33,255});
-
-		// splitpoints
-		auto track = pTrackAI->pTrack;
-		for (int i = 0; i < track->nNumSplitpoints; i++) {
-			auto pos = track->aSplitpoints[i].fPosition;
-
-			// 1 pixel off so it has less chance to look wrong
-			int top = 160;
-			int bottom = 811;
-
-			auto y = std::lerp(bottom, top, GetCoordProgressInStage({pos[0],pos[1],pos[2]}));
-			DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(y-1), Get1080pToAspectY(y+1), {0,0,0,127});
-		}
-
-		// top line
-		DrawRectangle_1080pScaled(81, 159, 42, 2, {22,22,22,255});
-		// bottom line
-		DrawRectangle_1080pScaled(81, 810, 42, 2, {22,22,22,255});
-		// left line
-		DrawRectangle_1080pScaled(81, 161-1, 2, 649+1, {22,22,22,255});
-		// right line
-		DrawRectangle_1080pScaled(97, 161-1, 2, 649+1, {22,22,22,255});
-		// right top line
-		DrawRectangle_1080pScaled(121, 161-1, 2, 5, {22,22,22,255});
-		// right bottom line
-		DrawRectangle_1080pScaled(121, 806, 2, 4+1, {22,22,22,255});
-
-		for (int i = 1; i < 32; i++) {
-			DrawPlayerOnRallyMap(GetPlayer(i));
-		}
-		DrawPlayerOnRallyMap(GetPlayer(0));
+		if (!ChloeMenuLib::IsMenuOpen()) DrawRallyHUD();
 	}
 }
 

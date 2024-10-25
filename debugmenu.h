@@ -12,14 +12,62 @@ std::string GetTimeString(double time_in_sec) {
 	return std::format("{}:{:02}:{:02}", h, m, s);
 }
 
+bool PacenoteComp(tPacenoteSpeech* a, tPacenoteSpeech* b) {
+	return a->speechName < b->speechName;
+}
+
 void PacenoteTypeEditor(int& out) {
+	static bool bHidePlaceholders = false;
+	static bool bHideMissing = false;
+
+	if (DrawMenuOption(std::format("Hide Placeholders - {}", bHidePlaceholders), "", false, false)) {
+		bHidePlaceholders=!bHidePlaceholders;
+	}
+	if (DrawMenuOption(std::format("Hide Missing Lines - {}", bHideMissing), "", false, false)) {
+		bHideMissing=!bHideMissing;
+	}
+
+	DrawMenuOption("-- Lines --", "", false, false);
+
 	if (DrawMenuOption("None", "", false, false)) {
 		out = -1;
 		ChloeMenuLib::BackOut();
 	}
-	for (auto& note : aPacenoteSpeeches) {
-		if (DrawMenuOption(note.speechName, "", false, false)) {
-			out = &note - &aPacenoteSpeeches[0];
+
+	std::vector<tPacenoteSpeech*> tmpSpeechesLR;
+	std::vector<tPacenoteSpeech*> tmpSpeechesYards;
+	std::vector<tPacenoteSpeech*> tmpSpeeches;
+	for (auto& speech : aPacenoteSpeeches) {
+		if (bHideMissing && speech.IsMissing()) continue;
+		if (bHidePlaceholders && speech.IsPlaceholder() && !speech.IsMissing()) continue;
+
+		if (speech.IsNumber()) {
+			tmpSpeechesYards.push_back(&speech);
+		} else if (speech.speechName.starts_with("Left") || speech.speechName.starts_with("Right")) {
+			tmpSpeechesLR.push_back(&speech);
+		} else {
+			tmpSpeeches.push_back(&speech);
+		}
+	}
+	std::sort(tmpSpeeches.begin(),tmpSpeeches.end(),PacenoteComp);
+	std::sort(tmpSpeechesLR.begin(),tmpSpeechesLR.end(),PacenoteComp);
+
+	// sort left/right first for convenience, then everything else, then distance
+	for (auto& note : tmpSpeechesLR) {
+		if (DrawMenuOption(note->GetName(), "", false, false)) {
+			out = note - &aPacenoteSpeeches[0];
+			ChloeMenuLib::BackOut();
+		}
+	}
+	for (auto& note : tmpSpeeches) {
+		if (DrawMenuOption(note->GetName(), "", false, false)) {
+			out = note - &aPacenoteSpeeches[0];
+			ChloeMenuLib::BackOut();
+		}
+	}
+	for (auto& note : tmpSpeechesYards) {
+		if (DrawMenuOption(note->GetName(), "", false, false)) {
+			out = note - &aPacenoteSpeeches[0];
 			ChloeMenuLib::BackOut();
 		}
 	}
@@ -119,19 +167,19 @@ void ProcessDebugMenu() {
 	DrawDebugMenuViewerOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy");
 	DrawDebugMenuViewerOption(std::format("Career Class - {}", prerace->GetPropertyAsInt("Class", 0)));
 	DrawDebugMenuViewerOption(std::format("Career Cup - {}", prerace->GetPropertyAsInt("Cup", 0)));
-	DrawDebugMenuViewerOption(std::format("Buoyancy Factor - {}", fLastBuoyancyResult));
-	DrawDebugMenuViewerOption(std::format("Water Drag Factor - {}", fLastWaterDragResult));
-	DrawDebugMenuViewerOption(std::format("Water Submerged Amount - {}", fLastWaterSubmergedResult));
+	//DrawDebugMenuViewerOption(std::format("Buoyancy Factor - {}", fLastBuoyancyResult));
+	//DrawDebugMenuViewerOption(std::format("Water Drag Factor - {}", fLastWaterDragResult));
+	//DrawDebugMenuViewerOption(std::format("Water Submerged Amount - {}", fLastWaterSubmergedResult));
 	DrawDebugMenuViewerOption(std::format("Player Score Pointer - {:X}", (uint32_t)GetPlayerScore<PlayerScoreRace>(1)));
 	if (auto ply = GetPlayer(0)) {
 		auto track = pTrackAI->pTrack;
 		auto start = track->aStartpoints[0].fPosition;
 		auto end = track->aSplitpoints[track->nNumSplitpoints-1].fPosition;
 		auto plyPos = ply->pCar->GetMatrix()->p;
-		DrawDebugMenuViewerOption(std::format("Start Point - {} {} {}", start[0], start[1], start[2]));
-		DrawDebugMenuViewerOption(std::format("End Point - {} {} {}", end[0], end[1], end[2]));
-		DrawDebugMenuViewerOption(std::format("Player Point - {} {} {}", plyPos[0], plyPos[1], plyPos[2]));
-		DrawDebugMenuViewerOption(std::format("Player Progress - {}%", GetPlayerProgressInStage()*100));
+		DrawDebugMenuViewerOption(std::format("Start Point - {:.2f} {:.2f} {:.2f}", start[0], start[1], start[2]));
+		DrawDebugMenuViewerOption(std::format("End Point - {:.2f} {:.2f} {:.2f}", end[0], end[1], end[2]));
+		DrawDebugMenuViewerOption(std::format("Player Point - {:.2f} {:.2f} {:.2f}", plyPos[0], plyPos[1], plyPos[2]));
+		DrawDebugMenuViewerOption(std::format("Player Progress - {:.0f}%", GetPlayerProgressInStage()*100));
 	}
 
 	ChloeMenuLib::EndMenu();
