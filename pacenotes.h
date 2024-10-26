@@ -499,36 +499,6 @@ void DrawPlayerOnRallyMap(Player* ply) {
 	auto y = Get1080pToAspectY(std::lerp(bottom, top, GetCoordProgressInStage(pos)));
 	auto tmp = *(NyaDrawing::CNyaRGBA32*)&ply->nArrowColor;
 	auto color = NyaDrawing::CNyaRGBA32(tmp.b, tmp.g, tmp.r, tmp.a);
-	if (pGameFlow->nGameMode == GM_CAREER && ply->nPlayerId > 1) {
-		switch (ply->nPlayerId) {
-			// gold
-			case 2:
-				color.r = 236;
-				color.g = 221;
-				color.b = 16;
-				break;
-			// silver
-			case 3:
-				color.r = 186;
-				color.g = 186;
-				color.b = 186;
-				break;
-			// bronze
-			case 4:
-				color.r = 175;
-				color.g = 100;
-				color.b = 0;
-				break;
-			// author
-			case 5:
-				color.r = 30;
-				color.g = 160;
-				color.b = 0;
-				break;
-			default:
-				break;
-		}
-	}
 	if (ply->nPlayerId == 1) DrawRectangle(x - markerPlayerOutlineXSize, x + markerPlayerOutlineXSize, y - markerPlayerOutlineYSize, y + markerPlayerOutlineYSize, localPlayerHighlightColor, 1);
 	DrawRectangle(x - markerOutlineXSize, x + markerOutlineXSize, y - markerOutlineYSize, y + markerOutlineYSize, {0,0,0,255}, 1);
 	DrawRectangle(x - markerXSize, x + markerXSize, y - markerYSize, y + markerYSize, color, 1);
