@@ -341,6 +341,31 @@ struct tPacenote {
 		if (played) return;
 		played = true;
 
+		/*struct tPacenoteGroup {
+			int begin;
+			int end;
+			std::string combinedFile;
+		};
+		std::vector<tPacenoteGroup> groups;
+
+		bool isGrouped[nMaxSpeechesPerPacenote] = {};
+		std::string groupLine;
+		for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
+			auto speech = GetSpeech(i);
+			if (!speech) continue;
+
+			if (std::filesystem::exists(groupLine + speech->speechFile)) {
+				groupLine += speech->speechFile;
+			}
+			else {
+				groupLine += speech->speechFile;
+			}
+
+			tPacenotePlaying note;
+			note.speech = speech;
+			aPacenoteQueue.push_back(note);
+		}*/
+
 		for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
 			auto speech = GetSpeech(i);
 			if (!speech) continue;

@@ -141,24 +141,24 @@ float __attribute__((naked)) ArcadePlatinumsASM() {
 	);
 }
 
-void FormatPoints(int a1, wchar_t* str, size_t len) {
-	if (a1 < 1000) _snwprintf(str, len, L"%d", a1);
+int FormatPoints(int a1, wchar_t* str, size_t len) {
+	if (a1 < 1000) return _snwprintf(str, len, L"%d", a1);
 
 	if (a1 >= 1000000) {
-		_snwprintf(str, len, L"%d,%03d,%03d", a1 / 1000000, (a1 / 1000) % 1000, a1 % 1000);
+		return _snwprintf(str, len, L"%d,%03d,%03d", a1 / 1000000, (a1 / 1000) % 1000, a1 % 1000);
 	}
 	else {
-		_snwprintf(str, len, L"%d,%03d", a1 / 1000, a1 % 1000);
+		return _snwprintf(str, len, L"%d,%03d", a1 / 1000, a1 % 1000);
 	}
 }
 
-void DrawArcadePlatinums(wchar_t* str, size_t len) {
+int DrawArcadePlatinums(wchar_t* str, size_t len, void* a3, void* a4) {
 	auto target = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
-	FormatPoints(target, str, len);
+	return FormatPoints(target, str, len);
 }
 
 void __fastcall ArcadePlatinumKeyword(void* a3) {
-	AddHUDKeyword("PLATINUM", (void*)&DrawArcadePlatinums, a3);
+	AddHUDKeyword("PLATINUM", &DrawArcadePlatinums, a3);
 }
 
 uintptr_t ArcadePlatinumKeywordASM_jmp = 0x4ECB20;

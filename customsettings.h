@@ -32,6 +32,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "WidescreenMenu", &nWidescreenMenu, 1, 0, 0 },
 		{ "Game", "WidescreenSafeZone", &nWidescreenSafeZone, 0, 0, 4 },
 		{ "Game", "LoadingSkip", &nLoadingSkip, 1, 0, 0 },
+		{ "Game", "ShowSuperAuthors", &nShowSuperAuthors, 1, 0, 0 },
 		{ "Control", "ControllerGuid", (void*)0x845D98, 3, 0, 0 },
 		{ "Control", "Controller", (void*)0x845DBC, 0, 0, 2 },
 		{ "Control", "ForceFeedback", (void*)0x845DC0, 1, 0, 0 },

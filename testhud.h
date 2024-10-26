@@ -15,7 +15,7 @@ void __attribute__((naked)) __fastcall SetupTestTrackHUDASM() {
 	);
 }
 
-uintptr_t UltrawideJumpTable[] = {
+uintptr_t SetupHUDJumpTable[] = {
 	0x4DC0ED,
 	0x4DC0ED,
 	0x4DC142,
@@ -30,38 +30,27 @@ uintptr_t UltrawideJumpTable[] = {
 	(uintptr_t)&SetupTestTrackHUDASM
 };
 
-void GetTestTrackCarName(wchar_t* str, size_t len) {
+int GetTestTrackCarName(wchar_t* str, size_t len, void* a3, void* a4) {
 	auto ply = GetPlayer(0);
-	mbstowcs(str, GetCarName(ply->nCarId), len);
+	return mbstowcs(str, GetCarName(ply->nCarId), len);
 }
 
-void GetTestTrackTopSpeed(wchar_t* str, size_t len) {
+int GetTestTrackTopSpeed(wchar_t* str, size_t len, void* a3, void* a4) {
 	auto& bImperial = *(bool*)0x849494;
 
 	auto ply = GetPlayerScore<PlayerScoreTest>(1);
-	_snwprintf(str, len, L"%d %s", ply->nTopSpeed, bImperial ? L"MPH" : L"KMH");
+	return _snwprintf(str, len, L"%d %s", ply->nTopSpeed, bImperial ? L"MPH" : L"KMH");
 }
 
-void __fastcall TestTrackKeyword(void* a3) {
-	AddHUDKeyword("TEST_CARNAME", (void*)&GetTestTrackCarName, a3);
-	AddHUDKeyword("TEST_TOPSPEED", (void*)&GetTestTrackTopSpeed, a3);
-}
-
-uintptr_t TestTrackKeywordASM_jmp = 0x4ECB20;
-float __attribute__((naked)) TestTrackKeywordASM() {
-	__asm__ (
-		"pushad\n\t"
-		"mov ecx, esi\n\t"
-		"call %1\n\t"
-		"popad\n\t"
-		"jmp %0\n\t"
-			:
-			:  "m" (TestTrackKeywordASM_jmp), "i" (TestTrackKeyword)
-	);
+void TestTrackKeyword(void* a3) {
+	AddHUDKeyword("TEST_CARNAME", &GetTestTrackCarName, a3);
+	AddHUDKeyword("TEST_TOPSPEED", &GetTestTrackTopSpeed, a3);
 }
 
 void ApplyTestHUDPatches() {
-	NyaHookLib::Patch(0x4DC001, &UltrawideJumpTable);
+	NyaHookLib::Patch(0x4DC001, &SetupHUDJumpTable);
 	NyaHookLib::Patch<uint8_t>(0x4DBFF3 + 2, 11); // increase jmptable size
-	TestTrackKeywordASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4EA8C7, &TestTrackKeywordASM);
+
+	NyaFO2Hooks::PlaceHUDKeywordHook();
+	NyaFO2Hooks::aHUDKeywordFuncs.push_back(TestTrackKeyword);
 }

@@ -33,6 +33,7 @@ uint32_t nLoadingSkip = 0;
 uint32_t nPacenoteVolume = 70;
 uint32_t nPacenoteType = 2;
 uint32_t nPacenoteVisualType = 2;
+uint32_t nShowSuperAuthors = 0;
 int nFragDerbyRewardSlam = 100;
 int nFragDerbyRewardSuperFlip = 250;
 int nFragDerbyRewardPowerHit = 250;
