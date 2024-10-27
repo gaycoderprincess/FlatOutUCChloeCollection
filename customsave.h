@@ -1,6 +1,9 @@
 const int nNumArcadeRacesX = 6;
 const int nNumArcadeRacesY = 6;
 
+const int nNumCareerEventsX = 8;
+const int nNumCareerEventsY = 16;
+
 int nSaveSlot = 999;
 
 std::string GetCustomSavePath(int id) {
@@ -39,6 +42,7 @@ enum ePlaytimeType {
 	PLAYTIME_INGAME_FRAGDERBY,
 	PLAYTIME_INGAME_STUNT,
 	PLAYTIME_INGAME_STUNTSHOW,
+	PLAYTIME_INGAME_TIMETRIAL,
 	NUM_PLAYTIME_TYPES
 };
 
@@ -62,6 +66,7 @@ const char* aPlaytimeTypeNames[] = {
 	"Deathmatch Derby",
 	"All Stunts",
 	"Stunt Show",
+	"Time Trial",
 };
 
 struct tCustomSaveStructure {
@@ -77,6 +82,10 @@ struct tCustomSaveStructure {
 	uint8_t playerPortrait;
 	tCarTuning aCarTunings[256];
 	double playtime[NUM_PLAYTIME_TYPES];
+	struct {
+		uint32_t pbTime;
+		uint32_t medal;
+	} aCareerEvents[nNumCareerEventsX][nNumCareerEventsY];
 
 	static inline bool bOverrideAllArcadeScores = false;
 
@@ -205,7 +214,11 @@ void ProcessPlayStats() {
 			gCustomSave.playtime[PLAYTIME_INGAME_MULTIPLAYER] += time;
 		}
 
-		if (bIsStuntMode) {
+		if (bIsTimeTrial) {
+			gCustomSave.playtime[PLAYTIME_INGAME_TIMETRIAL] += time;
+			gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+		}
+		else if (bIsStuntMode) {
 			gCustomSave.playtime[PLAYTIME_INGAME_STUNTSHOW] += time;
 		}
 		else if (pGameFlow->nDerbyType == DERBY_NONE) {

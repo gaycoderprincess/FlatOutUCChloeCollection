@@ -694,6 +694,7 @@ void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
 	ApplyStuntModePatches(false);
+	ApplyCareerTimeTrialPatches(false);
 	return 0;
 }
 
@@ -939,6 +940,11 @@ int ChloeSPStats_GetPlaytimeOfType(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_SetIsTimeTrial(void* a1) {
+	bIsTimeTrial = luaL_checknumber(a1, 1);
+	return 0;
+}
+
 int ChloeCollection_SetCareerTimeTrial(void* a1) {
 	ApplyCareerTimeTrialPatches(luaL_checknumber(a1, 1));
 	return 0;
@@ -952,6 +958,54 @@ int ChloeCollection_SetCareerTimeTrialCar(void* a1) {
 int ChloeCollection_SetCareerTimeTrialUpgrades(void* a1) {
 	bCareerTimeTrialUpgrades = luaL_checknumber(a1, 1);
 	return 0;
+}
+
+int ChloeCollection_SetCareerTimeTrialEventId(void* a1) {
+	nCareerTimeTrialEventClass = luaL_checknumber(a1, 1)-1;
+	nCareerTimeTrialEventId = luaL_checknumber(a1, 2)-1;
+	return 0;
+}
+
+int ChloeCollection_SetCareerTimeTrialMedal(void* a1) {
+	nCareerTimeTrialMedalTimes[(int)luaL_checknumber(a1,1)]=luaL_checknumber(a1,2);
+	//WriteLog(std::format("Setting medal time {} to {}", (int)luaL_checknumber(a1,1), (int)luaL_checknumber(a1,2)));
+	return 0;
+}
+
+int ChloeCollection_SetCareerTimeTrialResult(void* a1) {
+	auto& event = gCustomSave.aCareerEvents[nCareerTimeTrialEventClass][nCareerTimeTrialEventId];
+	uint32_t pbTime = luaL_checknumber(a1, 1);
+	if (!event.pbTime || pbTime <= event.pbTime) {
+		event.pbTime = pbTime;
+		//WriteLog(std::format("Setting PB time to {}", pbTime));
+
+		auto& medals = nCareerTimeTrialMedalTimes;
+		if (medals[MEDAL_BRONZE] && event.pbTime <= medals[MEDAL_BRONZE]) event.medal = MEDAL_BRONZE;
+		if (medals[MEDAL_SILVER] && event.pbTime <= medals[MEDAL_SILVER]) event.medal = MEDAL_SILVER;
+		if (medals[MEDAL_GOLD] && event.pbTime <= medals[MEDAL_GOLD]) event.medal = MEDAL_GOLD;
+		if (medals[MEDAL_AUTHOR] && event.pbTime <= medals[MEDAL_AUTHOR]) event.medal = MEDAL_AUTHOR;
+		if (medals[MEDAL_SAUTHOR] && event.pbTime <= medals[MEDAL_SAUTHOR]) event.medal = MEDAL_SAUTHOR;
+		//WriteLog(std::format("earned medal {}", event.medal));
+	}
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeCollection_GetCareerTimeTrialResult(void* a1) {
+	int x = ((int)luaL_checknumber(a1, 1))-1;
+	int y = ((int)luaL_checknumber(a1, 2))-1;
+	auto& event = gCustomSave.aCareerEvents[x][y];
+	lua_pushnumber(a1, event.medal);
+
+	//WriteLog(std::format("Getting results of event {} {}", x, y));
+	//WriteLog(std::format("PB time {}, earned medal {}", event.pbTime, event.medal));
+	return 1;
+}
+
+int ChloeCollection_GetCareerTimeTrialBestTime(void* a1) {
+	auto& event = gCustomSave.aCareerEvents[((int)luaL_checknumber(a1, 1))-1][((int)luaL_checknumber(a1, 2))-1];
+	lua_pushnumber(a1, event.pbTime);
+	return 1;
 }
 
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
@@ -1066,6 +1120,12 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrial, "ChloeCollection_SetCareerTimeTrial");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialCar, "ChloeCollection_SetCareerTimeTrialCar");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialUpgrades, "ChloeCollection_SetCareerTimeTrialUpgrades");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsTimeTrial, "ChloeCollection_SetIsTimeTrial");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialEventId, "ChloeCollection_SetCareerTimeTrialEventId");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialMedal, "ChloeCollection_SetCareerTimeTrialMedal");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialResult, "ChloeCollection_SetCareerTimeTrialResult");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialResult, "ChloeCollection_GetCareerTimeTrialResult");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialBestTime, "ChloeCollection_GetCareerTimeTrialBestTime");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
@@ -1091,7 +1151,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_SINGLEPLAYER, "PLAYTIME_INGAME_SINGLEPLAYER");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.49 - Suspension Tuning Edition";
+	static auto sVersionString = "Chloe's Collection v1.49 - Super Author Hunt Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

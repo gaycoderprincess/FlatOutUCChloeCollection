@@ -1,8 +1,19 @@
 bool bIsCareerTimeTrial = false;
 int nCareerTimeTrialCar = 0;
 bool bCareerTimeTrialUpgrades = false;
+uint32_t nCareerTimeTrialMedalTimes[5];
+uint32_t nCareerTimeTrialEventClass;
+uint32_t nCareerTimeTrialEventId;
+enum eCareerTimeTrialMedal {
+	MEDAL_GOLD,
+	MEDAL_SILVER,
+	MEDAL_BRONZE,
+	MEDAL_AUTHOR,
+	MEDAL_SAUTHOR
+};
 
 void ApplyCareerTimeTrialPatches(bool apply) {
+	bIsTimeTrial = apply;
 	bIsCareerTimeTrial = apply;
 	if (!apply) bSkipTuningThisRace = false;
 	NyaHookLib::Patch<uint8_t>(0x46937D, apply ? 0xEB : 0x74); // never use career active car
@@ -23,25 +34,25 @@ void SetCareerTimeTrialPlayerColor(Player* ply) {
 			color.g = 221;
 			color.b = 16;
 			break;
-			// silver
+		// silver
 		case 3:
 			color.r = 186;
 			color.g = 186;
 			color.b = 186;
 			break;
-			// bronze
+		// bronze
 		case 4:
 			color.r = 175;
 			color.g = 100;
 			color.b = 0;
 			break;
-			// author
+		// author
 		case 5:
 			color.r = 30;
 			color.g = 160;
 			color.b = 0;
 			break;
-			// super author
+		// super author
 		case 6:
 			color.r = 219;
 			color.g = 100;
