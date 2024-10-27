@@ -68,6 +68,10 @@ void SetCareerTimeTrialPlayerColor(Player* ply) {
 }
 
 void ProcessCareerTimeTrial() {
+	if (bIsTimeTrial && pGameFlow->nGameState == GAME_STATE_RACE && GetPlayer(0)) {
+		GetPlayer(0)->nPlayerStartPosition = bIsCareerTimeTrial ? 4 : 1;
+	}
+
 	if (!bIsCareerTimeTrial) return;
 	if (pGameFlow->nGameMode != GM_CAREER) return;
 	bSkipTuningThisRace = true;
