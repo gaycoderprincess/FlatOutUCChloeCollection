@@ -4,6 +4,7 @@ bool bCareerTimeTrialUpgrades = false;
 uint32_t nCareerTimeTrialMedalTimes[5];
 uint32_t nCareerTimeTrialEventClass;
 uint32_t nCareerTimeTrialEventId;
+uint32_t nCareerTimeTrialStartPosition;
 enum eCareerTimeTrialMedal {
 	MEDAL_GOLD,
 	MEDAL_SILVER,
@@ -69,7 +70,7 @@ void SetCareerTimeTrialPlayerColor(Player* ply) {
 
 void ProcessCareerTimeTrial() {
 	if (bIsTimeTrial && pGameFlow->nGameState == GAME_STATE_RACE && GetPlayer(0)) {
-		GetPlayer(0)->nPlayerStartPosition = bIsCareerTimeTrial ? 4 : 1;
+		GetPlayer(0)->nPlayerStartPosition = bIsCareerTimeTrial ? nCareerTimeTrialStartPosition : 1;
 	}
 
 	if (!bIsCareerTimeTrial) return;

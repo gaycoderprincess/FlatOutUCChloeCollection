@@ -960,6 +960,11 @@ int ChloeCollection_SetCareerTimeTrialUpgrades(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_SetCareerTimeTrialStartPosition(void* a1) {
+	nCareerTimeTrialStartPosition = luaL_checknumber(a1, 1);
+	return 0;
+}
+
 int ChloeCollection_SetCareerTimeTrialEventId(void* a1) {
 	nCareerTimeTrialEventClass = luaL_checknumber(a1, 1)-1;
 	nCareerTimeTrialEventId = luaL_checknumber(a1, 2)-1;
@@ -1120,6 +1125,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrial, "ChloeCollection_SetCareerTimeTrial");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialCar, "ChloeCollection_SetCareerTimeTrialCar");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialUpgrades, "ChloeCollection_SetCareerTimeTrialUpgrades");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialStartPosition, "ChloeCollection_SetCareerTimeTrialStartPosition");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsTimeTrial, "ChloeCollection_SetIsTimeTrial");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialEventId, "ChloeCollection_SetCareerTimeTrialEventId");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialMedal, "ChloeCollection_SetCareerTimeTrialMedal");
