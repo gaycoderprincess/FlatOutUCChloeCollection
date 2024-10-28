@@ -31,7 +31,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "HighCarCam", &nHighCarCam, 1, 0, 0 },
 		{ "Game", "WidescreenMenu", &nWidescreenMenu, 1, 0, 0 },
 		{ "Game", "WidescreenSafeZone", &nWidescreenSafeZone, 0, 0, 4 },
-		{ "Game", "LoadingSkip", &nLoadingSkip, 1, 0, 0 },
+		{ "Game", "LoadingSkip", &nLoadingSkip, 0, 0, 2 },
 		{ "Game", "ShowSuperAuthors", &nShowSuperAuthors, 0, 0, 2 },
 		{ "Control", "ControllerGuid", (void*)0x845D98, 3, 0, 0 },
 		{ "Control", "Controller", (void*)0x845DBC, 0, 0, 2 },

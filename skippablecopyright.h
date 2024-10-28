@@ -56,10 +56,13 @@ int __attribute__((naked)) FreeLoadingScreenHookedASM() {
 	);
 }
 
+bool bLoadingScreenIsMenu = false;
 bool bLoadingScreenPressEnter = false;
 bool bLoadingScreenResetPressEnter = false;
 void OnLoadInGame() {
-	if (bIsInMultiplayer || nLoadingSkip) return;
+	if (bIsInMultiplayer) return;
+	if (nLoadingSkip == 1) return;
+	if (nLoadingSkip == 2 && !bLoadingScreenIsMenu) return;
 
 	bLoadingScreenPressEnter = true;
 	while (!GetCopyrightSkipButton()) {
@@ -84,7 +87,9 @@ void OnLoadMenu() {
 		bInitialLoad = false;
 		return;
 	}
+	bLoadingScreenIsMenu = true;
 	OnLoadInGame();
+	bLoadingScreenIsMenu = false;
 }
 
 void __fastcall LoadingScreenPressEnter(int* pElement) {

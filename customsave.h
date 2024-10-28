@@ -79,18 +79,61 @@ struct tCustomSaveStructure {
 	uint32_t numCarsUnlocked;
 	uint32_t numCupsPassed;
 	uint32_t gameProgress;
-	uint8_t playerPortrait;
+	uint8_t _tmp; // old player portrait var
 	tCarTuning aCarTunings[256];
 	double playtime[NUM_PLAYTIME_TYPES];
 	struct {
 		uint32_t pbTime;
 		uint32_t medal;
 	} aCareerEvents[nNumCareerEventsX][nNumCareerEventsY];
+	uint8_t imperialUnits;
+	uint8_t ingameMap;
+	uint8_t playerFlag;
+	uint8_t playerFlag2;
+	uint8_t playerModel;
+	uint8_t playerPortrait;
+	uint8_t playerColor;
+	uint8_t hudType;
+	uint8_t highCarCam;
 
 	static inline bool bOverrideAllArcadeScores = false;
 
 	tCustomSaveStructure() {
 		memset(this,0,sizeof(*this));
+		SetDefaultPlayerSettings();
+	}
+	void SetDefaultPlayerSettings() {
+		imperialUnits = gGameRegion == 1;
+		ingameMap = 1;
+		playerFlag = 0;
+		playerFlag2 = 0;
+		playerModel = 0;
+		playerPortrait = 12; // none
+		playerColor = 0;
+		hudType = 0;
+		highCarCam = 0;
+	}
+	void ApplyPlayerSettings() const {
+		*(int*)0x849494 = imperialUnits;
+		*(int*)0x84949C = ingameMap;
+		nPlayerFlag = playerFlag;
+		nPlayerFlag2 = playerFlag2;
+		nPlayerModel = playerModel;
+		nAvatarID = playerPortrait;
+		nArrowColor = playerColor;
+		nHUDType = hudType;
+		nHighCarCam = highCarCam;
+	}
+	void ReadPlayerSettings() {
+		imperialUnits = *(int*)0x849494;
+		ingameMap = *(int*)0x84949C;
+		playerFlag = nPlayerFlag;
+		playerFlag2 = nPlayerFlag2;
+		playerModel = nPlayerModel;
+		playerPortrait = nAvatarID;
+		playerColor = nArrowColor;
+		hudType = nHUDType;
+		highCarCam = nHighCarCam;
 	}
 	void Load(int saveSlot, bool overrideArcadeScores) {
 		// override all scores on the first load since swapping profiles doesn't properly clear it
@@ -98,7 +141,7 @@ struct tCustomSaveStructure {
 
 		memset(this,0,sizeof(*this));
 		memset(nArcadePlatinumTargets,0,sizeof(nArcadePlatinumTargets));
-		playerPortrait = 12; // none
+		SetDefaultPlayerSettings();
 
 		auto file = std::ifstream(GetCustomSavePath(saveSlot), std::ios::in | std::ios::binary);
 		if (!file.is_open()) return;
@@ -107,6 +150,8 @@ struct tCustomSaveStructure {
 		if (playerName[31]) playerName[31] = 0;
 	}
 	void Save() {
+		ReadPlayerSettings();
+
 		auto file = std::ofstream(GetCustomSavePath(nSaveSlot), std::ios::out | std::ios::binary);
 		if (!file.is_open()) return;
 

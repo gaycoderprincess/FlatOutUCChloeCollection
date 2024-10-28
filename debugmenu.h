@@ -27,7 +27,7 @@ void PacenoteTypeEditor(int& out) {
 		bHideMissing=!bHideMissing;
 	}
 
-	DrawMenuOption("-- Lines --", "", false, false);
+	DrawMenuOption("Lines:", "", true, false);
 
 	if (DrawMenuOption("None", "", false, false)) {
 		out = -1;

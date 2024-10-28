@@ -51,16 +51,53 @@ void __fastcall DoCarTuning(Car* pCar, float* pStackHandling) {
 	auto& fRearBumpDamp = *(float*)0x764EC8;
 	auto& fRearReboundDamp = *(float*)0x764ECC;
 
+	// blaster xl:
+	/*
+		vec2 FrontMinLength = { 0, 0 };
+		vec2 FrontMaxLength = { 0.65, 0.65 };
+		vec2 FrontRestLength = { 0.53, 0.5 };
+		vec2 FrontDefaultCompression = { 0.13, 0.1 };
+		vec2 FrontBumpDamp = { 0.6, 0.6 };
+		vec2 FrontReboundDamp = { 0.8, 0.8 };
+		vec2 FrontBumperLength = { 0.03, 0.03 };
+		vec2 FrontBumperConst = { 0, 0 };
+		vec2 FrontBumperRestitution = { 0, 0 };
+		vec2 FrontRollbarStiffness = { 0.3, 0.315 };
+		vec2 FrontCamberAngle = { 1, 1 };
+		vec2 FrontCamberChangeUp = { 0.2, 0.2 };
+		vec2 FrontCamberChangeDown = { 0.2, 0.2 };
+		vec2 FrontCamberChangeIn = { 0.04, 0.04 };
+		vec2 FrontCamberChangeOut = { 0.04, 0.04 };
+	*/
+
+	// chili pepper:
+	/*
+		vec2 FrontMinLength = { 0, 0 };
+		vec2 FrontMaxLength = { 0.65, 0.65 };
+		vec2 FrontRestLength = { 0.24, 0.23 };
+		vec2 FrontDefaultCompression = { 0.08, 0.07 };
+		vec2 FrontBumpDamp = { 0.4, 0.4 };
+		vec2 FrontReboundDamp = { 0.6, 0.6 };
+		vec2 FrontBumperLength = { 0.03, 0.03 };
+		vec2 FrontBumperConst = { 0, 0 };
+		vec2 FrontBumperRestitution = { 0, 0 };
+		vec2 FrontRollbarStiffness = { 0.2, 0.25 };
+		vec2 FrontCamberAngle = { 1, 1 };
+		vec2 FrontCamberChangeUp = { 0.2, 0.2 };
+		vec2 FrontCamberChangeDown = { 0.2, 0.2 };
+		vec2 FrontCamberChangeIn = { 0.04, 0.04 };
+		vec2 FrontCamberChangeOut = { 0.04, 0.04 };
+	*/
+
 	auto nitroModifier = sqrt(tuning->fNitroModifier + 0.5);
 	auto suspModifier1 = sqrt(tuning->fSuspensionStiffness + 0.5);
-	auto suspModifier2 = sqrt(suspModifier1);
 
 	fFrontDefaultCompression /= suspModifier1;
 	fRearDefaultCompression /= suspModifier1;
-	fFrontBumpDamp /= suspModifier2;
-	fFrontReboundDamp /= suspModifier2;
-	fRearBumpDamp /= suspModifier2;
-	fRearReboundDamp /= suspModifier2;
+	fFrontBumpDamp /= suspModifier1;
+	fFrontReboundDamp /= suspModifier1;
+	fRearBumpDamp /= suspModifier1;
+	fRearReboundDamp /= suspModifier1;
 
 	fNitroStorage /= nitroModifier;
 	fNitroAcceleration *= nitroModifier;

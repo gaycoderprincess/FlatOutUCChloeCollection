@@ -518,6 +518,7 @@ int ChloeProfiles_LoadPlayerNameFromProfile(void* a1) {
 	gCustomSave.Load(nSaveSlot, true);
 	wcscpy_s(gCustomSave.playerName, 32, GetProfileName(nSaveSlot));
 	if (!gCustomSave.playerName[0]) wcscpy_s(gCustomSave.playerName, 32, L"PLAYER");
+	gCustomSave.ApplyPlayerSettings();
 	gCustomSave.Save();
 	return 0;
 }
@@ -536,12 +537,6 @@ int ChloeProfiles_SetNumCarsUnlocked(void* a1) {
 
 int ChloeProfiles_SetGameProgress(void* a1) {
 	gCustomSave.gameProgress = luaL_checknumber(a1, 1);
-	gCustomSave.Save();
-	return 0;
-}
-
-int ChloeProfiles_SetProfilePortrait(void* a1) {
-	gCustomSave.playerPortrait = luaL_checknumber(a1, 1);
 	gCustomSave.Save();
 	return 0;
 }
@@ -1087,7 +1082,6 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetNumCupsPassed, "ChloeProfiles_SetNumCupsPassed");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetNumCarsUnlocked, "ChloeProfiles_SetNumCarsUnlocked");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetGameProgress, "ChloeProfiles_SetGameProgress");
-	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetProfilePortrait, "ChloeProfiles_SetProfilePortrait");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetNumArcadeEventsPassed, "ChloeProfiles_GetNumArcadeEventsPassed");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetNumArcadeEvents, "ChloeProfiles_GetNumArcadeEvents");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetSoundtrackName, "ChloeOST_GetSoundtrackName");
@@ -1157,7 +1151,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_SINGLEPLAYER, "PLAYTIME_INGAME_SINGLEPLAYER");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.49 - Super Author Hunt Edition";
+	static auto sVersionString = "Chloe's Collection v1.50 - Public Release Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
