@@ -4,6 +4,7 @@ const int nMaxSpeechesPerPacenote = 8;
 struct tPacenoteType {
 	std::wstring name;
 	std::string folder;
+	std::string format;
 };
 std::vector<tPacenoteType> aPacenoteSpeechTypes;
 std::vector<tPacenoteType> aPacenoteVisualTypes;
@@ -28,8 +29,12 @@ struct tPacenoteSpeech {
 
 	static std::string GetSpeechPath(const std::string& file) {
 		std::string folder = "rt_eng";
-		if (nPacenoteType < aPacenoteSpeechTypes.size()) folder = aPacenoteSpeechTypes[nPacenoteType].folder;
-		return "data/sound/rally/" + folder + "/" + file + ".wav";
+		std::string format = ".wav";
+		if (nPacenoteType < aPacenoteSpeechTypes.size()) {
+			folder = aPacenoteSpeechTypes[nPacenoteType].folder;
+			format = aPacenoteSpeechTypes[nPacenoteType].format;
+		}
+		return "data/sound/rally/" + folder + "/" + file + format;
 	}
 
 	bool IsPlaceholder() const {
@@ -183,6 +188,12 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"180","180"},
 		{"190","190"},
 		{"200","200"},
+		{"Extra Long", "ExtraLong", "Long"},
+		{"Left Entry Chicane","LeftEntryChicane"},
+		{"Right Entry Chicane","RightEntryChicane"},
+		{"Careful - Tunnel", "CarefulTunnel", "Careful"},
+		{"Onto Concrete", "OntoConcrete"},
+		{"Uphill", "Uphill"},
 };
 
 CNyaTimer gPacenoteTimer;
@@ -614,8 +625,10 @@ void LoadPacenoteConfigs() {
 		tPacenoteType type;
 		type.name = config[std::format("pacenotespeech{}", i+1)]["name"].value_or(L"");
 		type.folder = config[std::format("pacenotespeech{}", i+1)]["folder"].value_or("");
+		type.format = config[std::format("pacenotespeech{}", i+1)]["format"].value_or("");
 		if (type.name.empty()) continue;
 		if (type.folder.empty()) continue;
+		if (type.format.empty()) continue;
 		aPacenoteSpeechTypes.push_back(type);
 	}
 	for (int i = 0; i < numPacenoteVisual; i++) {

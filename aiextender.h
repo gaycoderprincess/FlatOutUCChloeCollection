@@ -40,6 +40,13 @@ auto InitAIHooked_call = (void(__stdcall*)(void*, int))0x4693F0;
 void __stdcall InitAIHooked(void* a1, int count) {
 	if (count >= 7) {
 		count = GetOpponentCount();
+
+		// set arcade opponent count to either 11 or 12 for balance
+		if (pGameFlow->nGameMode == GM_ARCADE_CAREER) {
+			if (count <= 11) count = 11;
+			else count = 12;
+		}
+
 		if (bIsStuntMode) count = 0;
 		if (pGameFlow->nGameRulesIngame == GR_STUNT) count = 7;
 		if (nForceAICountNextRace >= 0) {
