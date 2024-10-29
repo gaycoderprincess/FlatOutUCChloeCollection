@@ -16,22 +16,30 @@ void SetSoundtrack() {
 
 	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aMenuPlaylists[nMenuSoundtrack].filename.c_str());
 
-	static int nLastSoundtrackId = -1;
-	if (pGameFlow && (pGameFlow->nGameState == GAME_STATE_RACE || nLastSoundtrackId < 0)) {
+	static std::string sLastSoundtrack;
+	if (pGameFlow && (pGameFlow->nGameState == GAME_STATE_RACE || sLastSoundtrack.empty())) {
+		bool isCarnageRace = false;
+
 		int soundtrackId = nIngameSoundtrack;
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
 			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
 			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
 			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
 			if (pGameFlow->nGameRulesIngame == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) soundtrackId = nIngameDerbySoundtrack;
+			if (pGameFlow->nGameRulesIngame == GR_ARCADE_RACE) {
+				soundtrackId = nIngameArcadeRaceSoundtrack;
+				isCarnageRace = true;
+			}
 			if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
 		}
 
-		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, aPlaylists[soundtrackId].filename.c_str());
+		auto filename = aPlaylists[soundtrackId].filename;
+		if (isCarnageRace && filename == "playlist_ingamemodern") filename = "playlist_ingamemodern2";
+		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, filename.c_str());
 
-		if (soundtrackId != nLastSoundtrackId) {
+		if (filename != sLastSoundtrack) {
 			LoadSoundtrack(1);
-			nLastSoundtrackId = soundtrackId;
+			sLastSoundtrack = filename;
 		}
 	}
 
@@ -71,6 +79,7 @@ void ApplySoundtrackPatches() {
 	int defaultTT = config["main"]["default_tt_race"].value_or(1) - 1;
 	int defaultRT = config["main"]["default_rt_race"].value_or(1) - 1;
 	int defaultDerby = config["main"]["default_derby"].value_or(1) - 1;
+	int defaultArcade = config["main"]["default_arcade_race"].value_or(1) - 1;
 	int defaultStuntShow = config["main"]["default_stuntshow"].value_or(1) - 1;
 	for (int i = 0; i < numPlaylists; i++) {
 		tPlaylist playlist;
@@ -94,6 +103,7 @@ void ApplySoundtrackPatches() {
 	if (defaultTT < 0 || defaultTT >= aPlaylists.size()) defaultTT = 0;
 	if (defaultRT < 0 || defaultRT >= aPlaylists.size()) defaultRT = 0;
 	if (defaultDerby < 0 || defaultDerby >= aPlaylists.size()) defaultDerby = 0;
+	if (defaultArcade < 0 || defaultArcade >= aPlaylists.size()) defaultArcade = 0;
 	if (defaultStuntShow < 0 || defaultStuntShow >= aPlaylists.size()) defaultStuntShow = 0;
 	nMenuSoundtrack = defaultMenu;
 	nIngameSoundtrack = defaultIngame;
@@ -101,6 +111,7 @@ void ApplySoundtrackPatches() {
 	nIngameTTSoundtrack = defaultTT;
 	nIngameRTSoundtrack = defaultRT;
 	nIngameDerbySoundtrack = defaultDerby;
+	nIngameArcadeRaceSoundtrack = defaultArcade;
 	nIngameStuntShowSoundtrack = defaultStuntShow;
 
 	for (auto& setting : aNewGameSettings) {
@@ -110,6 +121,7 @@ void ApplySoundtrackPatches() {
 		if (setting.value == &nIngameTTSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameRTSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameDerbySoundtrack) setting.maxValue = aPlaylists.size()-1;
+		if (setting.value == &nIngameArcadeRaceSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameStuntShowSoundtrack) setting.maxValue = aPlaylists.size()-1;
 	}
 

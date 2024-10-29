@@ -67,6 +67,13 @@ void SetTrackCustomProperties() {
 		NyaHookLib::Patch<uint64_t>(0x4F210A, noMap ? 0x909090000000BCE9 : 0x00014024848B168B);
 	}
 
+	bool muteMusic = pGameFlow->nGameState == GAME_STATE_RACE && !aPacenotes.empty() && nMuteMusicInRally;
+
+	static uint32_t tmpMusicVolume = 0;
+	NyaHookLib::Patch(0x41D348, muteMusic ? (uintptr_t)&tmpMusicVolume : 0x849548);
+	NyaHookLib::Patch(0x41DEAB, muteMusic ? (uintptr_t)&tmpMusicVolume : 0x849548);
+	NyaHookLib::Patch(0x4AF18C, muteMusic ? (uintptr_t)&tmpMusicVolume : 0x849548);
+
 	// increase VisibilitySet grid extents for rally trophy tracks
 	// rally russia extends to about 4600 for reference
 	static float fNegExtentsExtended = -5000.0;
