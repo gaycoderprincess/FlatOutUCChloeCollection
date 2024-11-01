@@ -4,21 +4,48 @@ int nForceAICountNextRace = -1;
 
 int GetOpponentCount() {
 	int count = 11;
-	switch (nOpponentCountType) {
-		case 0:
-			count = 7;
-			break;
-		case 1:
-			count = 11;
-			break;
-		case 2:
-			count = nNumAIProfiles;
-			break;
-		case 3:
-			count = 31;
-			break;
-		default:
-			break;
+	if (pGameFlow->nGameMode == GM_ARCADE_CAREER) {
+		switch (nOpponentCountTypeArcade) {
+			case 0:
+				count = 11;
+				break;
+			case 1:
+				count = nNumAIProfiles;
+				break;
+			default:
+				break;
+		}
+	}
+	else if (pGameFlow->nGameMode == GM_CAREER) {
+		switch (nOpponentCountTypeCareer) {
+			case 0:
+				count = 7;
+				break;
+			case 1:
+				count = 11;
+				break;
+			default:
+				break;
+		}
+	}
+	// single events
+	else {
+		switch (nOpponentCountTypeSingleEvent) {
+			case 0:
+				count = 7;
+				break;
+			case 1:
+				count = 11;
+				break;
+			case 2:
+				count = nNumAIProfiles;
+				break;
+			case 3:
+				count = 31;
+				break;
+			default:
+				break;
+		}
 	}
 	return count;
 }

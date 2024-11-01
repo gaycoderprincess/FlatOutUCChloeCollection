@@ -125,6 +125,68 @@ void SetExplosionEffects() {
 	}
 }
 
+/*NyaDrawing::CNyaRGBA32& GetPaletteColor(int id) {
+	return *(NyaDrawing::CNyaRGBA32*)&gPalette[id];
+}
+
+void SetColorPalette() {
+	static int nLastColorPalette = -1;
+	if (nLastColorPalette != nColorPalette) {
+		if (nColorPalette == 1) {
+			// upgrade bar start color
+			GetPaletteColor(30).b = 238;
+			GetPaletteColor(30).g = 63;
+			GetPaletteColor(30).r = 191;
+
+			// upgrade bar end color
+			GetPaletteColor(31).b = 241;
+			GetPaletteColor(31).g = 10;
+			GetPaletteColor(31).r = 113;
+
+			// menu yellow -> chloe collection pink
+			//GetPaletteColor(33).b = 219;
+			//GetPaletteColor(33).g = 100;
+			//GetPaletteColor(33).r = 193;
+			//GetPaletteColor(33).b = 241;
+			//GetPaletteColor(33).g = 45;
+			//GetPaletteColor(33).r = 193;
+			//GetPaletteColor(33).b = 236;
+			//GetPaletteColor(33).g = 127;
+			//GetPaletteColor(33).r = 211;
+			GetPaletteColor(33).b = 255;
+			GetPaletteColor(33).g = 115;
+			GetPaletteColor(33).r = 255;
+
+			// menu slight yellow -> slight pink
+			//GetPaletteColor(34).b = 255;
+			//GetPaletteColor(34).g = 195;
+			//GetPaletteColor(34).r = 241;
+			GetPaletteColor(34).b = 255;
+			GetPaletteColor(34).g = 201;
+			GetPaletteColor(34).r = 243;
+		}
+		else {
+			GetPaletteColor(30).b = 238;
+			GetPaletteColor(30).g = 191;
+			GetPaletteColor(30).r = 63;
+
+			GetPaletteColor(31).b = 241;
+			GetPaletteColor(31).g = 113;
+			GetPaletteColor(31).r = 10;
+
+			GetPaletteColor(33).b = 241;
+			GetPaletteColor(33).g = 193;
+			GetPaletteColor(33).r = 45;
+
+			GetPaletteColor(34).b = 255;
+			GetPaletteColor(34).g = 241;
+			GetPaletteColor(34).r = 195;
+		}
+
+		nLastColorPalette = nColorPalette;
+	}
+}*/
+
 void CustomSetterThread() {
 	SetSoundtrack();
 	SetPlayerModel();
