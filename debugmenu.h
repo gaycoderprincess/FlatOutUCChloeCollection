@@ -149,8 +149,11 @@ void ProcessDebugMenu() {
 					}
 					ChloeMenuLib::EndMenu();
 				}
-				if (DrawMenuOption("Save Pacenotes", "", false, false)) {
-					SavePacenotes();
+				if (DrawMenuOption("Save Pacenotes Globally", "", false, false)) {
+					SavePacenotes(GetPacenoteFilename());
+				}
+				if (DrawMenuOption("Save Pacenotes for this voice", "", false, false)) {
+					SavePacenotes(GetPacenoteFilenameWithVoice());
 				}
 			}
 			DrawDebugMenuViewerOption(std::format("Last Played Pacenote - {}", nLastPacenote+1));

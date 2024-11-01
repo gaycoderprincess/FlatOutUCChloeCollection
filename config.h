@@ -3,6 +3,7 @@ uint32_t nCareerRallyTrophyCars = 0;
 uint32_t nMenuSoundtrack = 0;
 uint32_t nIngameSoundtrack = 0;
 uint32_t nIngameDerbySoundtrack = 0;
+uint32_t nIngameFragDerbySoundtrack = 0;
 uint32_t nIngameArcadeRaceSoundtrack = 0;
 uint32_t nIngameFO1Soundtrack = 3;
 uint32_t nIngameTTSoundtrack = 0;

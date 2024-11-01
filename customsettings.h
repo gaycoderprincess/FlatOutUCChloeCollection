@@ -16,6 +16,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "CareerRallyTrophyCars", &nCareerRallyTrophyCars, 1, 0, 0 },
 		{ "Game", "Soundtrack", &nIngameSoundtrack, 0, 0, 1 },
 		{ "Game", "DerbySoundtrack", &nIngameDerbySoundtrack, 0, 0, 1 },
+		{ "Game", "FragDerbySoundtrack", &nIngameFragDerbySoundtrack, 0, 0, 1 },
 		{ "Game", "ArcadeRaceSoundtrack", &nIngameArcadeRaceSoundtrack, 0, 0, 1 },
 		{ "Game", "FO1Soundtrack", &nIngameFO1Soundtrack, 0, 0, 1 },
 		{ "Game", "TTSoundtrack", &nIngameTTSoundtrack, 0, 0, 1 },

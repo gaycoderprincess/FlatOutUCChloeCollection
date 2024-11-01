@@ -409,16 +409,24 @@ std::string GetPacenoteFilename() {
 	return (std::string)"Config/Pacenotes/" + GetTrackName(pGameFlow->nLevelId) + ".pac";
 }
 
+std::string GetPacenoteFilenameWithVoice() {
+	std::string type;
+	if (nPacenoteType < aPacenoteSpeechTypes.size()) {
+		type = aPacenoteSpeechTypes[nPacenoteType].folder;
+	}
+	return (std::string)"Config/Pacenotes/" + GetTrackName(pGameFlow->nLevelId) + " " + type + ".pac";
+}
+
 void AddPacenote(tPacenote note) {
 	if (note.data.types[0] < 0) return;
 	aPacenotes.push_back(note);
 }
 
-void SavePacenotes() {
+void SavePacenotes(const std::string& filename) {
 	std::filesystem::create_directory("Config");
 	std::filesystem::create_directory("Config/Pacenotes");
 
-	std::ofstream fout(GetPacenoteFilename(), std::ios::out | std::ios::binary );
+	std::ofstream fout(filename, std::ios::out | std::ios::binary );
 	if (!fout.is_open()) return;
 
 	uint32_t count = aPacenotes.size();
@@ -429,22 +437,23 @@ void SavePacenotes() {
 }
 
 int nLastPacenote = 0;
-void LoadPacenotes() {
+bool LoadPacenotes(const std::string& filename) {
 	aPacenotes.clear();
 
-	std::ifstream fin(GetPacenoteFilename(), std::ios::in | std::ios::binary );
-	if (!fin.is_open()) return;
+	std::ifstream fin(filename, std::ios::in | std::ios::binary );
+	if (!fin.is_open()) return false;
 
 	uint32_t count = 0;
 	fin.read((char*)&count, 4);
 	aPacenotes.reserve(count);
 	for (int i = 0; i < count; i++) {
-		if (fin.eof()) return;
+		if (fin.eof()) return true;
 
 		tPacenote note;
 		fin.read((char*)&note.data, sizeof(note.data));
 		AddPacenote(note);
 	}
+	return true;
 }
 
 float GetCoordProgressInStage(NyaVec3 coord) {
