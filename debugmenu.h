@@ -92,14 +92,14 @@ void PacenoteEditor(tPacenote* note) {
 	}
 }
 
-void PlaylistViewer(FO2Vector<MusicInterface::tSong>* songs, int* current, int* next) {
+void PlaylistViewer(FO2Vector<MusicInterface::tSong>& songs, int* current, int* next) {
 	ChloeMenuLib::BeginMenu();
 	DrawDebugMenuViewerOption(std::format("Current Song ID - {}", (*current) + 1));
 	DrawDebugMenuViewerOption(std::format("Next Song ID - {}", (*next) + 1));
-	for (int i = 0; i < songs->GetSize(); i++) {
+	for (int i = 0; i < songs.GetSize(); i++) {
 		DrawDebugMenuViewerOption(std::format("Song {}", i + 1));
 
-		auto song = songs->Get(i);
+		auto song = &songs[i];
 		DrawDebugMenuViewerOption(std::format("File Path - {}", song->sFile.Get()));
 		DrawDebugMenuViewerOption(std::format("Artist - {}", song->sArtist.Get()));
 		DrawDebugMenuViewerOption(std::format("Title - {}", song->sTitle.Get()));
@@ -222,13 +222,13 @@ void ProcessDebugMenu() {
 	if (DrawMenuOption("Game Playlist State")) {
 		ChloeMenuLib::BeginMenu();
 		if (DrawMenuOption("Title")) {
-			PlaylistViewer(&MusicInterface::gPlaylistTitle, &MusicInterface::gPlaylistTitleCurrent, &MusicInterface::gPlaylistTitleNext);
+			PlaylistViewer(MusicInterface::gPlaylistTitle, &MusicInterface::gPlaylistTitleCurrent, &MusicInterface::gPlaylistTitleNext);
 		}
 		if (DrawMenuOption("Ingame")) {
-			PlaylistViewer(&MusicInterface::gPlaylistIngame, &MusicInterface::gPlaylistIngameCurrent, &MusicInterface::gPlaylistIngameNext);
+			PlaylistViewer(MusicInterface::gPlaylistIngame, &MusicInterface::gPlaylistIngameCurrent, &MusicInterface::gPlaylistIngameNext);
 		}
 		if (DrawMenuOption("Stunt")) {
-			PlaylistViewer(&MusicInterface::gPlaylistStunt, &MusicInterface::gPlaylistStuntCurrent, &MusicInterface::gPlaylistStuntNext);
+			PlaylistViewer(MusicInterface::gPlaylistStunt, &MusicInterface::gPlaylistStuntCurrent, &MusicInterface::gPlaylistStuntNext);
 		}
 		ChloeMenuLib::EndMenu();
 	}
@@ -238,13 +238,13 @@ void ProcessDebugMenu() {
 			if (!playlist.gamePlaylist.begin) continue;
 
 			if (DrawMenuOption(GetStringNarrow(playlist.name))) {
-				PlaylistViewer(&playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
+				PlaylistViewer(playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
 			}
 		}
 		if (gCarnageModernPlaylist.gamePlaylist.begin) {
 			if (DrawMenuOption("MODERN (CARNAGE)")) {
 				auto& playlist = gCarnageModernPlaylist;
-				PlaylistViewer(&playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
+				PlaylistViewer(playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
 			}
 		}
 		ChloeMenuLib::EndMenu();
