@@ -6,18 +6,103 @@ char aPlaylistIngamePath[64] = "data/music/playlist_ingame.bed";
 struct tPlaylist {
 	std::string filename;
 	std::wstring name;
+
+	FO2Vector<MusicInterface::tSong> gamePlaylist;
+	int gamePlaylistCurrent = -2;
+	int gamePlaylistNext = 0;
 };
 std::vector<tPlaylist> aPlaylists;
 std::vector<tPlaylist> aMenuPlaylists;
 
-auto LoadSoundtrack = (void(*)(int))0x41D870;
+tPlaylist gCarnageModernPlaylist;
+tPlaylist* pCurrentPlaylist[3] = {};
+
+void LoadSoundtrackWithBackup(int id, tPlaylist* playlist) {
+	FO2Vector<MusicInterface::tSong>* songs = nullptr;
+	int* current = nullptr;
+	int* next = nullptr;
+	switch (id) {
+		case 0:
+			songs = &MusicInterface::gPlaylistTitle;
+			current = &MusicInterface::gPlaylistTitleCurrent;
+			next = &MusicInterface::gPlaylistTitleNext;
+			break;
+		case 1:
+			songs = &MusicInterface::gPlaylistIngame;
+			current = &MusicInterface::gPlaylistIngameCurrent;
+			next = &MusicInterface::gPlaylistIngameNext;
+			break;
+		case 2:
+			songs = &MusicInterface::gPlaylistStunt;
+			current = &MusicInterface::gPlaylistStuntCurrent;
+			next = &MusicInterface::gPlaylistStuntNext;
+			break;
+		default:
+			break;
+	}
+
+	if (auto old = pCurrentPlaylist[id]) {
+		old->gamePlaylistCurrent = *current;
+		old->gamePlaylistNext = *next;
+	}
+
+	auto bak1 = MusicInterface::gPlaylistTitleCurrent;
+	auto bak2 = MusicInterface::gPlaylistTitleNext;
+	auto bak3 = MusicInterface::gPlaylistIngameCurrent;
+	auto bak4 = MusicInterface::gPlaylistIngameNext;
+
+	if (!playlist->gamePlaylist.begin) {
+		songs->begin = nullptr;
+		songs->end = nullptr;
+		songs->capacity = nullptr;
+
+		MusicInterface::LoadPlaylist(id);
+
+		playlist->gamePlaylist = *songs;
+		playlist->gamePlaylistCurrent = *current;
+		playlist->gamePlaylistNext = *next;
+ 	}
+	else {
+		*songs = playlist->gamePlaylist;
+		*current = playlist->gamePlaylistCurrent;
+		*next = playlist->gamePlaylistNext;
+	}
+
+	if (id != 0) {
+		auto numTitle = MusicInterface::gPlaylistTitle.GetSize();
+		MusicInterface::gPlaylistTitleCurrent = bak1;
+		MusicInterface::gPlaylistTitleNext = bak2;
+
+		if (numTitle > 0) {
+			if (MusicInterface::gPlaylistTitleCurrent >= 0) MusicInterface::gPlaylistTitleCurrent %= numTitle;
+			MusicInterface::gPlaylistTitleNext %= numTitle;
+		}
+	}
+
+	if (id != 1) {
+		auto numIngame = MusicInterface::gPlaylistIngame.GetSize();
+		MusicInterface::gPlaylistIngameCurrent = bak3;
+		MusicInterface::gPlaylistIngameNext = bak4;
+
+		if (numIngame > 0) {
+			if (MusicInterface::gPlaylistIngameCurrent >= 0) MusicInterface::gPlaylistIngameCurrent %= numIngame;
+			MusicInterface::gPlaylistIngameNext %= numIngame;
+		}
+	}
+
+	pCurrentPlaylist[id] = playlist;
+}
+
 void SetSoundtrack() {
+	//NyaHookLib::Patch(0x41D8B2 + 1, "data/music/playlist_stuntfo2.bed");
+
 	static int nLastMenuSoundtrack = -1;
 
-	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, aMenuPlaylists[nMenuSoundtrack].filename.c_str());
+	auto menuPlaylist = &aMenuPlaylists[nMenuSoundtrack];
+	snprintf(aPlaylistTitlePath, 64, "%s%s.bed", aPlaylistTitleBasePath, menuPlaylist->filename.c_str());
 
-	static std::string sLastSoundtrack;
-	if (pGameFlow && (pGameFlow->nGameState == GAME_STATE_RACE || sLastSoundtrack.empty())) {
+	static tPlaylist* sLastSoundtrack = nullptr;
+	if (pGameFlow && (pGameFlow->nGameState == GAME_STATE_RACE || !sLastSoundtrack)) {
 		bool isCarnageRace = false;
 
 		int soundtrackId = nIngameSoundtrack;
@@ -35,18 +120,18 @@ void SetSoundtrack() {
 			if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
 		}
 
-		auto filename = aPlaylists[soundtrackId].filename;
-		if (isCarnageRace && filename == "playlist_ingamemodern") filename = "playlist_ingamemodern2";
-		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, filename.c_str());
+		auto playlist = &aPlaylists[soundtrackId];
+		if (isCarnageRace && playlist->filename == "playlist_ingamemodern") playlist = &gCarnageModernPlaylist;
+		snprintf(aPlaylistIngamePath, 64, "%s%s.bed", aPlaylistIngameBasePath, playlist->filename.c_str());
 
-		if (filename != sLastSoundtrack) {
-			LoadSoundtrack(1);
-			sLastSoundtrack = filename;
+		if (playlist != sLastSoundtrack) {
+			LoadSoundtrackWithBackup(1, playlist);
+			sLastSoundtrack = playlist;
 		}
 	}
 
 	if (nLastMenuSoundtrack != nMenuSoundtrack) {
-		LoadSoundtrack(0);
+		LoadSoundtrackWithBackup(0, menuPlaylist);
 
 		if (nLastMenuSoundtrack >= 0) {
 			auto data = tEventData(EVENT_MUSIC_STOP);
@@ -91,6 +176,10 @@ void ApplySoundtrackPatches() {
 		if (playlist.name.empty()) continue;
 		if (playlist.filename.empty()) continue;
 		aPlaylists.push_back(playlist);
+		if (playlist.filename == "playlist_ingamemodern") {
+			gCarnageModernPlaylist = playlist;
+			gCarnageModernPlaylist.filename = "playlist_ingamemodern2";
+		}
 	}
 	for (int i = 0; i < numMenuPlaylists; i++) {
 		tPlaylist playlist;

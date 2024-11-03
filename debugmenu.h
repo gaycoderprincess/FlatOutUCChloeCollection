@@ -92,6 +92,37 @@ void PacenoteEditor(tPacenote* note) {
 	}
 }
 
+void PlaylistViewer(FO2Vector<MusicInterface::tSong>* songs, int* current, int* next) {
+	ChloeMenuLib::BeginMenu();
+	DrawDebugMenuViewerOption(std::format("Current Song ID - {}", (*current) + 1));
+	DrawDebugMenuViewerOption(std::format("Next Song ID - {}", (*next) + 1));
+	for (int i = 0; i < songs->GetSize(); i++) {
+		DrawDebugMenuViewerOption(std::format("Song {}", i + 1));
+
+		auto song = songs->Get(i);
+		DrawDebugMenuViewerOption(std::format("File Path - {}", song->sFile.Get()));
+		DrawDebugMenuViewerOption(std::format("Artist - {}", song->sArtist.Get()));
+		DrawDebugMenuViewerOption(std::format("Title - {}", song->sTitle.Get()));
+	}
+	ChloeMenuLib::EndMenu();
+}
+
+void PaletteEditorMenu(uint8_t& value) {
+	ChloeMenuLib::BeginMenu();
+
+	static char inputString[1024] = {};
+	ChloeMenuLib::AddTextInputToString(inputString, 1024, true);
+	ChloeMenuLib::SetEnterHint("Apply");
+
+	if (DrawMenuOption(inputString + (std::string)"...", "", false, false) && inputString[0]) {
+		value = std::stoi(inputString);
+		memset(inputString,0,sizeof(inputString));
+		ChloeMenuLib::BackOut();
+	}
+
+	ChloeMenuLib::EndMenu();
+}
+
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -164,9 +195,60 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
+	if (DrawMenuOption("Palette Editor")) {
+		ChloeMenuLib::BeginMenu();
+		for (int i = 0; i < 256; i++) {
+			auto& col = *(NyaDrawing::CNyaRGBA32*)&gPalette[i];
+			if (DrawMenuOption(std::format("Color {} - {} {} {}", i, col.b, col.g, col.r))) {
+				ChloeMenuLib::BeginMenu();
+				if (DrawMenuOption(std::format("Red - {}", col.b))) {
+					PaletteEditorMenu(col.b);
+				}
+				if (DrawMenuOption(std::format("Green - {}", col.g))) {
+					PaletteEditorMenu(col.g);
+				}
+				if (DrawMenuOption(std::format("Blue - {}", col.r))) {
+					PaletteEditorMenu(col.r);
+				}
+				ChloeMenuLib::EndMenu();
+			}
+		}
+		ChloeMenuLib::EndMenu();
+	}
+
 	DrawMenuOption("Game State:", "", true);
 
 	auto prerace = GetLiteDB()->GetTable("GameFlow.PreRace");
+	if (DrawMenuOption("Game Playlist State")) {
+		ChloeMenuLib::BeginMenu();
+		if (DrawMenuOption("Title")) {
+			PlaylistViewer(&MusicInterface::gPlaylistTitle, &MusicInterface::gPlaylistTitleCurrent, &MusicInterface::gPlaylistTitleNext);
+		}
+		if (DrawMenuOption("Ingame")) {
+			PlaylistViewer(&MusicInterface::gPlaylistIngame, &MusicInterface::gPlaylistIngameCurrent, &MusicInterface::gPlaylistIngameNext);
+		}
+		if (DrawMenuOption("Stunt")) {
+			PlaylistViewer(&MusicInterface::gPlaylistStunt, &MusicInterface::gPlaylistStuntCurrent, &MusicInterface::gPlaylistStuntNext);
+		}
+		ChloeMenuLib::EndMenu();
+	}
+	if (DrawMenuOption("Mod Playlist State")) {
+		ChloeMenuLib::BeginMenu();
+		for (auto& playlist : aPlaylists) {
+			if (!playlist.gamePlaylist.begin) continue;
+
+			if (DrawMenuOption(GetStringNarrow(playlist.name))) {
+				PlaylistViewer(&playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
+			}
+		}
+		if (gCarnageModernPlaylist.gamePlaylist.begin) {
+			if (DrawMenuOption("MODERN (CARNAGE)")) {
+				auto& playlist = gCarnageModernPlaylist;
+				PlaylistViewer(&playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
+			}
+		}
+		ChloeMenuLib::EndMenu();
+	}
 	DrawDebugMenuViewerOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy");
 	DrawDebugMenuViewerOption(std::format("Career Class - {}", prerace->GetPropertyAsInt("Class", 0)));
 	DrawDebugMenuViewerOption(std::format("Career Cup - {}", prerace->GetPropertyAsInt("Cup", 0)));
