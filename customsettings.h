@@ -21,6 +21,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "FO1Soundtrack", &nIngameFO1Soundtrack, 0, 0, 1 },
 		{ "Game", "TTSoundtrack", &nIngameTTSoundtrack, 0, 0, 1 },
 		{ "Game", "RTSoundtrack", &nIngameRTSoundtrack, 0, 0, 1 },
+		{ "Game", "StuntSoundtrack", &nIngameStuntSoundtrack, 0, 0, 1 },
 		{ "Game", "StuntModeSoundtrack", &nIngameStuntShowSoundtrack, 0, 0, 1 },
 		{ "Game", "MenuSoundtrack", &nMenuSoundtrack, 0, 0, 1 },
 		{ "Game", "OpponentCountCareer", &nOpponentCountTypeCareer, 0, 0, 3 },

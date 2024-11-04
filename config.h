@@ -8,6 +8,7 @@ uint32_t nIngameArcadeRaceSoundtrack = 0;
 uint32_t nIngameFO1Soundtrack = 3;
 uint32_t nIngameTTSoundtrack = 0;
 uint32_t nIngameRTSoundtrack = 0;
+uint32_t nIngameStuntSoundtrack = 0;
 uint32_t nIngameStuntShowSoundtrack = 0;
 uint32_t nOpponentCountTypeCareer = 1; // 11
 uint32_t nOpponentCountTypeArcade = 1; // numaiprofiles

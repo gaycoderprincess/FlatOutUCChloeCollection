@@ -601,6 +601,13 @@ int ChloeOST_GetMenuSoundtrackName(void* a1) {
 	return 1;
 }
 
+int ChloeOST_GetStuntSoundtrackName(void* a1) {
+	auto name = aStuntPlaylists[(int)luaL_checknumber(a1, 1)].name;
+	if (name.empty()) return 0;
+	lua_pushlstring(a1, name.c_str(), (name.length() + 1) * 2);
+	return 1;
+}
+
 int ChloeOST_GetNumSoundtracks(void* a1) {
 	lua_pushnumber(a1, aPlaylists.size());
 	return 1;
@@ -608,6 +615,11 @@ int ChloeOST_GetNumSoundtracks(void* a1) {
 
 int ChloeOST_GetNumMenuSoundtracks(void* a1) {
 	lua_pushnumber(a1, aMenuPlaylists.size());
+	return 1;
+}
+
+int ChloeOST_GetNumStuntSoundtracks(void* a1) {
+	lua_pushnumber(a1, aStuntPlaylists.size());
 	return 1;
 }
 
@@ -1086,8 +1098,10 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetNumArcadeEvents, "ChloeProfiles_GetNumArcadeEvents");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetSoundtrackName, "ChloeOST_GetSoundtrackName");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetMenuSoundtrackName, "ChloeOST_GetMenuSoundtrackName");
+	RegisterLUAFunction(a1, (void*)&ChloeOST_GetStuntSoundtrackName, "ChloeOST_GetStuntSoundtrackName");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumSoundtracks, "ChloeOST_GetNumSoundtracks");
 	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumMenuSoundtracks, "ChloeOST_GetNumMenuSoundtracks");
+	RegisterLUAFunction(a1, (void*)&ChloeOST_GetNumStuntSoundtracks, "ChloeOST_GetNumStuntSoundtracks");
 	RegisterLUAFunction(a1, (void*)&ChloePacenotes_GetSpeechName, "ChloePacenotes_GetSpeechName");
 	RegisterLUAFunction(a1, (void*)&ChloePacenotes_GetVisualName, "ChloePacenotes_GetVisualName");
 	RegisterLUAFunction(a1, (void*)&ChloePacenotes_GetNumSpeechTypes, "ChloePacenotes_GetNumSpeechTypes");

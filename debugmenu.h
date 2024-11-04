@@ -247,6 +247,20 @@ void ProcessDebugMenu() {
 				PlaylistViewer(playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
 			}
 		}
+		for (auto& playlist : aMenuPlaylists) {
+			if (!playlist.gamePlaylist.begin) continue;
+
+			if (DrawMenuOption(GetStringNarrow(playlist.name) + " (MENU)")) {
+				PlaylistViewer(playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
+			}
+		}
+		for (auto& playlist : aStuntPlaylists) {
+			if (!playlist.gamePlaylist.begin) continue;
+
+			if (DrawMenuOption(GetStringNarrow(playlist.name) + " (STUNT)")) {
+				PlaylistViewer(playlist.gamePlaylist, &playlist.gamePlaylistCurrent, &playlist.gamePlaylistNext);
+			}
+		}
 		ChloeMenuLib::EndMenu();
 	}
 	DrawDebugMenuViewerOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy");
