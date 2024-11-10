@@ -157,7 +157,7 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Through Water", "ThroughWater", "Water", "WaterSplash"},
 		{"Left 6", "Left6", "Left5"},
 		{"Right 6", "Right6", "Right5"},
-		{"And", "And", "Into"},
+		{"And", "And"},
 		{"Dip", "Dip"},
 		{"Downhill", "Downhill"},
 		{"Slowing", "Slowing"},
@@ -194,6 +194,7 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Careful - Tunnel", "CarefulTunnel", "Careful"},
 		{"Onto Concrete", "OntoConcrete"},
 		{"Uphill", "Uphill"},
+		{"Immediate", "Immediate"},
 };
 
 CNyaTimer gPacenoteTimer;
