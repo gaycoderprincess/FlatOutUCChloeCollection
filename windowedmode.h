@@ -13,6 +13,7 @@ void SetWindowedMode() {
 	// set windowed mode to the desired option if the setup dialog is used
 	if (bSetupDialogRan) {
 		nWindowedMode = *(int*)0x764AAC;
+		bSetupDialogRan = false;
 	}
 
 	static int nLastWindowed = -1;
