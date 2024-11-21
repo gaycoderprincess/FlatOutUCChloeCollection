@@ -1,3 +1,5 @@
+bool bForceFullscreen = false;
+
 RECT GetMonitorRect(HWND hwnd) {
 	RECT rect;
 	auto monitor = MonitorFromWindow(hwnd, 0);
@@ -10,6 +12,8 @@ RECT GetMonitorRect(HWND hwnd) {
 }
 
 void SetWindowedMode() {
+	if (bForceFullscreen) return;
+
 	// set windowed mode to the desired option if the setup dialog is used
 	if (bSetupDialogRan) {
 		nWindowedMode = *(int*)0x764AAC;
@@ -44,6 +48,9 @@ void SetWindowedMode() {
 }
 
 void ApplyWindowedModePatches() {
+	bForceFullscreen = std::filesystem::exists("fullscreen");
+	if (bForceFullscreen) return;
+
 	// don't show cursor
 	NyaHookLib::Patch(0x60F23B, 0x9090D231);
 
