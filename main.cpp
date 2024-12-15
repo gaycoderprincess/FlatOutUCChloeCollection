@@ -10,6 +10,7 @@
 #include "nya_commonmath.h"
 
 #include "fouc.h"
+#include "fo2versioncheck.h"
 #include "chloemenulib.h"
 
 void WriteLog(const std::string& str) {
@@ -239,11 +240,7 @@ float __fastcall MenuCameraRotation(void* a1) {
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
-			if (NyaHookLib::GetEntryPoint() != 0x24CEF7) {
-				MessageBoxA(nullptr, aFOUCVersionFail, "nya?!~", MB_ICONERROR);
-				exit(0);
-				return TRUE;
-			}
+			DoFlatOutVersionCheck(FO2Version::FOUC_GFWL);
 
 			// after race finish, autopilot starts being read:
 			// 00481EAB
