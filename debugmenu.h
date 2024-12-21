@@ -123,6 +123,62 @@ void PaletteEditorMenu(uint8_t& value) {
 	ChloeMenuLib::EndMenu();
 }
 
+std::vector<NyaVec3> aCustomSplinesL;
+std::vector<NyaVec3> aCustomSplinesR;
+
+void SplineViewerMenu(std::vector<NyaVec3>& splines, const std::string& name) {
+	if (!splines.empty()) {
+		if (DrawMenuOption(std::format("Edit {} ({})", name, splines.size()))) {
+			ChloeMenuLib::BeginMenu();
+			for (auto& node: splines) {
+				if (DrawMenuOption(std::to_string((&node - &splines[0]) + 1))) {
+					ChloeMenuLib::BeginMenu();
+					if (DrawMenuOption("Teleport to Node", "", false, false)) {
+						auto ply = GetPlayer(0);
+						ply->pCar->GetMatrix()->p = node;
+						*ply->pCar->GetVelocity() = {0, 0, 0};
+						*ply->pCar->GetAngVelocity() = {0, 0, 0};
+						break;
+					}
+					if (DrawMenuOption("Delete Node", "", false, false)) {
+						splines.erase(splines.begin() + (&node - &splines[0]));
+						ChloeMenuLib::BackOut();
+						break;
+					}
+					ChloeMenuLib::EndMenu();
+				}
+			}
+			ChloeMenuLib::EndMenu();
+		}
+	}
+}
+
+void WriteSpline(std::ofstream& fout, std::vector<NyaVec3>& vec, const std::string& name) {
+	if (vec.empty()) return;
+
+	fout << "\n\t[\"" + name + "\"] = {";
+	fout << "\n\t\tCount = " + std::to_string(vec.size()) + ",";
+	fout << "\n\t\tControlPoints = {";
+	for (auto& pos : vec) {
+		fout << std::format("\n\t\t\t[{}] = {{ {}, {}, {} }},", std::to_string((&pos - &vec[0]) + 1), pos.x, pos.y, pos.z);
+	}
+	fout << "\n\t\t},";
+	fout << "\n\t},\n";
+}
+
+void WriteSplines() {
+	std::ofstream fout((std::string)GetTrackName(pGameFlow->nLevelId) + "_splines.ai", std::ios::out);
+	if (!fout.is_open()) return;
+
+	fout << "Count = 2";
+	fout << "\n\nSplines = {";
+
+	WriteSpline(fout, aCustomSplinesL, "AIBorderLineLeft");
+	WriteSpline(fout, aCustomSplinesR, "AIBorderLineRight");
+
+	fout << "\n}";
+}
+
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -137,6 +193,31 @@ void ProcessDebugMenu() {
 			DrawDebugMenuViewerOption(std::format("{} - {}", aPlaytimeTypeNames[i], GetTimeString(gCustomSave.playtime[i])));
 		}
 
+		ChloeMenuLib::EndMenu();
+	}
+
+	if (DrawMenuOption("Spline Creator")) {
+		ChloeMenuLib::BeginMenu();
+		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			if (DrawMenuOption("Add Left Node")) {
+				auto ply = GetPlayer(0);
+				aCustomSplinesL.push_back(ply->pCar->GetMatrix()->p);
+			}
+			if (DrawMenuOption("Add Right Node")) {
+				auto ply = GetPlayer(0);
+				aCustomSplinesR.push_back(ply->pCar->GetMatrix()->p);
+			}
+			SplineViewerMenu(aCustomSplinesL, "Left");
+			SplineViewerMenu(aCustomSplinesR, "Right");
+			if (!aCustomSplinesL.empty() && !aCustomSplinesR.empty()) {
+				if (DrawMenuOption("Save Splines Globally", "", false, false)) {
+					WriteSplines();
+				}
+			}
+		}
+		else {
+			DrawDebugMenuViewerOption("Not in a race");
+		}
 		ChloeMenuLib::EndMenu();
 	}
 
