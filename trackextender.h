@@ -17,14 +17,62 @@ void SetAILookahead() {
 	}
 }
 
+std::vector<NyaMat4x4> aNewResetPoints;
+void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
+	*car->GetMatrix() = pos;
+	*car->GetVelocity() = car->GetMatrix()->z * speed;
+	*car->GetAngVelocity() = {0, 0, 0};
+	FO2MatrixToQuat(car->mMatrix, car->qQuaternion);
+}
+
+std::string GetResetPointFilename() {
+	return (std::string)"Config/Resets/" + GetTrackName(pGameFlow->nLevelId) + ".rst";
+}
+
+void SaveResetPoints(const std::string& filename) {
+	std::filesystem::create_directory("Config");
+	std::filesystem::create_directory("Config/Resets");
+
+	std::ofstream fout(filename, std::ios::out | std::ios::binary );
+	if (!fout.is_open()) return;
+
+	uint32_t count = aNewResetPoints.size();
+	fout.write((char*)&count, 4);
+	for (int i = 0; i < count; i++) {
+		fout.write((char*)&aNewResetPoints[i], sizeof(NyaMat4x4));
+	}
+}
+
+bool LoadResetPoints(const std::string& filename) {
+	aNewResetPoints.clear();
+
+	std::ifstream fin(filename, std::ios::in | std::ios::binary );
+	if (!fin.is_open()) return false;
+
+	uint32_t count = 0;
+	fin.read((char*)&count, 4);
+	aNewResetPoints.reserve(count);
+	for (int i = 0; i < count; i++) {
+		if (fin.eof()) return true;
+
+		NyaMat4x4 v;
+		fin.read((char*)&v, sizeof(v));
+		aNewResetPoints.push_back(v);
+	}
+	return true;
+}
+
 bool bInvisWaterPlane = false;
 float fWaterPlaneY = 0;
 void SetTrackCustomProperties() {
 	bool increased = false;
 	bool increasedNegY = false;
+	bool increasedNegY2 = false;
 	if (pGameFlow->nGameState == GAME_STATE_RACE) {
 		increased = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedVisibility");
 		increasedNegY = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedNegYVisibility");
+		increasedNegY2 = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedNegYVisibility2");
+		if (increasedNegY2) increasedNegY = true;
 
 		static double waterPlaneY;
 		static float camWaterPlaneY;
@@ -59,6 +107,8 @@ void SetTrackCustomProperties() {
 			LoadPacenotes(GetPacenoteFilename());
 		}
 
+		LoadResetPoints(GetResetPointFilename());
+
 		bool noMap = !aPacenotes.empty() && !bIsInMultiplayer;
 
 		// just disabling the map doesn't work - that sets some render flags for shadows to work correctly
@@ -82,11 +132,12 @@ void SetTrackCustomProperties() {
 	static float fPosExtentsExtended = 5000.0;
 	static float fNegExtents = -4096.0;
 	static float fPosExtents = 4096.0;
+	static float fNegYExtentsExtended2 = -400.0;
 	static float fNegYExtentsExtended = -100.0;
 	static float fNegYExtents = -50.0;
 	NyaHookLib::Patch(0x57AD5F + 2, increased ? &fNegExtentsExtended : &fNegExtents);
 	NyaHookLib::Patch(0x57AD8E + 2, increased ? &fPosExtentsExtended : &fPosExtents);
-	NyaHookLib::Patch(0x57AD6A + 2, increasedNegY ? &fNegYExtentsExtended : &fNegYExtents);
+	NyaHookLib::Patch(0x57AD6A + 2, increasedNegY2 ? &fNegYExtentsExtended2 : (increasedNegY ? &fNegYExtentsExtended : &fNegYExtents));
 }
 
 uintptr_t InitTrackASM_jmp = 0x55AAB9;
@@ -153,8 +204,60 @@ void __attribute__((naked)) __fastcall WaterPlaneSoundYASM() {
 	);
 }
 
+static inline auto ResetCar = (void(__stdcall*)(Car*, int, float*, float))0x42EEF0;
+
+NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
+	if (aNewResetPoints.empty()) return nullptr;
+
+	float dist = 99999;
+	NyaMat4x4* out = nullptr;
+	for (auto& reset : aNewResetPoints) {
+		auto d = (reset.p - pos).length();
+		if (d < dist) {
+			out = &reset;
+			dist = d;
+		}
+	}
+	auto track = pTrackAI->pTrack;
+	for (int i = 0; i < track->nNumStartpoints; i++) {
+		auto start = track->aStartpoints[i];
+		auto startPos = NyaVec3(start.fPosition[0], start.fPosition[1], start.fPosition[2]);
+		auto d = (startPos - pos).length();
+		if (d < dist) {
+			out = (NyaMat4x4*)start.fMatrix;
+			dist = d;
+		}
+	}
+	return out;
+}
+
+void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
+	auto pos = car->GetMatrix()->p;
+	ResetCar(car, a2, a3, speed);
+	if (auto reset = GetClosestResetpoint(pos)) {
+		ResetCarAt(car, *reset, speed);
+	}
+}
+
+// race restart, use end pos
+void __stdcall ResetCarNewRestart(Car* car, int a2, float* a3, float speed) {
+	ResetCar(car, a2, a3, speed);
+	if (auto reset = GetClosestResetpoint(car->GetMatrix()->p)) {
+		ResetCarAt(car, *reset, speed);
+	}
+}
+
 void ApplyTrackExtenderPatches() {
 	InitTrackASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitTrackASM);
 	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55EF38, &ForceWaterPlaneASM);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x414DB0, &WaterPlaneSoundYASM);
+
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x40AD7E, &ResetCarNew);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x40ADD9, &ResetCarNew);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47BFAF, &ResetCarNew);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47C3DE, &ResetCarNew);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47C4A0, &ResetCarNew);
+	//NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480559, &ResetCarNew);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480559, &ResetCarNewRestart);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5147C3, &ResetCarNew);
 }

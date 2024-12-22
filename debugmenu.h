@@ -221,6 +221,45 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
+	if (DrawMenuOption("Resetpoint Editor")) {
+		ChloeMenuLib::BeginMenu();
+		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			if (DrawMenuOption("Add Reset")) {
+				auto ply = GetPlayer(0);
+				aNewResetPoints.push_back(*ply->pCar->GetMatrix());
+			}
+			if (!aNewResetPoints.empty()) {
+				if (DrawMenuOption(std::format("Edit Resetpoints ({})", aNewResetPoints.size()))) {
+					ChloeMenuLib::BeginMenu();
+					for (auto& reset: aNewResetPoints) {
+						if (DrawMenuOption(std::to_string((&reset - &aNewResetPoints[0]) + 1))) {
+							ChloeMenuLib::BeginMenu();
+							if (DrawMenuOption("Teleport to Node", "", false, false)) {
+								auto ply = GetPlayer(0);
+								ResetCarAt(ply->pCar, reset, *(float*)0x849430);
+								break;
+							}
+							if (DrawMenuOption("Delete Resetpoint", "", false, false)) {
+								aNewResetPoints.erase(aNewResetPoints.begin() + (&reset - &aNewResetPoints[0]));
+								ChloeMenuLib::BackOut();
+								break;
+							}
+							ChloeMenuLib::EndMenu();
+						}
+					}
+					ChloeMenuLib::EndMenu();
+				}
+				if (DrawMenuOption("Save Resetpoints", "", false, false)) {
+					SaveResetPoints(GetResetPointFilename());
+				}
+			}
+		}
+		else {
+			DrawDebugMenuViewerOption("Not in a race");
+		}
+		ChloeMenuLib::EndMenu();
+	}
+
 	if (DrawMenuOption("Pacenote Editor")) {
 		ChloeMenuLib::BeginMenu();
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
@@ -360,6 +399,8 @@ void ProcessDebugMenu() {
 		DrawDebugMenuViewerOption(std::format("End Point - {:.2f} {:.2f} {:.2f}", end[0], end[1], end[2]));
 		DrawDebugMenuViewerOption(std::format("Player Point - {:.2f} {:.2f} {:.2f}", plyPos[0], plyPos[1], plyPos[2]));
 		DrawDebugMenuViewerOption(std::format("Player Progress - {:.0f}%", GetPlayerProgressInStage()*100));
+		DrawDebugMenuViewerOption(std::format("Player Pointer - {:X}", (uintptr_t)ply));
+		DrawDebugMenuViewerOption(std::format("Player Car Pointer - {:X}", (uintptr_t)ply->pCar));
 	}
 
 	ChloeMenuLib::EndMenu();
