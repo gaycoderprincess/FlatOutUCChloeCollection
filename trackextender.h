@@ -264,6 +264,8 @@ void ProcessNewReset() {
 		return;
 	}
 
+	if (ply->nTimeInAir > 100) return;
+
 	auto closest = GetClosestResetpoint(ply->pCar->GetMatrix()->p);
 	if (!closest) return;
 

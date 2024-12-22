@@ -347,6 +347,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// not sure if this ever does anything otherwise but it makes the FO2 Chili crash for some reason???
 			NyaHookLib::Patch<uint8_t>(0x631C88, 0xEB);
 
+			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4780CB, &OnSplitpointASM);
+
 			srand(time(0));
 		} break;
 		default:

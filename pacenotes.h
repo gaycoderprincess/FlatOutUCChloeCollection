@@ -525,6 +525,10 @@ void DrawPlayerOnRallyMap(Player* ply) {
 	DrawRectangle(x - markerXSize, x + markerXSize, y - markerYSize, y + markerYSize, color, 1);
 }
 
+double fSplitTimer = 9999;
+uint32_t nLastSplitTime = 0;
+uint32_t nLastSplitID = 0;
+
 void DrawRallyHUD() {
 	// left transparent bg
 	DrawRectangle_1080pScaled(81, 159, 18, 653, {0,0,0,50});
@@ -566,6 +570,49 @@ void DrawRallyHUD() {
 		DrawPlayerOnRallyMap(GetPlayer(i));
 	}
 	DrawPlayerOnRallyMap(GetPlayer(0));
+
+	if (fSplitTimer > 0) {
+		auto str = GetTimeFromMilliseconds(nLastSplitTime, true);
+
+		tNyaStringData data;
+		data.x = 0.5;
+		data.y = 0.3;
+		data.size = 0.04;
+		data.XCenterAlign = true;
+		data.outlinea = 255;
+		DrawString(data, std::format("{}: {}", nLastSplitID, str), &DrawStringFO2);
+	}
+	fSplitTimer -= gPacenoteTimer.fDeltaTime;
+}
+
+void __fastcall OnSplitpoint(Player* player, int id) {
+	if (aPacenotes.empty()) return;
+	if (pGameFlow->nRaceState != RACE_STATE_RACING) return;
+	if (id >= pTrackAI->pTrack->nNumSplitpoints) return;
+	if (player != GetPlayer(0)) return;
+
+	nLastSplitTime = pGameFlow->pHost->nRaceTime;
+	fSplitTimer = 3;
+	nLastSplitID = id;
+}
+
+uintptr_t OnSplitpoint_jmp = 0x4780D8;
+void __attribute__((naked)) OnSplitpointASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov edx, ecx\n\t"
+		"mov ecx, edi\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+
+		"push ecx\n"
+		"mov ecx, [edi+0x2C4]\n"
+		"push ecx\n"
+		"mov ecx, 0x178A\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (OnSplitpoint_jmp), "i" (OnSplitpoint)
+	);
 }
 
 void ProcessPacenotes() {
@@ -592,7 +639,11 @@ void ProcessPacenotes() {
 	if (AreVisualPacenotesEnabled()) DrawVisualPacenotes();
 	aVisualPacenotes.clear();
 
-	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+	if (pGameFlow->nGameState != GAME_STATE_RACE) {
+		fSplitTimer = 0;
+		return;
+	}
+
 	if (aPacenotes.empty()) return;
 	for (auto& note : aPacenoteSpeeches) {
 		note.LoadTexture();
@@ -600,6 +651,7 @@ void ProcessPacenotes() {
 
 	if (pLoadingScreen || !GetPlayer(0)) return;
 	if (pGameFlow->nRaceState != RACE_STATE_RACING) {
+		fSplitTimer = 0;
 		ClearPacenoteQueue();
 		sLastPlayedPacenoteSpeech = "";
 		for (auto& note : aPacenotes) {
