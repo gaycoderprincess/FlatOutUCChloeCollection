@@ -206,6 +206,7 @@ void __attribute__((naked)) __fastcall WaterPlaneSoundYASM() {
 
 static inline auto ResetCar = (void(__stdcall*)(Car*, int, float*, float))0x42EEF0;
 
+NyaMat4x4* pLastPlayerResetpoint = nullptr;
 NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
 	if (aNewResetPoints.empty()) return nullptr;
 
@@ -234,7 +235,10 @@ NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
 void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
 	auto pos = car->GetMatrix()->p;
 	ResetCar(car, a2, a3, speed);
-	if (auto reset = GetClosestResetpoint(pos)) {
+	if (pLastPlayerResetpoint && car == GetPlayer(0)->pCar) {
+		ResetCarAt(car, *pLastPlayerResetpoint, speed);
+	}
+	else if (auto reset = GetClosestResetpoint(pos)) {
 		ResetCarAt(car, *reset, speed);
 	}
 }
@@ -244,6 +248,27 @@ void __stdcall ResetCarNewRestart(Car* car, int a2, float* a3, float speed) {
 	ResetCar(car, a2, a3, speed);
 	if (auto reset = GetClosestResetpoint(car->GetMatrix()->p)) {
 		ResetCarAt(car, *reset, speed);
+	}
+}
+
+// grab closest resetpoint if it's within 5m, keep that
+// should be enough to prevent resets ahead of your current position
+void ProcessNewReset() {
+	if (pLoadingScreen || pGameFlow->nGameState != GAME_STATE_RACE || pGameFlow->nRaceState == RACE_STATE_COUNTDOWN) {
+		pLastPlayerResetpoint = nullptr;
+		return;
+	}
+	auto ply = GetPlayer(0);
+	if (!ply || !ply->pCar) {
+		pLastPlayerResetpoint = nullptr;
+		return;
+	}
+
+	auto closest = GetClosestResetpoint(ply->pCar->GetMatrix()->p);
+	if (!closest) return;
+
+	if ((closest->p - ply->pCar->GetMatrix()->p).length() <= 5) {
+		pLastPlayerResetpoint = closest;
 	}
 }
 

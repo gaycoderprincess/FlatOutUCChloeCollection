@@ -213,6 +213,10 @@ void ProcessDebugMenu() {
 				if (DrawMenuOption("Save Splines Globally", "", false, false)) {
 					WriteSplines();
 				}
+				if (DrawMenuOption("Delete All Splines", "", false, false)) {
+					aCustomSplinesL.clear();
+					aCustomSplinesR.clear();
+				}
 			}
 		}
 		else {

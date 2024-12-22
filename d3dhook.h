@@ -3,6 +3,7 @@ void HookLoop() {
 	ProcessPlayStats();
 	ProcessPacenotes();
 	ProcessCareerTimeTrial();
+	ProcessNewReset();
 	CommonMain();
 }
 
