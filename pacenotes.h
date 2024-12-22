@@ -573,6 +573,7 @@ void DrawRallyHUD() {
 
 	if (fSplitTimer > 0) {
 		auto str = GetTimeFromMilliseconds(nLastSplitTime, true);
+		str.pop_back(); // remove trailing zero
 
 		tNyaStringData data;
 		data.x = 0.5;
@@ -580,7 +581,10 @@ void DrawRallyHUD() {
 		data.size = 0.04;
 		data.XCenterAlign = true;
 		data.outlinea = 255;
-		DrawString(data, std::format("{}: {}", nLastSplitID, str), &DrawStringFO2);
+		if (fSplitTimer < 0.5) {
+			data.a = data.outlinea = fSplitTimer * 2 * 255;
+		}
+		DrawString(data, str, &DrawStringFO2);
 	}
 	fSplitTimer -= gPacenoteTimer.fDeltaTime;
 }

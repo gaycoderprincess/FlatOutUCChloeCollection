@@ -1,10 +1,12 @@
 void HookLoop() {
+	*(float*)0x716034 = 480.1f; // hack to fix font scale
 	ProcessCustomInputWindow();
 	ProcessPlayStats();
 	ProcessPacenotes();
 	ProcessCareerTimeTrial();
 	ProcessNewReset();
 	CommonMain();
+	*(float*)0x716034 = 480.0f;
 }
 
 void UpdateD3DProperties() {
