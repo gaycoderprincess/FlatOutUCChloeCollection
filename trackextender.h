@@ -218,7 +218,7 @@ NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
 			dist = d;
 		}
 	}
-	auto track = pTrackAI->pTrack;
+	/*auto track = pTrackAI->pTrack;
 	for (int i = 0; i < track->nNumStartpoints; i++) {
 		auto start = track->aStartpoints[i];
 		auto startPos = NyaVec3(start.fPosition[0], start.fPosition[1], start.fPosition[2]);
@@ -227,7 +227,7 @@ NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
 			out = (NyaMat4x4*)start.fMatrix;
 			dist = d;
 		}
-	}
+	}*/
 	return out;
 }
 
@@ -257,7 +257,6 @@ void ApplyTrackExtenderPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47BFAF, &ResetCarNew);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47C3DE, &ResetCarNew);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47C4A0, &ResetCarNew);
-	//NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480559, &ResetCarNew);
-	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480559, &ResetCarNewRestart);
+	//NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480559, &ResetCarNewRestart);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5147C3, &ResetCarNew);
 }
