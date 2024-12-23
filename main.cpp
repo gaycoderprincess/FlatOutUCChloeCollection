@@ -301,6 +301,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyTrackExtenderPatches();
 			ApplyBuoyancyPatches();
 			ApplyNoNetworkPatches();
+			ApplyRallyPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
 			InitCustomSave();
@@ -346,8 +347,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// never read VS_dynamicScale for cars
 			// not sure if this ever does anything otherwise but it makes the FO2 Chili crash for some reason???
 			NyaHookLib::Patch<uint8_t>(0x631C88, 0xEB);
-
-			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4780CB, &OnSplitpointASM);
 
 			srand(time(0));
 		} break;

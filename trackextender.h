@@ -232,15 +232,18 @@ NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
 	return out;
 }
 
+NyaMat4x4* pNewResetpoint = nullptr;
+float fNewResetpointSpeed = 0;
 void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
-	auto pos = car->GetMatrix()->p;
-	ResetCar(car, a2, a3, speed);
 	if (pLastPlayerResetpoint && car == GetPlayer(0)->pCar) {
-		ResetCarAt(car, *pLastPlayerResetpoint, speed);
+		pNewResetpoint = pLastPlayerResetpoint;
 	}
-	else if (auto reset = GetClosestResetpoint(pos)) {
-		ResetCarAt(car, *reset, speed);
+	else if (auto reset = GetClosestResetpoint(car->GetMatrix()->p)) {
+		pNewResetpoint = reset;
 	}
+	fNewResetpointSpeed = speed;
+	ResetCar(car, a2, a3, speed);
+	pNewResetpoint = nullptr;
 }
 
 // race restart, use end pos
@@ -274,6 +277,24 @@ void ProcessNewReset() {
 	}
 }
 
+void __fastcall OnCarReset(Car* pCar) {
+	if (!pNewResetpoint) return;
+	ResetCarAt(pCar, *pNewResetpoint, fNewResetpointSpeed);
+}
+
+uintptr_t OnCarResetASM_jmp = 0x655590;
+void __attribute__((naked)) __fastcall OnCarResetASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov ecx, ebx\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (OnCarResetASM_jmp), "i" (OnCarReset)
+	);
+}
+
 void ApplyTrackExtenderPatches() {
 	InitTrackASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitTrackASM);
 	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55EF38, &ForceWaterPlaneASM);
@@ -286,4 +307,5 @@ void ApplyTrackExtenderPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47C4A0, &ResetCarNew);
 	//NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x480559, &ResetCarNewRestart);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5147C3, &ResetCarNew);
+	OnCarResetASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x42F109, &OnCarResetASM);
 }

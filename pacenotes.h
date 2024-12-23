@@ -715,3 +715,7 @@ void LoadPacenoteConfigs() {
 		if (setting.value == &nPacenoteVisualType) setting.maxValue = aPacenoteVisualTypes.size()-1;
 	}
 }
+
+void ApplyRallyPatches() {
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4780CB, &OnSplitpointASM);
+}
