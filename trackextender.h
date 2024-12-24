@@ -62,12 +62,17 @@ bool LoadResetPoints(const std::string& filename) {
 	return true;
 }
 
+bool bOutOfMapResetEnabled = false;
+float fOutOfMapResetY = 0;
 bool bInvisWaterPlane = false;
 float fWaterPlaneY = 0;
 void SetTrackCustomProperties() {
+	bOutOfMapResetEnabled = false;
+
 	bool increased = false;
 	bool increasedNegY = false;
 	bool increasedNegY2 = false;
+	const char* textureFolder = "textures/";
 	if (pGameFlow->nGameState == GAME_STATE_RACE) {
 		increased = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedVisibility");
 		increasedNegY = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedNegYVisibility");
@@ -79,6 +84,13 @@ void SetTrackCustomProperties() {
 		waterPlaneY = 0.0;
 		if (DoesTrackValueExist(pGameFlow->nLevelId, "WaterPlaneY")) {
 			waterPlaneY = GetTrackValueNumber(pGameFlow->nLevelId, "WaterPlaneY");
+		}
+		if (DoesTrackValueExist(pGameFlow->nLevelId, "TextureFolder")) {
+			textureFolder = GetTrackValueString(pGameFlow->nLevelId, "TextureFolder");
+		}
+		if (DoesTrackValueExist(pGameFlow->nLevelId, "OutOfMapResetY")) {
+			bOutOfMapResetEnabled = true;
+			fOutOfMapResetY = GetTrackValueNumber(pGameFlow->nLevelId, "OutOfMapResetY");
 		}
 		camWaterPlaneY = waterPlaneY + 1.0;
 		NyaHookLib::Patch(0x4405FE + 2, &waterPlaneY);
@@ -118,6 +130,13 @@ void SetTrackCustomProperties() {
 		// disable local player marker
 		NyaHookLib::Patch<uint64_t>(0x4F210A, noMap ? 0x909090000000BCE9 : 0x00014024848B168B);
 	}
+
+	NyaHookLib::Patch<const char*>(0x56163D, textureFolder);
+	NyaHookLib::Patch<const char*>(0x56165A, textureFolder);
+	NyaHookLib::Patch<const char*>(0x562318, textureFolder);
+	NyaHookLib::Patch<const char*>(0x562331, textureFolder);
+	NyaHookLib::Patch<const char*>(0x58C3D3, textureFolder);
+	NyaHookLib::Patch<const char*>(0x58C40E, textureFolder);
 
 	bool muteMusic = pGameFlow->nGameState == GAME_STATE_RACE && !aPacenotes.empty() && nMuteMusicInRally;
 
@@ -264,6 +283,12 @@ void ProcessNewReset() {
 	auto ply = GetPlayer(0);
 	if (!ply || !ply->pCar) {
 		pLastPlayerResetpoint = nullptr;
+		return;
+	}
+
+	if (bOutOfMapResetEnabled && ply->pCar->GetMatrix()->p.y < fOutOfMapResetY) {
+		auto data = tEventData(EVENT_PLAYER_RESPAWN, ply->nPlayerId);
+		pEventManager->SendEvent(&data);
 		return;
 	}
 
