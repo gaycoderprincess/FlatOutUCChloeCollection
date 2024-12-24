@@ -85,7 +85,7 @@ void PacenoteEditor(tPacenote* note) {
 	if (DrawMenuOption("Move Pacenote to Car Position", "", false, false)) {
 		note->data.pos = ply->pCar->GetMatrix()->p;
 	}
-	if (DrawMenuOption("Teleport to Pacenote Position", "", false, false)) {
+	if (!bIsInMultiplayer && DrawMenuOption("Teleport to Pacenote Position", "", false, false)) {
 		ply->pCar->GetMatrix()->p = note->data.pos;
 		*ply->pCar->GetVelocity() = {0, 0, 0};
 		*ply->pCar->GetAngVelocity() = {0, 0, 0};
@@ -133,7 +133,7 @@ void SplineViewerMenu(std::vector<NyaVec3>& splines, const std::string& name) {
 			for (auto& node: splines) {
 				if (DrawMenuOption(std::to_string((&node - &splines[0]) + 1))) {
 					ChloeMenuLib::BeginMenu();
-					if (DrawMenuOption("Teleport to Node", "", false, false)) {
+					if (!bIsInMultiplayer && DrawMenuOption("Teleport to Node", "", false, false)) {
 						auto ply = GetPlayer(0);
 						ply->pCar->GetMatrix()->p = node;
 						*ply->pCar->GetVelocity() = {0, 0, 0};
@@ -294,10 +294,19 @@ void ProcessDebugMenu() {
 								std::format("{} - {}", (&note - &aPacenotes[0]) + 1, note.GetDisplayName()))) {
 							ChloeMenuLib::BeginMenu();
 							PacenoteEditor(&note);
-							if (DrawMenuOption("Delete Pacenote", "", false, false)) {
-								aPacenotes.erase(aPacenotes.begin() + (&note - &aPacenotes[0]));
-								ChloeMenuLib::BackOut();
-								break;
+							if (DrawMenuOption("Delete Pacenote")) {
+								ChloeMenuLib::BeginMenu();
+								if (DrawMenuOption("Confirm Deletion", "", false, false)) {
+									aPacenotes.erase(aPacenotes.begin() + (&note - &aPacenotes[0]));
+									ChloeMenuLib::BackOut();
+									ChloeMenuLib::BackOut();
+									return;
+								}
+								if (DrawMenuOption("Cancel", "", false, false)) {
+									ChloeMenuLib::BackOut();
+									return;
+								}
+								ChloeMenuLib::EndMenu();
 							}
 							ChloeMenuLib::EndMenu();
 						}
@@ -402,7 +411,7 @@ void ProcessDebugMenu() {
 		DrawDebugMenuViewerOption(std::format("Start Point - {:.2f} {:.2f} {:.2f}", start[0], start[1], start[2]));
 		DrawDebugMenuViewerOption(std::format("End Point - {:.2f} {:.2f} {:.2f}", end[0], end[1], end[2]));
 		DrawDebugMenuViewerOption(std::format("Player Point - {:.2f} {:.2f} {:.2f}", plyPos[0], plyPos[1], plyPos[2]));
-		DrawDebugMenuViewerOption(std::format("Player Progress - {:.0f}%", GetPlayerProgressInStage()*100));
+		DrawDebugMenuViewerOption(std::format("Player Progress - {:.0f}%", GetLocalPlayerProgressInStage()*100));
 		DrawDebugMenuViewerOption(std::format("Player Pointer - {:X}", (uintptr_t)ply));
 		DrawDebugMenuViewerOption(std::format("Player Car Pointer - {:X}", (uintptr_t)ply->pCar));
 	}

@@ -470,8 +470,44 @@ float GetCoordProgressInStage(NyaVec3 coord) {
 	return progress;
 }
 
-float GetPlayerProgressInStage() {
-	return GetCoordProgressInStage(GetPlayer(0)->pCar->GetMatrix()->p);
+struct tRallySplitpoint {
+	NyaVec3 vPos;
+	double fAbsoluteMapPos;
+	double fPercentMapPos;
+};
+tRallySplitpoint aRallySplitpoints[32];
+tRallySplitpoint gRallyInitialSplit;
+
+float GetPlayerProgressInStage(Player* ply) {
+	auto pos = ply->pCar->GetMatrix()->p;
+	pos.y = 0;
+	//auto progress = GetCoordProgressInStage(pos);
+	float progress = 0;
+	if (ply->nCurrentSplit >= pTrackAI->pTrack->nNumSplitpoints) {
+		progress = 1;
+	}
+	else if (ply->nCurrentSplit >= 0) {
+		auto split = ply->nCurrentSplit > 0 ? aRallySplitpoints[ply->nCurrentSplit-1] : gRallyInitialSplit;
+		auto splitNext = aRallySplitpoints[ply->nCurrentSplit];
+
+		auto start = split.fPercentMapPos;
+		auto end = splitNext.fPercentMapPos;
+
+		auto splitDist = (split.vPos - splitNext.vPos).length();
+		auto plyDistFromNext = (pos - splitNext.vPos).length();
+
+		auto delta = 1 - (plyDistFromNext / splitDist);
+		//if (delta < 0) delta = 0;
+		//if (delta > 1) delta = 1;
+		progress = std::lerp(start,end, delta);
+	}
+	if (progress < 0) progress = 0;
+	if (progress > 1) progress = 1;
+	return progress;
+}
+
+float GetLocalPlayerProgressInStage() {
+	return GetPlayerProgressInStage(GetPlayer(0));
 }
 
 double Get1080pToAspectX(double x) {
@@ -517,7 +553,9 @@ void DrawPlayerOnRallyMap(Player* ply) {
 	//NyaDrawing::CNyaRGBA32 localPlayerHighlightColor = {255,255,0,255};
 	NyaDrawing::CNyaRGBA32 localPlayerHighlightColor = {241,193,45,255};
 
-	auto y = Get1080pToAspectY(std::lerp(bottom, top, GetCoordProgressInStage(pos)));
+	auto progress = GetPlayerProgressInStage(ply);
+
+	auto y = Get1080pToAspectY(std::lerp(bottom, top, progress));
 	auto tmp = *(NyaDrawing::CNyaRGBA32*)&ply->nArrowColor;
 	auto color = NyaDrawing::CNyaRGBA32(tmp.b, tmp.g, tmp.r, tmp.a);
 	if (ply->nPlayerId == 1) DrawRectangle(x - markerPlayerOutlineXSize, x + markerPlayerOutlineXSize, y - markerPlayerOutlineYSize, y + markerPlayerOutlineYSize, localPlayerHighlightColor, 1);
@@ -535,21 +573,37 @@ void DrawRallyHUD() {
 	// right transparent bg
 	DrawRectangle_1080pScaled(99, 159, 24, 653, {255,255,255,50});
 
-	auto playerProgress = GetPlayerProgressInStage();
+	auto playerProgress = GetLocalPlayerProgressInStage();
 
 	// left filled bg
 	DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(std::lerp(811,160,playerProgress)), Get1080pToAspectY(811), {241,99,33,255});
 
 	// splitpoints
 	auto track = pTrackAI->pTrack;
+
+	double tmpMapPos = 0;
+	auto lastSplitpointPos = NyaVec3(track->aStartpoints[0].fPosition[0],0,track->aStartpoints[0].fPosition[2]);
+	gRallyInitialSplit.vPos = lastSplitpointPos;
+	gRallyInitialSplit.fAbsoluteMapPos = 0;
+	gRallyInitialSplit.fPercentMapPos = 0;
+
 	for (int i = 0; i < track->nNumSplitpoints; i++) {
 		auto pos = track->aSplitpoints[i].fPosition;
-
+		auto posVec = NyaVec3(pos[0],0,pos[2]);
+		tmpMapPos += (posVec - lastSplitpointPos).length();
+		lastSplitpointPos = posVec;
+		aRallySplitpoints[i].vPos = posVec;
+		aRallySplitpoints[i].fAbsoluteMapPos = tmpMapPos;
+	}
+	for (int i = 0; i < track->nNumSplitpoints; i++) {
+		aRallySplitpoints[i].fPercentMapPos = aRallySplitpoints[i].fAbsoluteMapPos / tmpMapPos;
+	}
+	for (int i = 0; i < track->nNumSplitpoints; i++) {
 		// 1 pixel off so it has less chance to look wrong
 		int top = 160;
 		int bottom = 811;
 
-		auto y = std::lerp(bottom, top, GetCoordProgressInStage({pos[0],pos[1],pos[2]}));
+		auto y = std::lerp(bottom, top, aRallySplitpoints[i].fPercentMapPos);
 		DrawRectangle(Get1080pToAspectX(81), Get1080pToAspectX(81+18), Get1080pToAspectY(y-1), Get1080pToAspectY(y+1), {0,0,0,127});
 	}
 
