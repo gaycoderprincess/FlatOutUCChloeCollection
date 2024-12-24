@@ -647,7 +647,7 @@ void __fastcall OnSplitpoint(Player* player, int id) {
 	if (aPacenotes.empty()) return;
 	if (pGameFlow->nRaceState != RACE_STATE_RACING) return;
 	if (id >= pTrackAI->pTrack->nNumSplitpoints) return;
-	if (player != GetPlayer(0)) return;
+	if (player->nPlayerId != 1) return;
 
 	nLastSplitTime = pGameFlow->pHost->nRaceTime;
 	fSplitTimer = 3;

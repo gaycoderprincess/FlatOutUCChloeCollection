@@ -20,6 +20,15 @@ void SetAILookahead() {
 std::vector<NyaMat4x4> aNewResetPoints;
 void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
 	*car->GetMatrix() = pos;
+	if (GetLiteDB()->GetTable("GameFlow.PreRace")->GetPropertyAsBool("Reversed", 0)) {
+		auto mat = car->GetMatrix();
+		mat->x.x *= -1;
+		mat->x.z *= -1;
+		mat->y.x *= -1;
+		mat->y.z *= -1;
+		mat->z.x *= -1;
+		mat->z.z *= -1;
+	}
 	*car->GetVelocity() = car->GetMatrix()->z * speed;
 	*car->GetAngVelocity() = {0, 0, 0};
 	FO2MatrixToQuat(car->mMatrix, car->qQuaternion);
@@ -254,7 +263,7 @@ NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
 NyaMat4x4* pNewResetpoint = nullptr;
 float fNewResetpointSpeed = 0;
 void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
-	if (pLastPlayerResetpoint && car == GetPlayer(0)->pCar) {
+	if (pLastPlayerResetpoint && car->pPlayer->nPlayerId == 1) {
 		pNewResetpoint = pLastPlayerResetpoint;
 	}
 	else if (auto reset = GetClosestResetpoint(car->GetMatrix()->p)) {
