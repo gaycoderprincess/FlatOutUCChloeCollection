@@ -71,12 +71,14 @@ bool LoadResetPoints(const std::string& filename) {
 	return true;
 }
 
+bool bVoidResetEnabled = false;
 bool bOutOfMapResetEnabled = false;
 float fOutOfMapResetY = 0;
 bool bInvisWaterPlane = false;
 float fWaterPlaneY = 0;
 void SetTrackCustomProperties() {
 	bOutOfMapResetEnabled = false;
+	bVoidResetEnabled = false;
 
 	bool increased = false;
 	bool increasedNegY = false;
@@ -100,6 +102,9 @@ void SetTrackCustomProperties() {
 		if (DoesTrackValueExist(pGameFlow->nLevelId, "OutOfMapResetY")) {
 			bOutOfMapResetEnabled = true;
 			fOutOfMapResetY = GetTrackValueNumber(pGameFlow->nLevelId, "OutOfMapResetY");
+		}
+		if (DoesTrackValueExist(pGameFlow->nLevelId, "ResetInVoid")) {
+			bVoidResetEnabled = true;
 		}
 		camWaterPlaneY = waterPlaneY + 1.0;
 		NyaHookLib::Patch(0x4405FE + 2, &waterPlaneY);
@@ -285,12 +290,18 @@ void __stdcall ResetCarNewRestart(Car* car, int a2, float* a3, float speed) {
 // grab closest resetpoint if it's within 5m, keep that
 // should be enough to prevent resets ahead of your current position
 void ProcessNewReset() {
+	static double fTimeSinceLastGround = 0;
+	static CNyaTimer timer;
+	timer.Process();
+
 	if (pLoadingScreen || pGameFlow->nGameState != GAME_STATE_RACE || pGameFlow->nRaceState == RACE_STATE_COUNTDOWN) {
+		fTimeSinceLastGround = 0;
 		pLastPlayerResetpoint = nullptr;
 		return;
 	}
 	auto ply = GetPlayer(0);
 	if (!ply || !ply->pCar) {
+		fTimeSinceLastGround = 0;
 		pLastPlayerResetpoint = nullptr;
 		return;
 	}
@@ -299,6 +310,28 @@ void ProcessNewReset() {
 		auto data = tEventData(EVENT_PLAYER_RESPAWN, ply->nPlayerId);
 		pEventManager->SendEvent(&data);
 		return;
+	}
+
+	// reset if no ground was found
+	if (bVoidResetEnabled) {
+		auto origin = ply->pCar->GetMatrix()->p;
+		auto dir = NyaVec3(0,-1,0);
+
+		tLineOfSightIn prop;
+		prop.fMaxDistance = 10000;
+		tLineOfSightOut out;
+		if (!CheckLineOfSight(&prop, pGameFlow->pHost->pUnkForLOS, &origin, &dir, &out)) {
+			fTimeSinceLastGround += timer.fDeltaTime;
+			if (fTimeSinceLastGround > 0.5) {
+				auto data = tEventData(EVENT_PLAYER_RESPAWN, ply->nPlayerId);
+				pEventManager->SendEvent(&data);
+				fTimeSinceLastGround = 0;
+				return;
+			}
+		}
+		else {
+			fTimeSinceLastGround = 0;
+		}
 	}
 
 	if (ply->nTimeInAir > 100) return;
