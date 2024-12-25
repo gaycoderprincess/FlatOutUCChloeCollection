@@ -69,9 +69,8 @@ namespace SpeedtrapMode {
 			data.x = 0.15 * GetAspectRatioInv();
 			data.XRightAlign = false;
 			DrawString(data, std::format("{}. {}", (&ply - &aLeaderboard[0]) + 1, GetStringNarrow(ply.name.c_str()), ply.score), &DrawStringFO2);
-			//data.x = 0.42 * GetAspectRatioInv();
 			//data.x = 0.45 * GetAspectRatioInv();
-			data.x = 0.46 * GetAspectRatioInv();
+			data.x = 0.47 * GetAspectRatioInv();
 			data.XRightAlign = true;
 			DrawString(data, std::format("{} KMH", ply.score), &DrawStringFO2);
 			data.y += data.size;
@@ -166,10 +165,12 @@ namespace SpeedtrapMode {
 					auto ply = GetPlayer(i);
 					if (!ply) continue;
 					if (ply->nCurrentLap < pScoreManager->nNumLaps) {
-						if (i == 0) {
-							AddScore(i, L"HURRY UP!", -10, 1);
+						if (nPlayerScore[i] >= 10) {
+							if (i == 0) {
+								AddScore(i, L"HURRY UP!", -10, 1);
+							}
+							nPlayerScore[i] -= 10;
 						}
-						nPlayerScore[i] -= 10;
 					}
 				}
 				fDeductTimer -= 1;
