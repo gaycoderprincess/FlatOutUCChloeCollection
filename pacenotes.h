@@ -564,6 +564,7 @@ void DrawPlayerOnRallyMap(Player* ply) {
 }
 
 double fSplitTimer = 0;
+double fSplitDiffTimer = 0;
 uint32_t nLastSplitTime = 0;
 uint32_t nLastSplitID = 0;
 float fLastSplitSpeed = 0;
@@ -572,7 +573,7 @@ uint32_t nSplitTimes[32][512];
 float fSplitSpeeds[32][512];
 uint32_t GetFastestOpponentTimeForSplit(int id) {
 	uint32_t out = 0;
-	for (int i = 1; i < 32; i++) { // don't count local player
+	for (int i = 1; i < 32; i++) {
 		auto split = nSplitTimes[i][id];
 		if (!split) continue;
 		if (!out || split < out) {
@@ -584,7 +585,7 @@ uint32_t GetFastestOpponentTimeForSplit(int id) {
 
 float GetFastestOpponentSpeedForSplit(int id) {
 	float out = 0;
-	for (int i = 1; i < 32; i++) { // don't count local player
+	for (int i = 1; i < 32; i++) {
 		auto split = fSplitSpeeds[i][id];
 		if (split > out) {
 			out = split;
@@ -593,25 +594,46 @@ float GetFastestOpponentSpeedForSplit(int id) {
 	return out;
 }
 
+bool HasAnyOpponentCrossedThisSplit(int id) {
+	for (int i = 1; i < 32; i++) {
+		if (nSplitTimes[i][id]) return true;
+	}
+	return false;
+}
+
+bool HasLocalPlayerCrossedThisSplit(int id) {
+	return nSplitTimes[0][id] != 0;
+}
+
 void DrawSplitHUD() {
 	static CNyaTimer gSplitTimer;
 	gSplitTimer.Process();
 
+	tNyaStringData data;
+	data.x = 0.5;
+	data.y = 0.3;
+	data.size = 0.04;
+	if (aPacenotes.empty()) data.y -= data.size;
+	data.XCenterAlign = true;
+	data.outlinea = 255;
+	if (fSplitTimer < 0.5) {
+		data.a = data.outlinea = fSplitTimer * 2 * 255;
+	}
+
 	if (fSplitTimer > 0) {
 		auto str = GetTimeFromMilliseconds(nLastSplitTime, true);
 		str.pop_back(); // remove trailing zero
-
-		tNyaStringData data;
-		data.x = 0.5;
-		data.y = 0.3;
-		data.size = 0.04;
-		if (aPacenotes.empty()) data.y -= data.size;
-		data.XCenterAlign = true;
-		data.outlinea = 255;
-		if (fSplitTimer < 0.5) {
-			data.a = data.outlinea = fSplitTimer * 2 * 255;
-		}
 		DrawString(data, str, &DrawStringFO2);
+	}
+
+	if (fSplitDiffTimer > 0) {
+		auto str = GetTimeFromMilliseconds(nLastSplitTime, true);
+		str.pop_back(); // remove trailing zero
+
+		data.a = 255;
+		if (fSplitDiffTimer < 0.5) {
+			data.a = data.outlinea = fSplitDiffTimer * 2 * 255;
+		}
 
 		auto comp = (int32_t)GetFastestOpponentTimeForSplit(nLastSplitID);
 		if (comp && nSplitType != 0) {
@@ -659,6 +681,7 @@ void DrawSplitHUD() {
 		}
 	}
 	fSplitTimer -= gSplitTimer.fDeltaTime;
+	fSplitDiffTimer -= gSplitTimer.fDeltaTime;
 }
 
 void DrawRallyHUD() {
@@ -750,8 +773,10 @@ bool ShouldDrawSplits() {
 		default:
 			return false;
 		case 1:
-			return IsInRallyMode() || IsInTimeTrialWithSplits();
+			return IsInRallyMode();
 		case 2:
+			return IsInRallyMode() || IsInTimeTrialWithSplits();
+		case 3:
 			return true;
 	}
 }
@@ -771,14 +796,23 @@ void __fastcall OnSplitpoint(Player* player, int id) {
 			time -= GetPlayerScore<PlayerScoreRace>(player->nPlayerId)->nLapTimes[lap];
 		}
 	}*/
+
+	if (player->nPlayerId != 1) {
+		if (HasLocalPlayerCrossedThisSplit(id) && !HasAnyOpponentCrossedThisSplit(id)) {
+			fSplitDiffTimer = 3;
+			if (fSplitTimer > 2) fSplitDiffTimer = fSplitTimer;
+		}
+	}
+	else {
+		nLastSplitTime = time;
+		fLastSplitSpeed = speed;
+		fSplitTimer = 3;
+		fSplitDiffTimer = 3;
+		nLastSplitID = id;
+	}
+
 	nSplitTimes[player->nPlayerId-1][id] = time;
 	fSplitSpeeds[player->nPlayerId-1][id] = speed;
-
-	if (player->nPlayerId != 1) return;
-	nLastSplitTime = time;
-	fLastSplitSpeed = speed;
-	fSplitTimer = 3;
-	nLastSplitID = id;
 }
 
 uintptr_t OnSplitpoint_jmp = 0x4780D8;
@@ -811,6 +845,7 @@ void ProcessSplitHUD() {
 		memset(nSplitTimes, 0, sizeof(nSplitTimes));
 		memset(fSplitSpeeds, 0, sizeof(fSplitSpeeds));
 		fSplitTimer = 0;
+		fSplitDiffTimer = 0;
 		nLastSplitTime = 0;
 		nLastSplitID = 0;
 		return;
@@ -842,10 +877,7 @@ void ProcessPacenotes() {
 	if (AreVisualPacenotesEnabled()) DrawVisualPacenotes();
 	aVisualPacenotes.clear();
 
-	if (pGameFlow->nGameState != GAME_STATE_RACE) {
-		fSplitTimer = 0;
-		return;
-	}
+	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
 
 	if (aPacenotes.empty()) return;
 	for (auto& note : aPacenoteSpeeches) {
@@ -854,7 +886,6 @@ void ProcessPacenotes() {
 
 	if (pLoadingScreen || !GetPlayer(0)) return;
 	if (pGameFlow->nRaceState != RACE_STATE_RACING) {
-		fSplitTimer = 0;
 		ClearPacenoteQueue();
 		sLastPlayedPacenoteSpeech = "";
 		for (auto& note : aPacenotes) {
