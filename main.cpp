@@ -293,7 +293,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyBombExplosionPatches();
 			ApplyCarLimitAdjuster();
 			ApplyCarTuningPatches();
-			ApplyStuntModeAirControlPatch();
+			StuntMode::ApplyAirControlPatch();
 			ApplySoundTweaks();
 			ApplyTestHUDPatches();
 			ApplyDebugMenuPatches();

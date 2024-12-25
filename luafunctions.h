@@ -663,32 +663,32 @@ int ChloeCollection_SaveSettings(void* a1) {
 }
 
 int ChloeCollection_SetStuntMode(void* a1) {
-	ApplyStuntModePatches(luaL_checknumber(a1, 1));
+	StuntMode::ApplyPatches(luaL_checknumber(a1, 1));
 	return 0;
 }
 
 int ChloeCollection_SetStuntTime(void* a1) {
-	nStuntModeTime = (int)luaL_checknumber(a1, 1) * 60 * 1000;
+	StuntMode::nTimeLimit = (int)luaL_checknumber(a1, 1) * 60 * 1000;
 	return 0;
 }
 
 int ChloeCollection_SetStuntSimpleUI(void* a1) {
-	bStuntModeSimpleUI = luaL_checknumber(a1, 1);
+	StuntMode::bSimpleUI = luaL_checknumber(a1, 1);
 	return 0;
 }
 
 int ChloeCollection_SetStuntHandling(void* a1) {
-	bStuntModeHandling = luaL_checknumber(a1, 1);
+	StuntMode::bStuntHandling = luaL_checknumber(a1, 1);
 	return 0;
 }
 
 int ChloeCollection_GetStuntHandling(void* a1) {
-	lua_pushnumber(a1, bStuntModeHandling);
+	lua_pushnumber(a1, StuntMode::bStuntHandling);
 	return 1;
 }
 
 int ChloeCollection_SetAirControlMode(void* a1) {
-	nStuntModeAirControlMode = (int)luaL_checknumber(a1, 1);
+	StuntMode::nAirControlMode = (int)luaL_checknumber(a1, 1);
 	return 0;
 }
 
@@ -700,7 +700,7 @@ int ChloeCollection_WasLastRaceStuntMode(void* a1) {
 void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
-	ApplyStuntModePatches(false);
+	StuntMode::ApplyPatches(false);
 	ApplyCareerTimeTrialPatches(false);
 	return 0;
 }
@@ -1166,7 +1166,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_TIMETRIAL, "PLAYTIME_INGAME_TIMETRIAL");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.55 - Rally Trophy Complete Edition";
+	static auto sVersionString = "Chloe's Collection v1.56 - Rally Trophy Complete Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
