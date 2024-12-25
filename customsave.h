@@ -95,6 +95,8 @@ struct tCustomSaveStructure {
 	uint8_t playerColor;
 	uint8_t hudType;
 	uint8_t highCarCam;
+	uint8_t displaySplits;
+	uint8_t splitType;
 
 	static inline bool bOverrideAllArcadeScores = false;
 
@@ -112,6 +114,8 @@ struct tCustomSaveStructure {
 		playerColor = 0;
 		hudType = 0;
 		highCarCam = 0;
+		displaySplits = 1;
+		splitType = 1;
 	}
 	void ApplyPlayerSettings() const {
 		*(int*)0x849494 = imperialUnits;
@@ -123,6 +127,8 @@ struct tCustomSaveStructure {
 		nArrowColor = playerColor;
 		nHUDType = hudType;
 		nHighCarCam = highCarCam;
+		nDisplaySplits = displaySplits;
+		nSplitType = splitType;
 	}
 	void ReadPlayerSettings() {
 		imperialUnits = *(int*)0x849494;
@@ -133,7 +139,8 @@ struct tCustomSaveStructure {
 		playerPortrait = nAvatarID;
 		playerColor = nArrowColor;
 		hudType = nHUDType;
-		highCarCam = nHighCarCam;
+		displaySplits = nDisplaySplits;
+		splitType = nSplitType;
 	}
 	void Load(int saveSlot, bool overrideArcadeScores) {
 		// override all scores on the first load since swapping profiles doesn't properly clear it

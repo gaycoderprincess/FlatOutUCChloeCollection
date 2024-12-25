@@ -566,8 +566,10 @@ void DrawPlayerOnRallyMap(Player* ply) {
 double fSplitTimer = 0;
 uint32_t nLastSplitTime = 0;
 uint32_t nLastSplitID = 0;
+float fLastSplitSpeed = 0;
 
-uint32_t nSplitTimes[32][32];
+uint32_t nSplitTimes[32][512];
+float fSplitSpeeds[32][512];
 uint32_t GetFastestOpponentTimeForSplit(int id) {
 	uint32_t out = 0;
 	for (int i = 1; i < 32; i++) { // don't count local player
@@ -578,6 +580,85 @@ uint32_t GetFastestOpponentTimeForSplit(int id) {
 		}
 	}
 	return out;
+}
+
+float GetFastestOpponentSpeedForSplit(int id) {
+	float out = 0;
+	for (int i = 1; i < 32; i++) { // don't count local player
+		auto split = fSplitSpeeds[i][id];
+		if (split > out) {
+			out = split;
+		}
+	}
+	return out;
+}
+
+void DrawSplitHUD() {
+	static CNyaTimer gSplitTimer;
+	gSplitTimer.Process();
+
+	if (fSplitTimer > 0) {
+		auto str = GetTimeFromMilliseconds(nLastSplitTime, true);
+		str.pop_back(); // remove trailing zero
+
+		tNyaStringData data;
+		data.x = 0.5;
+		data.y = 0.3;
+		data.size = 0.04;
+		if (aPacenotes.empty()) data.y -= data.size;
+		data.XCenterAlign = true;
+		data.outlinea = 255;
+		if (fSplitTimer < 0.5) {
+			data.a = data.outlinea = fSplitTimer * 2 * 255;
+		}
+		DrawString(data, str, &DrawStringFO2);
+
+		auto comp = (int32_t)GetFastestOpponentTimeForSplit(nLastSplitID);
+		if (comp && nSplitType != 0) {
+			auto diff = (int32_t)nLastSplitTime - comp;
+
+			bool ahead = diff <= 0;
+			if (ahead) {
+				diff *= -1;
+				data.r = 0;
+				data.g = 255;
+				data.b = 0;
+				str = "-" + GetTimeFromMilliseconds(diff, true);
+			} else {
+				data.r = 255;
+				data.g = 0;
+				data.b = 0;
+				str = "+" + GetTimeFromMilliseconds(diff, true);
+			}
+
+			str.pop_back(); // remove trailing zero
+			data.y += data.size;
+			DrawString(data, str, &DrawStringFO2);
+		}
+
+		comp = GetFastestOpponentSpeedForSplit(nLastSplitID);
+		if (comp && nDisplaySplits >= 2) {
+			auto diff = fLastSplitSpeed - comp;
+
+			bool ahead = diff <= 0;
+			if (ahead) {
+				diff *= -1;
+				data.r = 255;
+				data.g = 0;
+				data.b = 0;
+				str = std::format("-{:.0f} KMH",diff);
+			} else {
+				data.r = 0;
+				data.g = 255;
+				data.b = 0;
+				str = std::format("+{:.0f} KMH",diff);
+			}
+
+			data.y += data.size;
+			DrawString(data, str, &DrawStringFO2);
+		}
+	}
+	fSplitTimer -= gSplitTimer.fDeltaTime;
 }
 
 void DrawRallyHUD() {
@@ -637,46 +718,6 @@ void DrawRallyHUD() {
 		DrawPlayerOnRallyMap(GetPlayer(i));
 	}
 	DrawPlayerOnRallyMap(GetPlayer(0));
-
-	if (fSplitTimer > 0) {
-		auto str = GetTimeFromMilliseconds(nLastSplitTime, true);
-		str.pop_back(); // remove trailing zero
-
-		tNyaStringData data;
-		data.x = 0.5;
-		data.y = 0.3;
-		data.size = 0.04;
-		data.XCenterAlign = true;
-		data.outlinea = 255;
-		if (fSplitTimer < 0.5) {
-			data.a = data.outlinea = fSplitTimer * 2 * 255;
-		}
-		DrawString(data, str, &DrawStringFO2);
-
-		auto comp = (int32_t)GetFastestOpponentTimeForSplit(nLastSplitID);
-		if (comp) {
-			auto diff = (int32_t) nLastSplitTime - comp;
-
-			bool ahead = diff <= 0;
-			if (ahead) {
-				diff *= -1;
-				data.r = 0;
-				data.g = 255;
-				data.b = 0;
-				str = "-" + GetTimeFromMilliseconds(diff, true);
-			} else {
-				data.r = 255;
-				data.g = 0;
-				data.b = 0;
-				str = "+" + GetTimeFromMilliseconds(diff, true);
-			}
-
-			str.pop_back(); // remove trailing zero
-			data.y += data.size;
-			DrawString(data, str, &DrawStringFO2);
-		}
-	}
-	fSplitTimer -= gPacenoteTimer.fDeltaTime;
 }
 
 bool IsRallyTrack() {
@@ -692,14 +733,50 @@ bool IsInRallyMode() {
 	return true;
 }
 
+bool IsInTimeTrialWithSplits() {
+	if (pGameFlow->nGameState != GAME_STATE_RACE) return false;
+	if (pLoadingScreen || !GetPlayer(0)) return false;
+	if (!bIsTimeTrial) return false;
+	if (pScoreManager->nNumLaps > 3) return false;
+	return true;
+}
+
+bool ShouldDrawSplits() {
+	if (pGameFlow->nGameRulesIngame != GR_DEFAULT && pGameFlow->nGameRulesIngame != GR_RACE && pGameFlow->nGameRulesIngame != GR_PONGRACE) return false;
+	if (pGameFlow->nDerbyType != DERBY_NONE) return false;
+
+	switch (nDisplaySplits) {
+		case 0:
+		default:
+			return false;
+		case 1:
+			return IsInRallyMode() || IsInTimeTrialWithSplits();
+		case 2:
+			return true;
+	}
+}
+
 void __fastcall OnSplitpoint(Player* player, int id) {
-	if (!IsInRallyMode()) return;
+	if (!ShouldDrawSplits()) return;
 	if (pGameFlow->nRaceState != RACE_STATE_RACING) return;
-	if (id >= pTrackAI->pTrack->nNumSplitpoints) return;
-	nSplitTimes[player->nPlayerId-1][id] = pGameFlow->pHost->nRaceTime;
+	if (id >= pTrackAI->pTrack->nNumSplitpoints * pScoreManager->nNumLaps) return;
+
+	auto time = pGameFlow->pHost->nRaceTime;
+	auto speed = player->pCar->GetVelocity()->length() * 3.6;
+	/*if (bIsTimeTrial) {
+		int lap = player->nCurrentLap;
+		if (lap > 0 && (player->nCurrentSplit % pTrackAI->pTrack->nNumSplitpoints) == 0) lap--;
+		if (lap > 0) {
+			id -= lap * pTrackAI->pTrack->nNumSplitpoints;
+			time -= GetPlayerScore<PlayerScoreRace>(player->nPlayerId)->nLapTimes[lap];
+		}
+	}*/
+	nSplitTimes[player->nPlayerId-1][id] = time;
+	fSplitSpeeds[player->nPlayerId-1][id] = speed;
 
 	if (player->nPlayerId != 1) return;
-	nLastSplitTime = pGameFlow->pHost->nRaceTime;
+	nLastSplitTime = time;
+	fLastSplitSpeed = speed;
 	fSplitTimer = 3;
 	nLastSplitID = id;
 }
@@ -724,15 +801,21 @@ void __attribute__((naked)) OnSplitpointASM() {
 }
 
 void ProcessRallyHUD() {
-	if (!IsInRallyMode() || pGameFlow->nRaceState != RACE_STATE_RACING) {
+	if (!IsInRallyMode() || pGameFlow->nRaceState != RACE_STATE_RACING) return;
+	if (ChloeMenuLib::IsMenuOpen()) return;
+	DrawRallyHUD();
+}
+
+void ProcessSplitHUD() {
+	if (!ShouldDrawSplits() || pGameFlow->nRaceState != RACE_STATE_RACING) {
 		memset(nSplitTimes, 0, sizeof(nSplitTimes));
+		memset(fSplitSpeeds, 0, sizeof(fSplitSpeeds));
 		fSplitTimer = 0;
 		nLastSplitTime = 0;
 		nLastSplitID = 0;
 		return;
 	}
-	if (ChloeMenuLib::IsMenuOpen()) return;
-	DrawRallyHUD();
+	DrawSplitHUD();
 }
 
 void ProcessPacenotes() {

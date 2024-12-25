@@ -4,6 +4,7 @@ void HookLoop() {
 	ProcessPlayStats();
 	ProcessPacenotes();
 	ProcessRallyHUD();
+	ProcessSplitHUD();
 	ProcessCareerTimeTrial();
 	ProcessNewReset();
 	CommonMain();

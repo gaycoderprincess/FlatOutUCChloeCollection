@@ -39,6 +39,8 @@ uint32_t nPacenoteType = 2;
 uint32_t nPacenoteVisualType = 2;
 uint32_t nShowSuperAuthors = 0;
 uint32_t nMuteMusicInRally = 1;
+uint32_t nDisplaySplits = 1;
+uint32_t nSplitType = 1;
 
 uint32_t nNumAIProfiles = 11;
 int nFragDerbyRewardSlam = 100;
