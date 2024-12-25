@@ -135,7 +135,7 @@ void SetTrackCustomProperties() {
 
 		LoadResetPoints(GetResetPointFilename());
 
-		bool noMap = !aPacenotes.empty() && !bIsInMultiplayer;
+		bool noMap = IsRallyTrack() && !bIsInMultiplayer;
 
 		// just disabling the map doesn't work - that sets some render flags for shadows to work correctly
 		// so disabling the markers instead, rally stages don't have minimap textures anyway
