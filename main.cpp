@@ -30,6 +30,7 @@ void WriteLog(const std::string& str) {
 #include "profiles.h"
 #include "customsettings.h"
 #include "stuntmode.h"
+#include "speedtrapmode.h"
 #include "soundtrackswapper.h"
 #include "ultrawide.h"
 #include "cartuning.h"

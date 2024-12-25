@@ -7,6 +7,7 @@ void HookLoop() {
 	ProcessSplitHUD();
 	ProcessCareerTimeTrial();
 	ProcessNewReset();
+	SpeedtrapMode::OnTick();
 	CommonMain();
 	*(float*)0x716034 = 480.0f;
 }

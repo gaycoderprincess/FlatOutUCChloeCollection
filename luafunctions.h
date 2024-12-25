@@ -662,6 +662,16 @@ int ChloeCollection_SaveSettings(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_SetSpeedtrapMode(void* a1) {
+	SpeedtrapMode::ApplyPatches(luaL_checknumber(a1, 1));
+	return 0;
+}
+
+int ChloeCollection_SetSpeedtrapSimpleUI(void* a1) {
+	SpeedtrapMode::bSimpleUI = luaL_checknumber(a1, 1);
+	return 0;
+}
+
 int ChloeCollection_SetStuntMode(void* a1) {
 	StuntMode::ApplyPatches(luaL_checknumber(a1, 1));
 	return 0;
@@ -697,10 +707,16 @@ int ChloeCollection_WasLastRaceStuntMode(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_WasLastRaceSpeedtrap(void* a1) {
+	lua_pushboolean(a1, bIsSpeedtrap);
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
 	StuntMode::ApplyPatches(false);
+	SpeedtrapMode::ApplyPatches(false);
 	ApplyCareerTimeTrialPatches(false);
 	return 0;
 }
@@ -1117,6 +1133,8 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetHandlingMode, "ChloeCollection_SetHandlingMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SaveSettings, "ChloeCollection_SaveSettings");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetSpeedtrapMode, "ChloeCollection_SetSpeedtrapMode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetSpeedtrapSimpleUI, "ChloeCollection_SetSpeedtrapSimpleUI");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntMode, "ChloeCollection_SetStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntTime, "ChloeCollection_SetStuntTime");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntSimpleUI, "ChloeCollection_SetStuntSimpleUI");
@@ -1124,6 +1142,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetStuntHandling, "ChloeCollection_GetStuntHandling");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetAirControlMode, "ChloeCollection_SetAirControlMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceStuntMode, "ChloeCollection_WasLastRaceStuntMode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceSpeedtrap, "ChloeCollection_WasLastRaceSpeedtrap");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsInMultiplayer, "ChloeCollection_SetIsInMultiplayer");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetRandom, "ChloeCollection_GetRandom");
@@ -1143,6 +1162,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
+	RegisterLUAEnum(a1, GR_SPEEDTRAP, "GR_SPEEDTRAP");
 
 	RegisterLUAEnum(a1, PLAYTIME_TOTAL, "PLAYTIME_TOTAL");
 	RegisterLUAEnum(a1, PLAYTIME_MENU, "PLAYTIME_MENU");
@@ -1166,7 +1186,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_TIMETRIAL, "PLAYTIME_INGAME_TIMETRIAL");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.56 - Rally Trophy Complete Edition";
+	static auto sVersionString = "Chloe's Collection v1.56 - Speedtrap Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

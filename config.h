@@ -119,4 +119,5 @@ float fArcadeRacePositionMultiplier[32];
 
 bool bIsTimeTrial = false;
 bool bIsStuntMode = false;
+bool bIsSpeedtrap = false;
 bool bIsInMultiplayer = false;
