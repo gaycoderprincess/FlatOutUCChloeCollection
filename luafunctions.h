@@ -728,7 +728,7 @@ int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
 	StuntMode::ApplyPatches(false);
 	SpeedtrapMode::ApplyPatches(false);
-	ApplyCareerTimeTrialPatches(false);
+	CareerTimeTrial::ApplyPatches(false);
 	return 0;
 }
 
@@ -980,52 +980,38 @@ int ChloeCollection_SetIsTimeTrial(void* a1) {
 }
 
 int ChloeCollection_SetCareerTimeTrial(void* a1) {
-	ApplyCareerTimeTrialPatches(luaL_checknumber(a1, 1));
+	CareerTimeTrial::ApplyPatches(luaL_checknumber(a1, 1));
 	return 0;
 }
 
 int ChloeCollection_SetCareerTimeTrialCar(void* a1) {
-	nCareerTimeTrialCar = luaL_checknumber(a1, 1);
+	CareerTimeTrial::nCar = luaL_checknumber(a1, 1);
 	return 0;
 }
 
 int ChloeCollection_SetCareerTimeTrialUpgrades(void* a1) {
-	bCareerTimeTrialUpgrades = luaL_checknumber(a1, 1);
+	CareerTimeTrial::bUpgrades = luaL_checknumber(a1, 1);
 	return 0;
 }
 
 int ChloeCollection_SetCareerTimeTrialStartPosition(void* a1) {
-	nCareerTimeTrialStartPosition = luaL_checknumber(a1, 1);
+	CareerTimeTrial::nStartPosition = luaL_checknumber(a1, 1);
 	return 0;
 }
 
 int ChloeCollection_SetCareerTimeTrialEventId(void* a1) {
-	nCareerTimeTrialEventClass = luaL_checknumber(a1, 1)-1;
-	nCareerTimeTrialEventId = luaL_checknumber(a1, 2)-1;
+	CareerTimeTrial::nEventClass = luaL_checknumber(a1, 1)-1;
+	CareerTimeTrial::nEventId = luaL_checknumber(a1, 2)-1;
 	return 0;
 }
 
 int ChloeCollection_SetCareerTimeTrialMedal(void* a1) {
-	nCareerTimeTrialMedalTimes[(int)luaL_checknumber(a1,1)]=luaL_checknumber(a1,2);
-	//WriteLog(std::format("Setting medal time {} to {}", (int)luaL_checknumber(a1,1), (int)luaL_checknumber(a1,2)));
+	CareerTimeTrial::nMedalTimes[(int)luaL_checknumber(a1,1)]=luaL_checknumber(a1,2);
 	return 0;
 }
 
 int ChloeCollection_SetCareerTimeTrialResult(void* a1) {
-	auto& event = gCustomSave.aCareerEvents[nCareerTimeTrialEventClass][nCareerTimeTrialEventId];
-	uint32_t pbTime = luaL_checknumber(a1, 1);
-	if (!event.pbTime || pbTime <= event.pbTime) {
-		event.pbTime = pbTime;
-		//WriteLog(std::format("Setting PB time to {}", pbTime));
-
-		auto& medals = nCareerTimeTrialMedalTimes;
-		if (medals[MEDAL_BRONZE] && event.pbTime <= medals[MEDAL_BRONZE]) event.medal = MEDAL_BRONZE;
-		if (medals[MEDAL_SILVER] && event.pbTime <= medals[MEDAL_SILVER]) event.medal = MEDAL_SILVER;
-		if (medals[MEDAL_GOLD] && event.pbTime <= medals[MEDAL_GOLD]) event.medal = MEDAL_GOLD;
-		if (medals[MEDAL_AUTHOR] && event.pbTime <= medals[MEDAL_AUTHOR]) event.medal = MEDAL_AUTHOR;
-		if (medals[MEDAL_SAUTHOR] && event.pbTime <= medals[MEDAL_SAUTHOR]) event.medal = MEDAL_SAUTHOR;
-		//WriteLog(std::format("earned medal {}", event.medal));
-	}
+	CareerTimeTrial::SetMedal(luaL_checknumber(a1, 1));
 	gCustomSave.Save();
 	return 0;
 }

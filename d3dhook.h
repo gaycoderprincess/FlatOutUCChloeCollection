@@ -5,7 +5,7 @@ void HookLoop() {
 	ProcessPacenotes();
 	ProcessRallyHUD();
 	ProcessSplitHUD();
-	ProcessCareerTimeTrial();
+	CareerTimeTrial::OnTick();
 	ProcessNewReset();
 	SpeedtrapMode::OnTick();
 	CommonMain();
