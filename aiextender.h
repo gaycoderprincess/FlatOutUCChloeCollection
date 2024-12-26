@@ -4,7 +4,7 @@ int nForceAICountNextRace = -1;
 
 int GetOpponentCount() {
 	int count = 11;
-	if (pGameFlow->nGameMode == GM_ARCADE_CAREER) {
+	if (pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) {
 		switch (nOpponentCountTypeArcade) {
 			case 0:
 				count = 11;
@@ -16,7 +16,7 @@ int GetOpponentCount() {
 				break;
 		}
 	}
-	else if (pGameFlow->nGameMode == GM_CAREER) {
+	else if (pGameFlow->PreRace.nMode == GM_CAREER) {
 		switch (nOpponentCountTypeCareer) {
 			case 0:
 				count = 7;
@@ -69,7 +69,7 @@ void __stdcall InitAIHooked(void* a1, int count) {
 		count = GetOpponentCount();
 
 		// set arcade opponent count to either 11 or 12 for balance
-		if (pGameFlow->nGameMode == GM_ARCADE_CAREER) {
+		if (pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) {
 			if (count <= 11) count = 11;
 			else count = 12;
 		}
@@ -80,7 +80,7 @@ void __stdcall InitAIHooked(void* a1, int count) {
 			count = nForceAICountNextRace;
 			nForceAICountNextRace = -1;
 		}
-		if (pGameFlow->nGameMode == GM_CAREER && count > 11) {
+		if (pGameFlow->PreRace.nMode == GM_CAREER && count > 11) {
 			count = 11;
 		}
 	}
@@ -137,7 +137,7 @@ void __attribute__((naked)) __fastcall GetAINameASM() {
 }
 
 void __fastcall GhostForMoreOpponents(Player* pPlayer) {
-	if (GetOpponentCount() > 7 || DoesTrackValueExist(pGameFlow->nLevelId, "AlwaysUseStartingGhost")) {
+	if (GetOpponentCount() > 7 || DoesTrackValueExist(pGameFlow->PreRace.nLevel, "AlwaysUseStartingGhost")) {
 		auto eventData = tEventData(EVENT_PLAYER_RESPAWN_GHOST);
 		eventData.data[3] = 500;
 		pPlayer->TriggerEvent(&eventData);
@@ -191,7 +191,7 @@ void __fastcall SetCustomAIProfiles(Player* pPlayer) {
 	if (!strcmp(nodeName, "AI6_RaySmith")) {
 		bRayAltProfileState = false;
 		int chance = 10;
-		if (pGameFlow->nGameMode == GM_CAREER) {
+		if (pGameFlow->PreRace.nMode == GM_CAREER) {
 			if (prerace->GetPropertyAsInt("Class", 0) == 2 && prerace->GetPropertyAsInt("Cup", 0) == 9) {
 				chance = 100; // 100% chance in race finals
 			}

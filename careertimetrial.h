@@ -74,10 +74,10 @@ void ProcessCareerTimeTrial() {
 	}
 
 	if (!bIsCareerTimeTrial) return;
-	if (pGameFlow->nGameMode != GM_CAREER) return;
+	if (pGameFlow->PreRace.nMode != GM_CAREER) return;
 	bSkipTuningThisRace = true;
-	pGameFlow->nInstantActionCar = nCareerTimeTrialCar;
-	pGameFlow->nInstantActionCarSkin = 1;
+	pGameFlow->PreRace.nCar = nCareerTimeTrialCar;
+	pGameFlow->PreRace.nCarSkin = 1;
 
 	if (pGameFlow->nGameState == GAME_STATE_RACE && GetPlayer(0)) {
 		for (int i = 1; i < 32; i++) {

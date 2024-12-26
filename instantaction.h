@@ -31,8 +31,8 @@ void __attribute__((naked)) NoInstantActionTrackIntrosASM2() {
 }
 
 void RandomizeInstantActionSkin() {
-	if (pGameFlow->nGameMode != GM_INSTANT_ACTION) return;
-	pGameFlow->nInstantActionCarSkin = (rand() % GetNumSkinsForCar(pGameFlow->nInstantActionCar)) + 1;
+	if (pGameFlow->PreRace.nMode != GM_INSTANT_ACTION) return;
+	pGameFlow->PreRace.nCarSkin = (rand() % GetNumSkinsForCar(pGameFlow->PreRace.nCar)) + 1;
 }
 
 uintptr_t InstantActionSkinRandomizerASM_jmp = 0x469295;

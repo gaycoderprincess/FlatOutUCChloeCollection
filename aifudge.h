@@ -3,7 +3,7 @@ void SetAIFudgeFactor() {
 
 	// set to normal for carnage races
 	int currentAIFudge = nAIFudgeDisabled;
-	if (pGameFlow->nGameMode == GM_ARCADE_CAREER) currentAIFudge = 0;
+	if (pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) currentAIFudge = 0;
 
 	if (nLastAIFudgeDisabled != currentAIFudge) {
 		NyaHookLib::Patch<uint16_t>(0x480ABD, currentAIFudge ? 0x9090 : 0x1875);

@@ -89,7 +89,7 @@ int nArcadePlatinumCurrentLevelX = 0;
 int nArcadePlatinumCurrentLevelY = 0;
 bool bAchievedPlatinumThisRace = false;
 void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
-	if (!bArcadePlatinumEnabled || pGameFlow->nGameMode != GM_ARCADE_CAREER) {
+	if (!bArcadePlatinumEnabled || pGameFlow->PreRace.nMode != GM_ARCADE_CAREER) {
 		if (pArcadePlatinumImage) pArcadePlatinumImage->bVisible = false;
 		return;
 	}

@@ -295,5 +295,8 @@ namespace SpeedtrapMode {
 		else {
 			NyaHookLib::Patch<uint64_t>(0x48BBAE, 0xCC0004C25B5D5E5F);
 		}
+
+		// no nitro regen by default in arcade race
+		NyaHookLib::Patch<uint32_t>(0x469BB0, apply ? 0x469AF5 : 0x469AAC);
 	}
 }

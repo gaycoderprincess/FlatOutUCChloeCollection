@@ -156,9 +156,9 @@ void SetSoundtrack() {
 
 		int soundtrackId = nIngameSoundtrack;
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
-			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
-			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
-			if (DoesTrackValueExist(pGameFlow->nLevelId, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
+			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
+			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
+			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
 			if (pGameFlow->nGameRulesIngame == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) {
 				soundtrackId = pGameFlow->nDerbyType == DERBY_FRAG ? nIngameFragDerbySoundtrack : nIngameDerbySoundtrack;
 			}

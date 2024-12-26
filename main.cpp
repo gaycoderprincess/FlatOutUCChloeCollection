@@ -63,9 +63,9 @@ void WriteLog(const std::string& str) {
 
 void SetArcadeCareerCar() {
 	if (nArcadeCareerCarVariant) {
-		pGameFlow->nInstantActionCar = GetCarMatchup(pGameFlow->nInstantActionCar);
+		pGameFlow->PreRace.nCar = GetCarMatchup(pGameFlow->PreRace.nCar);
 	}
-	pGameFlow->nInstantActionCarSkin = nArcadeCareerCarSkin;
+	pGameFlow->PreRace.nCarSkin = nArcadeCareerCarSkin;
 }
 
 uintptr_t ArcadeCareerCarSkinASM_jmp = 0x467D63;

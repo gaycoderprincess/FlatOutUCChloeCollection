@@ -223,11 +223,11 @@ void ProcessPlayStats() {
 	if (pGameFlow->nGameState == GAME_STATE_RACE) {
 		gCustomSave.playtime[PLAYTIME_INGAME] += time;
 
-		if (!bIsInMultiplayer && pGameFlow->nGameMode != GM_ONLINE_MULTIPLAYER) {
+		if (!bIsInMultiplayer && pGameFlow->PreRace.nMode != GM_ONLINE_MULTIPLAYER) {
 			gCustomSave.playtime[PLAYTIME_INGAME_SINGLEPLAYER] += time;
 		}
 
-		switch (pGameFlow->nGameMode) {
+		switch (pGameFlow->PreRace.nMode) {
 			case GM_CAREER:
 				gCustomSave.playtime[PLAYTIME_INGAME_CAREER] += time;
 				break;

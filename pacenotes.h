@@ -407,7 +407,7 @@ struct tExtraPacenote {
 tExtraPacenote EjectPacenote = {"Windscreen"};
 
 std::string GetPacenoteFilename() {
-	return (std::string)"Config/Pacenotes/" + GetTrackName(pGameFlow->nLevelId) + ".pac";
+	return (std::string)"Config/Pacenotes/" + GetTrackName(pGameFlow->PreRace.nLevel) + ".pac";
 }
 
 std::string GetPacenoteFilenameWithVoice() {
@@ -415,7 +415,7 @@ std::string GetPacenoteFilenameWithVoice() {
 	if (nPacenoteType < aPacenoteSpeechTypes.size()) {
 		type = aPacenoteSpeechTypes[nPacenoteType].folder;
 	}
-	return (std::string)"Config/Pacenotes/" + GetTrackName(pGameFlow->nLevelId) + " " + type + ".pac";
+	return (std::string)"Config/Pacenotes/" + GetTrackName(pGameFlow->PreRace.nLevel) + " " + type + ".pac";
 }
 
 void AddPacenote(tPacenote note) {
@@ -731,8 +731,8 @@ void DrawRallyHUD() {
 }
 
 bool IsRallyTrack() {
-	if (!DoesTrackValueExist(pGameFlow->nLevelId, "ForceOneLapOnly")) return false;
-	if (strcmp(GetTrackValueString(pGameFlow->nLevelId, "GfxSetPath"), "data/Tracks/Rally/")) return false;
+	if (!DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceOneLapOnly")) return false;
+	if (strcmp(GetTrackValueString(pGameFlow->PreRace.nLevel, "GfxSetPath"), "data/Tracks/Rally/")) return false;
 	return true;
 }
 

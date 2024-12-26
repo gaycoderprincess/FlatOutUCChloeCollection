@@ -10,7 +10,7 @@ float __fastcall NoAILookahead(void* a1, uintptr_t a2) {
 void SetAILookahead() {
 	if (auto game = pGameFlow) {
 		if (game->nGameState != GAME_STATE_RACE) return;
-		bool isFO1Track = DoesTrackValueExist(game->nLevelId, "UseLowAILookahead");
+		bool isFO1Track = DoesTrackValueExist(game->PreRace.nLevel, "UseLowAILookahead");
 
 		//NyaHookLib::Patch<uint64_t>(0x406CF3, isFO1Track ? 0x818B90000000DEE9 : 0x818B000000DD840F);
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x406FE0, isFO1Track ? (uintptr_t)&NoAILookahead : 0x406E50);
@@ -35,7 +35,7 @@ void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
 }
 
 std::string GetResetPointFilename() {
-	return (std::string)"Config/Resets/" + GetTrackName(pGameFlow->nLevelId) + ".rst";
+	return (std::string)"Config/Resets/" + GetTrackName(pGameFlow->PreRace.nLevel) + ".rst";
 }
 
 void SaveResetPoints(const std::string& filename) {
@@ -85,25 +85,25 @@ void SetTrackCustomProperties() {
 	bool increasedNegY2 = false;
 	const char* textureFolder = "textures/";
 	if (pGameFlow->nGameState == GAME_STATE_RACE) {
-		increased = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedVisibility");
-		increasedNegY = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedNegYVisibility");
-		increasedNegY2 = DoesTrackValueExist(pGameFlow->nLevelId, "IncreasedNegYVisibility2");
+		increased = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IncreasedVisibility");
+		increasedNegY = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IncreasedNegYVisibility");
+		increasedNegY2 = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IncreasedNegYVisibility2");
 		if (increasedNegY2) increasedNegY = true;
 
 		static double waterPlaneY;
 		static float camWaterPlaneY;
 		waterPlaneY = 0.0;
-		if (DoesTrackValueExist(pGameFlow->nLevelId, "WaterPlaneY")) {
-			waterPlaneY = GetTrackValueNumber(pGameFlow->nLevelId, "WaterPlaneY");
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "WaterPlaneY")) {
+			waterPlaneY = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "WaterPlaneY");
 		}
-		if (DoesTrackValueExist(pGameFlow->nLevelId, "TextureFolder")) {
-			textureFolder = GetTrackValueString(pGameFlow->nLevelId, "TextureFolder");
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "TextureFolder")) {
+			textureFolder = GetTrackValueString(pGameFlow->PreRace.nLevel, "TextureFolder");
 		}
-		if (DoesTrackValueExist(pGameFlow->nLevelId, "OutOfMapResetY")) {
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "OutOfMapResetY")) {
 			bOutOfMapResetEnabled = true;
-			fOutOfMapResetY = GetTrackValueNumber(pGameFlow->nLevelId, "OutOfMapResetY");
+			fOutOfMapResetY = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "OutOfMapResetY");
 		}
-		if (DoesTrackValueExist(pGameFlow->nLevelId, "ResetInVoid")) {
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ResetInVoid")) {
 			bVoidResetEnabled = true;
 		}
 		camWaterPlaneY = waterPlaneY + 1.0;
@@ -111,7 +111,7 @@ void SetTrackCustomProperties() {
 		NyaHookLib::Patch(0x5076EB + 2, &camWaterPlaneY);
 		fWaterPlaneY = waterPlaneY;
 
-		bInvisWaterPlane = DoesTrackValueExist(pGameFlow->nLevelId, "ForceInvisibleWaterPlane");
+		bInvisWaterPlane = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceInvisibleWaterPlane");
 		NyaHookLib::Patch<uint64_t>(0x44056E, bInvisWaterPlane ? 0x8D8D909090909090 : 0x8D8D000000CA840F); // collision
 		NyaHookLib::Patch<uint64_t>(0x562B2D, bInvisWaterPlane && waterPlaneY == 0.0 ? 0x3D80909090909090 : 0x3D80000002D3840F); // ragdoll collision
 		NyaHookLib::Patch<uint16_t>(0x5076E9, bInvisWaterPlane ? 0x9090 : 0x1974); // camera
@@ -186,13 +186,13 @@ void __attribute__((naked)) __fastcall InitTrackASM() {
 }
 
 /*uint32_t __fastcall ForceWaterPlane(uint32_t origValue) {
-	if (pGameFlow->nGameState == GAME_STATE_RACE && DoesTrackValueExist(pGameFlow->nLevelId, "InvisibleWaterPlane")) {
+	if (pGameFlow->nGameState == GAME_STATE_RACE && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "InvisibleWaterPlane")) {
 		NyaHookLib::Patch<uint8_t>(0x4F4CAD, 0xEB);
 	}
 	else {
 		NyaHookLib::Patch<uint8_t>(0x4F4CAD, 0x74);
 	}
-	if (pGameFlow->nGameState == GAME_STATE_RACE && DoesTrackValueExist(pGameFlow->nLevelId, "ForceWaterPlane")) {
+	if (pGameFlow->nGameState == GAME_STATE_RACE && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceWaterPlane")) {
 		return 1;
 	}
 	return origValue;

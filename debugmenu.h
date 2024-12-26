@@ -167,7 +167,7 @@ void WriteSpline(std::ofstream& fout, std::vector<NyaVec3>& vec, const std::stri
 }
 
 void WriteSplines() {
-	std::ofstream fout((std::string)GetTrackName(pGameFlow->nLevelId) + "_splines.ai", std::ios::out);
+	std::ofstream fout((std::string)GetTrackName(pGameFlow->PreRace.nLevel) + "_splines.ai", std::ios::out);
 	if (!fout.is_open()) return;
 
 	fout << "Count = 2";
