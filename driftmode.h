@@ -6,6 +6,13 @@ namespace DriftMode {
 	const float fMaxDriftTimeout = 3;
 	float fDriftSpeedFactor = 100;
 
+	float fDriftHandlingFactor = 0.4;
+	float fDriftHandlingFactorFwd = 0.5;
+	float fDriftHandlingTopSpeed = 100;
+	float fDriftTurnTopSpeed = 70;
+	float fDriftTurnSpeed = 5;
+	float fDriftTurnAngSpeedCap = 10;
+
 	float fDriftPositionMultiplier[32] = {
 			1,
 			1,
@@ -121,9 +128,7 @@ namespace DriftMode {
 		bDriftDirectionInited = false;
 	}
 
-	float fDriftHandlingFactor = 1;
-	float fDriftHandlingFactorFwd = 1;
-	void ProcessDriftHandling(Player* pPlayer) {
+	void ProcessDriftGas(Player* pPlayer) {
 		auto car = pPlayer->pCar;
 		auto swd = car->GetMatrix()->x;
 		auto fwd = car->GetMatrix()->z;
@@ -133,9 +138,41 @@ namespace DriftMode {
 		if (pPlayer->nTimeInAir) return;
 		if (pPlayer->fGasPedal <= 0) return;
 
+		auto pVel = pPlayer->pCar->GetVelocity();
+
 		auto cross = fwd.Cross(vel);
-		*pPlayer->pCar->GetVelocity() += swd * cross.y * fDriftHandlingFactor * pPlayer->fGasPedal * 0.01;
-		*pPlayer->pCar->GetVelocity() += fwd * cross.y * fDriftHandlingFactorFwd * pPlayer->fGasPedal * 0.01;
+		auto speed = pVel->length();
+		*pVel += swd * cross.y * fDriftHandlingFactor * pPlayer->fGasPedal * 0.01;
+		*pVel += fwd * std::abs(cross.y) * fDriftHandlingFactorFwd * pPlayer->fGasPedal * 0.01;
+
+		if (pVel->length() > fDriftHandlingTopSpeed * 3.6) {
+			pVel->Normalize();
+			*pVel *= speed;
+		}
+	}
+
+	void ProcessDriftSteering(Player* pPlayer) {
+		auto car = pPlayer->pCar;
+		auto vel = *car->GetVelocity();
+
+		if (std::abs(pPlayer->fOutputSteerAngle) > 0) {
+			auto turnSpeed = fDriftTurnSpeed;
+			if (vel.length() < fDriftTurnTopSpeed) {
+				turnSpeed *= vel.length() / fDriftTurnTopSpeed;
+			}
+			auto angVel = pPlayer->pCar->GetAngVelocity();
+			auto tmpAngVel = *angVel;
+			tmpAngVel += pPlayer->pCar->GetMatrix()->y * turnSpeed * pPlayer->fOutputSteerAngle * 0.01;
+			if (tmpAngVel.length() < fDriftTurnAngSpeedCap || tmpAngVel.length() < angVel->length()) {
+				*angVel = tmpAngVel;
+			}
+		}
+	}
+
+	void ProcessDriftHandling(Player* pPlayer) {
+		if (pPlayer->pCar->GetMatrix()->y.y < 0.6) return;
+		ProcessDriftGas(pPlayer);
+		ProcessDriftSteering(pPlayer);
 	}
 
 	void __fastcall ProcessPlayerCarDrift(Player* pPlayer) {
@@ -157,40 +194,48 @@ namespace DriftMode {
 		velNorm.Normalize();
 
 		ProcessDriftHandling(pPlayer);
-		if ((vel.length() * 3.6) > 50 && !pPlayer->nTimeInAir) {
-			// 1 - moving forwards
-			// 0 - moving sideways
-			// -1 - moving backwards
-			// ideal drifts seem around 0.7-0.6 or so
-			auto dot = fwd.Dot(velNorm);
-			// spun out, break drift
-			if (dot < 0.1) {
-				if (fCurrentDriftChain > 0) {
-					AddNotif("SPUN OUT!\nDRIFT ENDED");
-					EndDriftChain(false);
-				}
-				return;
-			}
-			else if (dot < 0.92) {
-				fDriftChainTimer = 0;
-
-				auto pts = (1 - dot) * vel.length() * fDriftSpeedFactor * 0.01;
-				fCurrentDriftChain += pts;
-
-				auto cross = fwd.Cross(vel);
-				auto dir = cross.y >= 0;
-
-				if (dir != bLastDriftDirection && bDriftDirectionInited) {
-					nDriftChainMultiplier++;
-				}
-				bLastDriftDirection = dir;
-				bDriftDirectionInited = true;
+		if (pPlayer->pCar->GetMatrix()->y.y < 0.6) {
+			if (fCurrentDriftChain > 0) {
+				AddNotif("FLIPPED!\nDRIFT ENDED");
+				EndDriftChain(false);
 			}
 		}
+		else {
+			if ((vel.length() * 3.6) > 50 && !pPlayer->nTimeInAir) {
+				// 1 - moving forwards
+				// 0 - moving sideways
+				// -1 - moving backwards
+				// ideal drifts seem around 0.7-0.6 or so
+				auto dot = fwd.Dot(velNorm);
+				// spun out, break drift
+				if (dot <= 0.0) {
+					if (fCurrentDriftChain > 0) {
+						AddNotif("SPUN OUT!\nDRIFT ENDED");
+						EndDriftChain(false);
+					}
+					return;
+				}
+				else if (dot < 0.95) {
+					fDriftChainTimer = 0;
 
-		if (fDriftChainTimer > 3 && fCurrentDriftChain > 0) {
-			EndDriftChain(true);
-			return;
+					auto pts = (1 - dot) * vel.length() * fDriftSpeedFactor * 0.01;
+					fCurrentDriftChain += pts;
+
+					auto cross = fwd.Cross(vel);
+					auto dir = cross.y >= 0;
+
+					if (dir != bLastDriftDirection && bDriftDirectionInited && nDriftChainMultiplier < 5) {
+						nDriftChainMultiplier++;
+					}
+					bLastDriftDirection = dir;
+					bDriftDirectionInited = true;
+				}
+			}
+
+			if (fDriftChainTimer > 3 && fCurrentDriftChain > 0) {
+				EndDriftChain(true);
+				return;
+			}
 		}
 	}
 
@@ -213,6 +258,7 @@ namespace DriftMode {
 
 	void ApplyPatches(bool apply) {
 		bIsDriftEvent = apply;
+		DriftCamera::bEnabled = apply;
 		SetArcadeRaceMultiplierPointer(apply ? fDriftPositionMultiplier : fArcadeRacePositionMultiplier);
 		// remove scenery crash bonus
 		NyaHookLib::Patch<uint8_t>(0x48D175, apply ? 0xEB : 0x75);

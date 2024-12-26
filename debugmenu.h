@@ -365,16 +365,46 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
-	if (DrawMenuOption(std::format("Drift Speed Factor - {}", DriftMode::fDriftSpeedFactor))) {
-		ValueEditorMenu(DriftMode::fDriftSpeedFactor);
-	}
+	if (DrawMenuOption("Drift Mode Tweaks")) {
+		ChloeMenuLib::BeginMenu();
 
-	if (DrawMenuOption(std::format("Drift Handling Factor - {}", DriftMode::fDriftHandlingFactor))) {
-		ValueEditorMenu(DriftMode::fDriftHandlingFactor);
-	}
+		if (DrawMenuOption(std::format("Drift Speed Factor - {}", DriftMode::fDriftSpeedFactor))) {
+			ValueEditorMenu(DriftMode::fDriftSpeedFactor);
+		}
 
-	if (DrawMenuOption(std::format("Drift Handling Factor Fwd - {}", DriftMode::fDriftHandlingFactorFwd))) {
-		ValueEditorMenu(DriftMode::fDriftHandlingFactorFwd);
+		if (DrawMenuOption(std::format("Handling Factor - {}", DriftMode::fDriftHandlingFactor))) {
+			ValueEditorMenu(DriftMode::fDriftHandlingFactor);
+		}
+
+		if (DrawMenuOption(std::format("Handling Factor Fwd - {}", DriftMode::fDriftHandlingFactorFwd))) {
+			ValueEditorMenu(DriftMode::fDriftHandlingFactorFwd);
+		}
+
+		if (DrawMenuOption(std::format("Handling Top Speed - {}", DriftMode::fDriftHandlingTopSpeed))) {
+			ValueEditorMenu(DriftMode::fDriftHandlingTopSpeed);
+		}
+
+		if (DrawMenuOption(std::format("Handling Top Turn Speed - {}", DriftMode::fDriftTurnTopSpeed))) {
+			ValueEditorMenu(DriftMode::fDriftTurnTopSpeed);
+		}
+
+		if (DrawMenuOption(std::format("Handling Turn Factor - {}", DriftMode::fDriftTurnSpeed))) {
+			ValueEditorMenu(DriftMode::fDriftTurnSpeed);
+		}
+
+		if (DrawMenuOption(std::format("Angular Velocity Cap - {}", DriftMode::fDriftTurnAngSpeedCap))) {
+			ValueEditorMenu(DriftMode::fDriftTurnAngSpeedCap);
+		}
+
+		if (DrawMenuOption(std::format("Drift Lookat Offset - {}", DriftCamera::fLookatOffset))) {
+			ValueEditorMenu(DriftCamera::fLookatOffset);
+		}
+
+		if (DrawMenuOption(std::format("Drift Follow Offset - {}", DriftCamera::fFollowOffset))) {
+			ValueEditorMenu(DriftCamera::fFollowOffset);
+		}
+
+		ChloeMenuLib::EndMenu();
 	}
 
 	DrawMenuOption("Game State:", "", true);

@@ -31,6 +31,7 @@ void WriteLog(const std::string& str) {
 #include "customsettings.h"
 #include "stuntmode.h"
 #include "speedtrapmode.h"
+#include "driftcamera.h"
 #include "driftmode.h"
 #include "soundtrackswapper.h"
 #include "ultrawide.h"
@@ -229,6 +230,7 @@ void __fastcall UpdateCameraHooked(void* a1, void*, float a2) {
 	else {
 		UpdateCameraHooked_call(a1, a2);
 	}
+	DriftCamera::ProcessCam(pCameraManager->pCamera);
 }
 
 float __fastcall MenuCameraRotation(void* a1) {
