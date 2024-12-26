@@ -203,24 +203,26 @@ namespace SpeedtrapMode {
 		return pos;
 	}
 
-	int __fastcall GetSpeedtrapPointReward(PlayerScoreArcadeRace* score) {
-		int pos = GetPlayerPosition(score->nPlayerId);
-		score->nPosition = pos;
-		int pts[9];
-		pts[1] = 10;
-		pts[2] = 8;
-		pts[3] = 6;
-		pts[4] = 5;
-		pts[5] = 4;
-		pts[6] = 3;
-		pts[7] = 2;
-		pts[8] = 1;
-		if (pos < 1 || pos > 8) {
-			return 0;
+	void DoSpeedtrapRaceStandings() {
+		for (int i = 0; i < pScoreManager->aScores.GetSize(); i++) {
+			auto score = pScoreManager->aScores[i];
+			score->nPosition = GetPlayerPosition(score->nPlayerId);
 		}
-		else {
-			return pts[pos];
-		}
+	}
+
+	void __attribute__((naked)) __fastcall RaceStandingsASM() {
+		__asm__ (
+			"pushad\n\t"
+			"call %0\n\t"
+			"popad\n\t"
+			"pop edi\n\t"
+			"pop esi\n\t"
+			"pop ebp\n\t"
+			"pop ebx\n\t"
+			"ret 4\n\t"
+				:
+				: "i" (DoSpeedtrapRaceStandings)
+		);
 	}
 
 	void ApplyPatches(bool apply) {
@@ -284,9 +286,14 @@ namespace SpeedtrapMode {
 		NyaHookLib::Patch(0x4F2494 + 1, apply ? (uintptr_t)&GetRaceTypeString : 0x4F2920);
 		NyaHookLib::Patch(0x4F24BC + 1, apply ? (uintptr_t)&GetRaceDescString : 0x4F25F0);
 
-		NyaHookLib::Patch(0x6E2630, apply ? (uintptr_t)&GetSpeedtrapPointReward : 0x48B290);
-
 		// don't write arcade data to the gameflow results, fixes career scoring
 		NyaHookLib::Patch<uint64_t>(0x48DB89, apply ? 0x868D9000000156E9 : 0x868D000001558E0F);
+
+		if (apply) {
+			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x48BBAE, &RaceStandingsASM);
+		}
+		else {
+			NyaHookLib::Patch<uint64_t>(0x48BBAE, 0xCC0004C25B5D5E5F);
+		}
 	}
 }
