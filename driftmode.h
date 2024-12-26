@@ -4,7 +4,7 @@ namespace DriftMode {
 	bool bSimpleUI = false;
 
 	const float fMaxDriftTimeout = 3;
-	float fDriftScoreSpeedFactor = 100;
+	float fDriftScoreSpeedFactor = 4;
 
 	float fDriftHandlingFactor = 0.6;
 	float fDriftHandlingFactorFwd = 0.5;
@@ -272,7 +272,7 @@ namespace DriftMode {
 				else if (dot <= 0.96) {
 					fDriftChainTimer = 0;
 
-					auto pts = (1 - dot) * vel.length() * fDriftScoreSpeedFactor * 0.01;
+					auto pts = (1 - dot) * (vel.length() * vel.length()) * fDriftScoreSpeedFactor * 0.01;
 					fCurrentDriftChain += pts;
 
 					auto cross = fwd.Cross(vel);

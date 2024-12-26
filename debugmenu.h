@@ -365,10 +365,10 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
-	/*if (DrawMenuOption("Drift Mode Tweaks")) {
+	if (DrawMenuOption("Drift Mode Tweaks")) {
 		ChloeMenuLib::BeginMenu();
 
-		if (DrawMenuOption(std::format("Drift Score Speed Factor - {}", DriftMode::fDriftScoreSpeedFactor))) {
+		/*if (DrawMenuOption(std::format("Drift Score Speed Factor - {}", DriftMode::fDriftScoreSpeedFactor))) {
 			ValueEditorMenu(DriftMode::fDriftScoreSpeedFactor);
 		}
 
@@ -402,7 +402,7 @@ void ProcessDebugMenu() {
 
 		if (DrawMenuOption(std::format("Speed Dropoff Factor - {}", DriftMode::fDriftHandlingSpeedDropoffFactor))) {
 			ValueEditorMenu(DriftMode::fDriftHandlingSpeedDropoffFactor);
-		}
+		}*/
 
 		if (DrawMenuOption(std::format("Drift Lookat Offset - {}", DriftCamera::fLookatOffset))) {
 			ValueEditorMenu(DriftCamera::fLookatOffset);
@@ -413,7 +413,7 @@ void ProcessDebugMenu() {
 		}
 
 		ChloeMenuLib::EndMenu();
-	}*/
+	}
 
 	DrawMenuOption("Game State:", "", true);
 
