@@ -36,10 +36,8 @@ int GetTestTrackCarName(wchar_t* str, size_t len, void* a3, void* a4) {
 }
 
 int GetTestTrackTopSpeed(wchar_t* str, size_t len, void* a3, void* a4) {
-	auto& bImperial = *(bool*)0x849494;
-
 	auto ply = GetPlayerScore<PlayerScoreTest>(1);
-	return _snwprintf(str, len, L"%d %s", ply->nTopSpeed, bImperial ? L"MPH" : L"KMH");
+	return _snwprintf(str, len, L"%d %s", ply->nTopSpeed, bImperialUnits ? L"MPH" : L"KMH");
 }
 
 void TestTrackKeyword(void* a3) {

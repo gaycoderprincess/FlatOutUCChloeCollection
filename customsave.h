@@ -118,8 +118,8 @@ struct tCustomSaveStructure {
 		splitType = 1;
 	}
 	void ApplyPlayerSettings() const {
-		*(int*)0x849494 = imperialUnits;
-		*(int*)0x84949C = ingameMap;
+		bImperialUnits = imperialUnits;
+		bIngameMap = ingameMap;
 		nPlayerFlag = playerFlag;
 		nPlayerFlag2 = playerFlag2;
 		nPlayerModel = playerModel;
@@ -131,8 +131,8 @@ struct tCustomSaveStructure {
 		nSplitType = splitType;
 	}
 	void ReadPlayerSettings() {
-		imperialUnits = *(int*)0x849494;
-		ingameMap = *(int*)0x84949C;
+		imperialUnits = bImperialUnits;
+		ingameMap = bIngameMap;
 		playerFlag = nPlayerFlag;
 		playerFlag2 = nPlayerFlag2;
 		playerModel = nPlayerModel;

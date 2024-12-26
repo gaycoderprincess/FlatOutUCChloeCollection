@@ -8,7 +8,7 @@ namespace SpeedtrapMode {
 	}
 
 	void GetRaceDescString(wchar_t* str, size_t len) {
-		const wchar_t* descString = L"\n\nGet the highest speed through each checkpoint.\n\nThe racer with the highest cumulative speed through all the checkpoints wins.\n\nDon't fall behind - points will be lost after the first car crosses the finish line!";
+		const wchar_t* descString = L"\n\nGet the highest speed possible through each checkpoint.\n\nThe racer with the highest cumulative speed through all the checkpoints wins.\n\nDon't fall behind - points will be lost after the first car crosses the finish line!";
 		_snwprintf(str, len, descString);
 	}
 
@@ -20,6 +20,12 @@ namespace SpeedtrapMode {
 	std::string GetStringNarrow(const wchar_t* string) {
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 		return converter.to_bytes(string);
+	}
+
+	std::string GetMPSLocalized(int value) {
+		double fValue = value / 100.0;
+		if (bImperialUnits) return std::format("{} MPH", (int)(fValue * 2.23694));
+		return std::format("{} KMH", (int)(fValue * 3.6));
 	}
 
 	uint32_t nPlayerScore[32];
@@ -72,7 +78,7 @@ namespace SpeedtrapMode {
 			//data.x = 0.45 * GetAspectRatioInv();
 			data.x = 0.47 * GetAspectRatioInv();
 			data.XRightAlign = true;
-			DrawString(data, std::format("{} KMH", ply.score), &DrawStringFO2);
+			DrawString(data, GetMPSLocalized(ply.score), &DrawStringFO2);
 			data.y += data.size;
 		}
 	}
@@ -107,7 +113,7 @@ namespace SpeedtrapMode {
 				data.a = data.outlinea = fSplitTimer * 2 * 255;
 			}
 
-			DrawString(data, std::format("+{} KMH", nLastSplitSpeed), &DrawStringFO2);
+			DrawString(data, std::format("+{}", GetMPSLocalized(nLastSplitSpeed)), &DrawStringFO2);
 		}
 		fSplitTimer -= gSplitTimer.fDeltaTime;
 
@@ -130,9 +136,9 @@ namespace SpeedtrapMode {
 
 		int playerId = event->data[1] - 1;
 		auto ply = GetPlayer(playerId);
-		uint32_t points = (uint32_t)(ply->pCar->GetVelocity()->length() * 3.6) * fSpeedMultiplier;
+		uint32_t points = (uint32_t)(ply->pCar->GetVelocity()->length() * 100 * fSpeedMultiplier);
 		if (playerId == 0) {
-			auto spd = ply->pCar->GetVelocity()->length() * 3.6;
+			auto spd = ply->pCar->GetVelocity()->length() * 100;
 			nLastSplitSpeed = spd;
 			fSplitTimer = 3;
 			AddScore(playerId, L"CHECKPOINT!", points, 2);
@@ -160,20 +166,21 @@ namespace SpeedtrapMode {
 
 		if (HasAnyoneFinished()) {
 			fDeductTimer += gTimer.fDeltaTime;
-			if (fDeductTimer > 1) {
+			if (fDeductTimer >= 0.75) {
 				for (int i = 0; i < 32; i++) {
 					auto ply = GetPlayer(i);
 					if (!ply) continue;
 					if (ply->nCurrentLap < pScoreManager->nNumLaps) {
-						if (nPlayerScore[i] >= 10) {
+						int penalty = 2.77777777 * 100;
+						if (nPlayerScore[i] >= penalty) {
 							if (i == 0) {
-								AddScore(i, L"HURRY UP!", -10, 1);
+								AddScore(i, L"HURRY UP!", -penalty, 1);
 							}
-							nPlayerScore[i] -= 10;
+							nPlayerScore[i] -= penalty;
 						}
 					}
 				}
-				fDeductTimer -= 1;
+				fDeductTimer -= 0.75;
 			}
 		}
 		else fDeductTimer = 0;
