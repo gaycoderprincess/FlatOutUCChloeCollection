@@ -220,13 +220,11 @@ namespace DriftMode {
 		}
 
 		auto carHealth = 1 - pPlayer->pCar->fDamage;
-		if (fLastCarHealth < carHealth) {
-			fLastCarHealth = carHealth;
-		}
-		else if (fLastCarHealth > carHealth) {
+		if (fLastCarHealth > carHealth) {
 			AddNotif("HIT WALL!\nDRIFT ENDED");
 			EndDriftChain(false);
 		}
+		fLastCarHealth = carHealth;
 
 		for (int i = 0; i < 32; i++) {
 			fDriftPositionMultiplier[i] = nDriftChainMultiplier;
@@ -257,14 +255,14 @@ namespace DriftMode {
 				// ideal drifts seem around 0.7-0.6 or so
 				auto dot = fwd.Dot(velNorm);
 				// spun out, break drift
-				if (dot <= 0.0) {
+				if (dot <= 0.05) {
 					if (fCurrentDriftChain > 0) {
 						AddNotif("SPUN OUT!\nDRIFT ENDED");
 						EndDriftChain(false);
 					}
 					return;
 				}
-				else if (dot < 0.95) {
+				else if (dot <= 0.96) {
 					fDriftChainTimer = 0;
 
 					auto pts = (1 - dot) * vel.length() * fDriftScoreSpeedFactor * 0.01;
@@ -273,11 +271,13 @@ namespace DriftMode {
 					auto cross = fwd.Cross(vel);
 					auto dir = cross.y >= 0;
 
-					if (dir != bLastDriftDirection && bDriftDirectionInited && nDriftChainMultiplier < 5) {
-						nDriftChainMultiplier++;
+					if (dot < 0.92) {
+						if (dir != bLastDriftDirection && bDriftDirectionInited && nDriftChainMultiplier < 5) {
+							nDriftChainMultiplier++;
+						}
+						bLastDriftDirection = dir;
+						bDriftDirectionInited = true;
 					}
-					bLastDriftDirection = dir;
-					bDriftDirectionInited = true;
 				}
 			}
 
