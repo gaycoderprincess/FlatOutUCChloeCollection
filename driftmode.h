@@ -72,6 +72,7 @@ namespace DriftMode {
 	int nDriftChainMultiplier = 1;
 	std::string sDriftNotif;
 	double fLastCarHealth = 0;
+	bool bLastGhosting = 0;
 	void DrawHUD() {
 		static CNyaTimer gTimer;
 		gTimer.Process();
@@ -192,7 +193,7 @@ namespace DriftMode {
 	}
 
 	void ProcessDriftHandling(Player* pPlayer) {
-		if (pPlayer->pCar->GetMatrix()->y.y < 0.6) return;
+		if (pPlayer->pCar->GetMatrix()->y.y < 0.5) return;
 		ProcessDriftGas(pPlayer);
 		ProcessDriftSteering(pPlayer);
 
@@ -220,11 +221,17 @@ namespace DriftMode {
 		}
 
 		auto carHealth = 1 - pPlayer->pCar->fDamage;
-		if (fLastCarHealth > carHealth) {
+		if (fLastCarHealth > carHealth && fCurrentDriftChain > 0) {
 			AddNotif("HIT WALL!\nDRIFT ENDED");
 			EndDriftChain(false);
 		}
 		fLastCarHealth = carHealth;
+
+		if (pPlayer->nGhosting && !bLastGhosting && fCurrentDriftChain > 0) {
+			AddNotif("RESET PENALTY!\nDRIFT ENDED");
+			EndDriftChain(false);
+		}
+		bLastGhosting = pPlayer->nGhosting;
 
 		for (int i = 0; i < 32; i++) {
 			fDriftPositionMultiplier[i] = nDriftChainMultiplier;
@@ -241,7 +248,7 @@ namespace DriftMode {
 		velNorm.Normalize();
 
 		ProcessDriftHandling(pPlayer);
-		if (pPlayer->pCar->GetMatrix()->y.y < 0.6) {
+		if (pPlayer->pCar->GetMatrix()->y.y < 0.5) {
 			if (fCurrentDriftChain > 0) {
 				AddNotif("FLIPPED!\nDRIFT ENDED");
 				EndDriftChain(false);
