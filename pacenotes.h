@@ -457,19 +457,6 @@ bool LoadPacenotes(const std::string& filename) {
 	return true;
 }
 
-float GetCoordProgressInStage(NyaVec3 coord) {
-	auto track = pTrackAI->pTrack;
-	auto start = track->aStartpoints[0].fPosition;
-	auto end = track->aSplitpoints[track->nNumSplitpoints-1].fPosition;
-	auto vStart = NyaVec3(start[0],0,start[2]);
-	auto vEnd = NyaVec3(end[0],0,end[2]);
-	auto dist = (vStart - vEnd).length();
-	auto progress = 1 - (((coord - vStart) - (vEnd - vStart)).length() / dist);
-	if (progress < 0) progress = 0;
-	if (progress > 1) progress = 1;
-	return progress;
-}
-
 struct tRallySplitpoint {
 	NyaVec3 vPos;
 	double fAbsoluteMapPos;

@@ -29,6 +29,7 @@ namespace SpeedtrapMode {
 	}
 
 	uint32_t nPlayerScore[32];
+	uint32_t nLastPlayerScore[32];
 	double fSplitTimer = 0;
 	uint32_t nLastSplitSpeed = 0;
 	void DrawScoreboard() {
@@ -68,7 +69,6 @@ namespace SpeedtrapMode {
 				if (ply.isLocalPlayer) {
 					data.SetColor(241, 193, 41, 255); // 0xFFF1C129
 				}
-				//else data.SetColor(255, 255, 255, 255);
 				else data.SetColor(255, 237, 195, 255);
 			}
 
@@ -158,6 +158,7 @@ namespace SpeedtrapMode {
 			fDeductTimer = 0;
 			return;
 		}
+		memcpy(nLastPlayerScore, nPlayerScore, sizeof(nPlayerScore));
 
 		if (!bIsSpeedtrap) return;
 		if (pLoadingScreen) return;
@@ -190,6 +191,35 @@ namespace SpeedtrapMode {
 
 	float GetLapDecayMultiplier() {
 		return 0.0f;
+	}
+
+	int GetPlayerPosition(int id) {
+		int pos = 1;
+		int score = nLastPlayerScore[id];
+		// position = 1 + amount of players with a higher score
+		for (int i = 0; i < 32; i++) {
+			if (nLastPlayerScore[i] > score) pos++;
+		}
+		return pos;
+	}
+
+	int __fastcall GetSpeedtrapPointReward(PlayerScoreArcadeRace* score) {
+		int pos = GetPlayerPosition(score->nPlayerId);
+		int pts[9];
+		pts[1] = 10;
+		pts[2] = 8;
+		pts[3] = 6;
+		pts[4] = 5;
+		pts[5] = 4;
+		pts[6] = 3;
+		pts[7] = 2;
+		pts[8] = 1;
+		if (pos < 1 || pos > 8) {
+			return 0;
+		}
+		else {
+			return pts[pos];
+		}
 	}
 
 	void ApplyPatches(bool apply) {
@@ -234,6 +264,7 @@ namespace SpeedtrapMode {
 			NyaHookLib::Patch<uint16_t>(0x4DC19B, 0x2275);
 		}
 		NyaHookLib::Patch(0x4DC1AE + 1, apply ? "Data.Overlay.HUD.Speedtrap" : "Data.Overlay.HUD.FragDerbyOnline");
+		NyaHookLib::Patch(0x4DC017 + 1, apply ? "Data.Overlay.HUD.SpeedtrapArcade" : "Data.Overlay.HUD.ArcadeRace");
 
 		// remove vanilla leaderboards
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4E0CDC, apply ? 0x4E5291 : 0x4E4560);
@@ -252,7 +283,11 @@ namespace SpeedtrapMode {
 		NyaHookLib::Patch(0x4F2494 + 1, apply ? (uintptr_t)&GetRaceTypeString : 0x4F2920);
 		NyaHookLib::Patch(0x4F24BC + 1, apply ? (uintptr_t)&GetRaceDescString : 0x4F25F0);
 
-		//const char* str = "Data.Track.Forest.Forest1.A.Checkpoints.ArcadeRace";
-		//NyaHookLib::Patch(0x48DEB3 + 1, apply ? (uintptr_t)str : 0x6E2568);
+		NyaHookLib::Patch(0x6E2630, apply ? (uintptr_t)&GetSpeedtrapPointReward : 0x48B290);
+
+		// don't write arcade data to the gameflow results, fixes career scoring
+		NyaHookLib::Patch<uint64_t>(0x48DB89, apply ? 0x868D9000000156E9 : 0x868D000001558E0F);
+
+		// cup standings are done at 45FF14
 	}
 }

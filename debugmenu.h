@@ -396,6 +396,15 @@ void ProcessDebugMenu() {
 		}
 		ChloeMenuLib::EndMenu();
 	}
+	if (pCupManager && DrawMenuOption("Cup State")) {
+		ChloeMenuLib::BeginMenu();
+		DrawDebugMenuViewerOption(std::format("In Cup - {}", pCupManager->nResultsValid));
+		for (int i = 0; i < 32; i++) {
+			auto ply = pCupManager->aStandings[i];
+			DrawMenuOption(std::format("{}: Player {}, {} pts", i+1, ply.nPlayerId, ply.nCupPoints));
+		}
+		ChloeMenuLib::EndMenu();
+	}
 	DrawDebugMenuViewerOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy");
 	DrawDebugMenuViewerOption(std::format("Career Class - {}", prerace->GetPropertyAsInt("Class", 0)));
 	DrawDebugMenuViewerOption(std::format("Career Cup - {}", prerace->GetPropertyAsInt("Cup", 0)));
