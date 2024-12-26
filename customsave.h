@@ -97,6 +97,7 @@ struct tCustomSaveStructure {
 	uint8_t highCarCam;
 	uint8_t displaySplits;
 	uint8_t splitType;
+	uint8_t splitsInitialized;
 
 	static inline bool bOverrideAllArcadeScores = false;
 
@@ -155,6 +156,12 @@ struct tCustomSaveStructure {
 
 		file.read((char*)this, sizeof(*this));
 		if (playerName[31]) playerName[31] = 0;
+
+		if (!splitsInitialized) {
+			displaySplits = 1;
+			splitType = 1;
+			splitsInitialized = 1;
+		}
 	}
 	void Save() {
 		ReadPlayerSettings();
@@ -274,7 +281,7 @@ void ProcessPlayStats() {
 			gCustomSave.playtime[PLAYTIME_INGAME_STUNTSHOW] += time;
 		}
 		else if (pGameFlow->nDerbyType == DERBY_NONE) {
-			switch (pGameFlow->nGameRulesIngame) {
+			switch (pGameFlow->nGameRules) {
 				case GR_DEFAULT:
 				case GR_RACE:
 					gCustomSave.playtime[PLAYTIME_INGAME_RACE] += time;

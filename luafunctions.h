@@ -683,6 +683,21 @@ int ChloeCollection_SetSpeedtrapSimpleUI(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_SetDriftMode(void* a1) {
+	DriftMode::ApplyPatches(luaL_checknumber(a1, 1));
+	return 0;
+}
+
+int ChloeCollection_SetDriftSimpleUI(void* a1) {
+	DriftMode::bSimpleUI = luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeCollection_SetDriftTime(void* a1) {
+	DriftMode::nTimeLimit = (int)luaL_checknumber(a1, 1) * 60 * 1000;
+	return 0;
+}
+
 int ChloeCollection_SetStuntMode(void* a1) {
 	StuntMode::ApplyPatches(luaL_checknumber(a1, 1));
 	return 0;
@@ -728,6 +743,7 @@ int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
 	StuntMode::ApplyPatches(false);
 	SpeedtrapMode::ApplyPatches(false);
+	DriftMode::ApplyPatches(false);
 	CareerTimeTrial::ApplyPatches(false);
 	return 0;
 }
@@ -1130,6 +1146,9 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetHandlingMode, "ChloeCollection_SetHandlingMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SaveSettings, "ChloeCollection_SaveSettings");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftMode, "ChloeCollection_SetDriftMode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftSimpleUI, "ChloeCollection_SetDriftSimpleUI");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftTime, "ChloeCollection_SetDriftTime");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetSpeedtrapMode, "ChloeCollection_SetSpeedtrapMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetSpeedtrapSimpleUI, "ChloeCollection_SetSpeedtrapSimpleUI");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetStuntMode, "ChloeCollection_SetStuntMode");
@@ -1160,6 +1179,7 @@ void CustomLUAFunctions(void* a1) {
 
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 	RegisterLUAEnum(a1, GR_SPEEDTRAP, "GR_SPEEDTRAP");
+	RegisterLUAEnum(a1, GR_DRIFT, "GR_DRIFT");
 
 	RegisterLUAEnum(a1, PLAYTIME_TOTAL, "PLAYTIME_TOTAL");
 	RegisterLUAEnum(a1, PLAYTIME_MENU, "PLAYTIME_MENU");

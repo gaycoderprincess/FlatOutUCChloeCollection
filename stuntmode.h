@@ -169,7 +169,7 @@ namespace StuntMode {
 
 	bool IsAirControlOn() {
 		if (nAirControlMode == AIRCONTROL_ON) return true;
-		if ((nAirControlMode == AIRCONTROL_DEFAULT || nAirControlMode == AIRCONTROL_YAWONLY) && bIsStuntMode && pGameFlow->nGameRulesIngame == GR_ARCADE_RACE) return true;
+		if ((nAirControlMode == AIRCONTROL_DEFAULT || nAirControlMode == AIRCONTROL_YAWONLY) && bIsStuntMode && pGameFlow->nGameRules == GR_ARCADE_RACE) return true;
 		return false;
 	}
 
@@ -184,7 +184,7 @@ namespace StuntMode {
 		}
 
 		if (!bIsStuntMode) return;
-		if (pGameFlow->nGameRulesIngame != GR_ARCADE_RACE) return;
+		if (pGameFlow->nGameRules != GR_ARCADE_RACE) return;
 		*(float*)0x765044 = nAirtimeBonus;
 
 		// air control

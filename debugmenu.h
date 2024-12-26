@@ -179,6 +179,22 @@ void WriteSplines() {
 	fout << "\n}";
 }
 
+void ValueEditorMenu(float& value) {
+	ChloeMenuLib::BeginMenu();
+
+	static char inputString[1024] = {};
+	ChloeMenuLib::AddTextInputToString(inputString, 1024, true);
+	ChloeMenuLib::SetEnterHint("Apply");
+
+	if (DrawMenuOption(inputString + (std::string)"...", "", false, false) && inputString[0]) {
+		value = std::stof(inputString);
+		memset(inputString,0,sizeof(inputString));
+		ChloeMenuLib::BackOut();
+	}
+
+	ChloeMenuLib::EndMenu();
+}
+
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -349,6 +365,18 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
+	if (DrawMenuOption(std::format("Drift Speed Factor - {}", DriftMode::fDriftSpeedFactor))) {
+		ValueEditorMenu(DriftMode::fDriftSpeedFactor);
+	}
+
+	if (DrawMenuOption(std::format("Drift Handling Factor - {}", DriftMode::fDriftHandlingFactor))) {
+		ValueEditorMenu(DriftMode::fDriftHandlingFactor);
+	}
+
+	if (DrawMenuOption(std::format("Drift Handling Factor Fwd - {}", DriftMode::fDriftHandlingFactorFwd))) {
+		ValueEditorMenu(DriftMode::fDriftHandlingFactorFwd);
+	}
+
 	DrawMenuOption("Game State:", "", true);
 
 	auto prerace = GetLiteDB()->GetTable("GameFlow.PreRace");
@@ -423,6 +451,16 @@ void ProcessDebugMenu() {
 		DrawDebugMenuViewerOption(std::format("Player Progress - {:.0f}%", GetLocalPlayerProgressInStage()*100));
 		DrawDebugMenuViewerOption(std::format("Player Pointer - {:X}", (uintptr_t)ply));
 		DrawDebugMenuViewerOption(std::format("Player Car Pointer - {:X}", (uintptr_t)ply->pCar));
+
+		auto car = ply->pCar;
+		auto fwd = car->GetMatrix()->z;
+		auto vel = *car->GetVelocity();
+		auto velNorm = vel;
+		velNorm.Normalize();
+		auto dot = fwd.Dot(velNorm);
+		DrawDebugMenuViewerOption(std::format("Player Drift Value - {:.2f}", dot));
+		auto cross = fwd.Cross(vel);
+		DrawDebugMenuViewerOption(std::format("Player Drift Cross - {:.2f} {:.2f} {:.2f}", cross.x, cross.y, cross.z));
 	}
 
 	ChloeMenuLib::EndMenu();

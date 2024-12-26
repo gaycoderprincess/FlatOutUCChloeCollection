@@ -120,7 +120,7 @@ void LoadSoundtrackWithBackup(int id, tPlaylist* playlist) {
 void SetSoundtrack() {
 	if (!MusicInterface::bMusicLoaded) return;
 
-	NyaHookLib::Patch<uint8_t>(0x41E264, pGameFlow->nGameRulesIngame == GR_STUNT && aStuntPlaylists[nIngameStuntSoundtrack].ShouldDisableStuntDisplay() ? 0xEB : 0x74);
+	NyaHookLib::Patch<uint8_t>(0x41E264, pGameFlow->nGameRules == GR_STUNT && aStuntPlaylists[nIngameStuntSoundtrack].ShouldDisableStuntDisplay() ? 0xEB : 0x74);
 
 	static tPlaylist* pLastSoundtrack = nullptr;
 	static tPlaylist* pLastMenuSoundtrack = nullptr;
@@ -159,10 +159,10 @@ void SetSoundtrack() {
 			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
 			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
 			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
-			if (pGameFlow->nGameRulesIngame == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) {
+			if (pGameFlow->nGameRules == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) {
 				soundtrackId = pGameFlow->nDerbyType == DERBY_FRAG ? nIngameFragDerbySoundtrack : nIngameDerbySoundtrack;
 			}
-			if (pGameFlow->nGameRulesIngame == GR_ARCADE_RACE) {
+			if (pGameFlow->nGameRules == GR_ARCADE_RACE) {
 				soundtrackId = nIngameArcadeRaceSoundtrack;
 				isCarnageRace = true;
 			}

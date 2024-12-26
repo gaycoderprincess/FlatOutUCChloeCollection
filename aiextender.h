@@ -74,8 +74,8 @@ void __stdcall InitAIHooked(void* a1, int count) {
 			else count = 12;
 		}
 
-		if (bIsStuntMode) count = 0;
-		if (pGameFlow->nGameRulesIngame == GR_STUNT) count = 7;
+		if (bIsStuntMode || bIsDriftEvent) count = 0;
+		if (pGameFlow->nGameRules == GR_STUNT) count = 7;
 		if (nForceAICountNextRace >= 0) {
 			count = nForceAICountNextRace;
 			nForceAICountNextRace = -1;

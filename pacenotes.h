@@ -752,7 +752,7 @@ bool IsInTimeTrialWithSplits() {
 }
 
 bool ShouldDrawSplits() {
-	if (pGameFlow->nGameRulesIngame != GR_DEFAULT && pGameFlow->nGameRulesIngame != GR_RACE && pGameFlow->nGameRulesIngame != GR_PONGRACE) return false;
+	if (pGameFlow->nGameRules != GR_DEFAULT && pGameFlow->nGameRules != GR_RACE && pGameFlow->nGameRules != GR_PONGRACE) return false;
 	if (pGameFlow->nDerbyType != DERBY_NONE) return false;
 
 	switch (nDisplaySplits) {

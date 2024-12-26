@@ -8,6 +8,7 @@ void HookLoop() {
 	CareerTimeTrial::OnTick();
 	ProcessNewReset();
 	SpeedtrapMode::OnTick();
+	DriftMode::OnTick();
 	CommonMain();
 	*(float*)0x716034 = 480.0f;
 }

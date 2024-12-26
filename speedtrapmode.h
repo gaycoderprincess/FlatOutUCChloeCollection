@@ -163,7 +163,7 @@ namespace SpeedtrapMode {
 		if (!bIsSpeedtrap) return;
 		if (pLoadingScreen) return;
 		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
-		if (pGameFlow->nGameRulesIngame != GR_ARCADE_RACE) return;
+		if (pGameFlow->nGameRules != GR_ARCADE_RACE) return;
 
 		if (HasAnyoneFinished()) {
 			fDeductTimer += gTimer.fDeltaTime;
@@ -203,7 +203,7 @@ namespace SpeedtrapMode {
 		return pos;
 	}
 
-	void DoSpeedtrapRaceStandings() {
+	void DoRaceStandings() {
 		for (int i = 0; i < pScoreManager->aScores.GetSize(); i++) {
 			auto score = pScoreManager->aScores[i];
 			score->nPosition = GetPlayerPosition(score->nPlayerId);
@@ -221,7 +221,7 @@ namespace SpeedtrapMode {
 			"pop ebx\n\t"
 			"ret 4\n\t"
 				:
-				: "i" (DoSpeedtrapRaceStandings)
+				: "i" (DoRaceStandings)
 		);
 	}
 

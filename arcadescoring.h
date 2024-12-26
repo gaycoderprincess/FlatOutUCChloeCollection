@@ -12,7 +12,7 @@ void SetArcadeRaceMultiplierPointer(float* values) {
 void AddFragDerbyScore(int amount) {
 	//if (!nFragDerbyCrashRewards) return;
 	if (amount <= 0) return;
-	if (pGameFlow->nGameRulesIngame != GR_DERBY) return;
+	if (pGameFlow->nGameRules != GR_DERBY) return;
 	if (pGameFlow->nDerbyType != DERBY_FRAG) return;
 
 	auto score = GetPlayerScore<PlayerScoreDerby>(1);
