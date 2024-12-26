@@ -13,6 +13,30 @@ enum eCareerTimeTrialMedal {
 	MEDAL_SAUTHOR
 };
 
+void DoCareerTimeTrialRaceStandings() {
+	// if super author opponents are on, subtract 2 from player position so you still finish 1st
+	auto ply = GetPlayerScore<PlayerScoreRace>(1);
+	if (nShowSuperAuthors >= 2) {
+		ply->nPosition -= 2;
+		if (ply->nPosition < 1) ply->nPosition = 1;
+	}
+}
+
+void __attribute__((naked)) __fastcall CareerTimeTrialRaceStandingsASM() {
+	__asm__ (
+		"pushad\n\t"
+		"call %0\n\t"
+		"popad\n\t"
+		"pop edi\n\t"
+		"pop esi\n\t"
+		"pop ebp\n\t"
+		"pop ebx\n\t"
+		"ret 4\n\t"
+			:
+			: "i" (DoCareerTimeTrialRaceStandings)
+	);
+}
+
 void ApplyCareerTimeTrialPatches(bool apply) {
 	bIsTimeTrial = apply;
 	bIsCareerTimeTrial = apply;
@@ -21,6 +45,13 @@ void ApplyCareerTimeTrialPatches(bool apply) {
 	NyaHookLib::Patch<uint64_t>(0x469BFE, apply ? 0xF883909090909090 : 0xF8830000020A840F); // use UpgradeLevel
 	NyaHookLib::Patch<uint8_t>(0x469CE1, apply && bCareerTimeTrialUpgrades ? 0xEB : 0x74); // use UpgradeLevel SingleRace
 	NyaHookLib::Patch(0x4DC0FF + 1, apply ? "Data.Overlay.HUD.ChloeTimeTrial" : "Data.Overlay.HUD.Race"); // use UpgradeLevel SingleRace
+
+	if (apply) {
+		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x48BBAE, &CareerTimeTrialRaceStandingsASM);
+	}
+	else {
+		NyaHookLib::Patch<uint64_t>(0x48BBAE, 0xCC0004C25B5D5E5F);
+	}
 }
 
 void SetCareerTimeTrialPlayerColor(Player* ply) {

@@ -94,8 +94,8 @@ void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 		return;
 	}
 
-	auto silverTarget = pGameFlow->nArcadeTargets[1];
-	auto goldTarget = pGameFlow->nArcadeTargets[0];
+	auto silverTarget = pGameFlow->Awards.nArcadeGoalScores[1];
+	auto goldTarget = pGameFlow->Awards.nArcadeGoalScores[0];
 	auto platTarget = nArcadePlatinumTargets[nArcadePlatinumCurrentLevelX][nArcadePlatinumCurrentLevelY];
 	if (platTarget <= 0) return;
 
