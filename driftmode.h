@@ -4,14 +4,16 @@ namespace DriftMode {
 	bool bSimpleUI = false;
 
 	const float fMaxDriftTimeout = 3;
-	float fDriftSpeedFactor = 100;
+	float fDriftScoreSpeedFactor = 100;
 
-	float fDriftHandlingFactor = 0.4;
+	float fDriftHandlingFactor = 0.6;
 	float fDriftHandlingFactorFwd = 0.5;
 	float fDriftHandlingTopSpeed = 100;
 	float fDriftTurnTopSpeed = 70;
 	float fDriftTurnSpeed = 5;
 	float fDriftTurnAngSpeedCap = 10;
+	//float fDriftVelocityCap = 130;
+	float fDriftHandlingSpeedDropoffFactor = 0.1;
 
 	float fDriftPositionMultiplier[32] = {
 			1,
@@ -62,11 +64,14 @@ namespace DriftMode {
 		GameFlow::AddArcadeRaceScore(str, category, pGameFlow, amount, playerScore->nPosition);
 	}
 
+	bool bLastDriftDirection = false;
+	bool bDriftDirectionInited = false;
 	double fCurrentDriftChain = 0;
 	double fDriftChainTimer = 0;
 	double fDriftNotifTimer = 0;
 	int nDriftChainMultiplier = 1;
 	std::string sDriftNotif;
+	double fLastCarHealth = 0;
 	void DrawHUD() {
 		static CNyaTimer gTimer;
 		gTimer.Process();
@@ -102,9 +107,12 @@ namespace DriftMode {
 		gTimer.Process();
 
 		if (pGameFlow->nRaceState != RACE_STATE_RACING) {
+			bDriftDirectionInited = false;
 			fCurrentDriftChain = 0;
 			fDriftChainTimer = 0;
 			fDriftNotifTimer = 0;
+			nDriftChainMultiplier = 1;
+			fLastCarHealth = 0;
 			return;
 		}
 
@@ -115,8 +123,6 @@ namespace DriftMode {
 		DrawHUD();
 	}
 
-	bool bLastDriftDirection = false;
-	bool bDriftDirectionInited = false;
 	void EndDriftChain(bool cashOut) {
 		fDriftChainTimer = fMaxDriftTimeout + 1;
 		if (cashOut && fCurrentDriftChain > 0) {
@@ -142,13 +148,29 @@ namespace DriftMode {
 
 		auto cross = fwd.Cross(vel);
 		auto speed = pVel->length();
+
+		// lower drift speed if at too large of an angle
+		auto velNorm = vel;
+		velNorm.Normalize();
+		auto dot = fwd.Dot(velNorm);
+		if (dot < 0) return;
+
+		if (dot < 0.55) {
+			cross.y *= dot * 2;
+		}
+		if (speed >= fDriftHandlingTopSpeed / 3.6) {
+			auto dropoff = 1 - ((speed - (fDriftHandlingTopSpeed / 3.6)) * fDriftHandlingSpeedDropoffFactor);
+			if (dropoff < 0) dropoff = 0;
+			cross.y *= dropoff;
+		}
+
 		*pVel += swd * cross.y * fDriftHandlingFactor * pPlayer->fGasPedal * 0.01;
 		*pVel += fwd * std::abs(cross.y) * fDriftHandlingFactorFwd * pPlayer->fGasPedal * 0.01;
 
-		if (pVel->length() > fDriftHandlingTopSpeed * 3.6) {
-			pVel->Normalize();
-			*pVel *= speed;
-		}
+		//if (pVel->length() > fDriftHandlingTopSpeed * 3.6) {
+		//	pVel->Normalize();
+		//	*pVel *= speed;
+		//}
 	}
 
 	void ProcessDriftSteering(Player* pPlayer) {
@@ -173,11 +195,38 @@ namespace DriftMode {
 		if (pPlayer->pCar->GetMatrix()->y.y < 0.6) return;
 		ProcessDriftGas(pPlayer);
 		ProcessDriftSteering(pPlayer);
+
+		//auto vel = *pPlayer->pCar->GetVelocity();
+		//vel.y = 0;
+		//if (vel.length() > fDriftVelocityCap * 3.6) {
+		//	vel.Normalize();
+		//	vel *= fDriftVelocityCap * 3.6;
+		//	pPlayer->pCar->GetVelocity()->x = vel.x;
+		//	pPlayer->pCar->GetVelocity()->z = vel.z;
+		//}
 	}
 
 	void __fastcall ProcessPlayerCarDrift(Player* pPlayer) {
 		if (!bIsDriftEvent) return;
 		if (pGameFlow->nGameRules != GR_ARCADE_RACE) return;
+
+		// cash out any drifts in the last second of play
+		auto score = GetPlayerScore<PlayerScoreArcadeRace>(1);
+		if (score->nTimeLeft < 1000) {
+			if (fCurrentDriftChain > 0) {
+				EndDriftChain(true);
+			}
+			return;
+		}
+
+		auto carHealth = 1 - pPlayer->pCar->fDamage;
+		if (fLastCarHealth < carHealth) {
+			fLastCarHealth = carHealth;
+		}
+		else if (fLastCarHealth > carHealth) {
+			AddNotif("HIT WALL!\nDRIFT ENDED");
+			EndDriftChain(false);
+		}
 
 		for (int i = 0; i < 32; i++) {
 			fDriftPositionMultiplier[i] = nDriftChainMultiplier;
@@ -218,7 +267,7 @@ namespace DriftMode {
 				else if (dot < 0.95) {
 					fDriftChainTimer = 0;
 
-					auto pts = (1 - dot) * vel.length() * fDriftSpeedFactor * 0.01;
+					auto pts = (1 - dot) * vel.length() * fDriftScoreSpeedFactor * 0.01;
 					fCurrentDriftChain += pts;
 
 					auto cross = fwd.Cross(vel);

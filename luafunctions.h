@@ -738,6 +738,11 @@ int ChloeCollection_WasLastRaceSpeedtrap(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_WasLastRaceDrift(void* a1) {
+	lua_pushboolean(a1, bIsDriftEvent);
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
@@ -1159,6 +1164,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetAirControlMode, "ChloeCollection_SetAirControlMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceStuntMode, "ChloeCollection_WasLastRaceStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceSpeedtrap, "ChloeCollection_WasLastRaceSpeedtrap");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceDrift, "ChloeCollection_WasLastRaceDrift");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsInMultiplayer, "ChloeCollection_SetIsInMultiplayer");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetRandom, "ChloeCollection_GetRandom");

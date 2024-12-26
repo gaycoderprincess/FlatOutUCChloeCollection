@@ -365,11 +365,11 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
-	if (DrawMenuOption("Drift Mode Tweaks")) {
+	/*if (DrawMenuOption("Drift Mode Tweaks")) {
 		ChloeMenuLib::BeginMenu();
 
-		if (DrawMenuOption(std::format("Drift Speed Factor - {}", DriftMode::fDriftSpeedFactor))) {
-			ValueEditorMenu(DriftMode::fDriftSpeedFactor);
+		if (DrawMenuOption(std::format("Drift Score Speed Factor - {}", DriftMode::fDriftScoreSpeedFactor))) {
+			ValueEditorMenu(DriftMode::fDriftScoreSpeedFactor);
 		}
 
 		if (DrawMenuOption(std::format("Handling Factor - {}", DriftMode::fDriftHandlingFactor))) {
@@ -396,6 +396,14 @@ void ProcessDebugMenu() {
 			ValueEditorMenu(DriftMode::fDriftTurnAngSpeedCap);
 		}
 
+		//if (DrawMenuOption(std::format("Total Velocity Cap - {}", DriftMode::fDriftVelocityCap))) {
+		//	ValueEditorMenu(DriftMode::fDriftVelocityCap);
+		//}
+
+		if (DrawMenuOption(std::format("Speed Dropoff Factor - {}", DriftMode::fDriftHandlingSpeedDropoffFactor))) {
+			ValueEditorMenu(DriftMode::fDriftHandlingSpeedDropoffFactor);
+		}
+
 		if (DrawMenuOption(std::format("Drift Lookat Offset - {}", DriftCamera::fLookatOffset))) {
 			ValueEditorMenu(DriftCamera::fLookatOffset);
 		}
@@ -405,7 +413,7 @@ void ProcessDebugMenu() {
 		}
 
 		ChloeMenuLib::EndMenu();
-	}
+	}*/
 
 	DrawMenuOption("Game State:", "", true);
 
@@ -482,15 +490,26 @@ void ProcessDebugMenu() {
 		DrawDebugMenuViewerOption(std::format("Player Pointer - {:X}", (uintptr_t)ply));
 		DrawDebugMenuViewerOption(std::format("Player Car Pointer - {:X}", (uintptr_t)ply->pCar));
 
-		auto car = ply->pCar;
-		auto fwd = car->GetMatrix()->z;
-		auto vel = *car->GetVelocity();
-		auto velNorm = vel;
-		velNorm.Normalize();
-		auto dot = fwd.Dot(velNorm);
-		DrawDebugMenuViewerOption(std::format("Player Drift Value - {:.2f}", dot));
-		auto cross = fwd.Cross(vel);
-		DrawDebugMenuViewerOption(std::format("Player Drift Cross - {:.2f} {:.2f} {:.2f}", cross.x, cross.y, cross.z));
+		if (bIsDriftEvent) {
+			auto car = ply->pCar;
+			auto fwd = car->GetMatrix()->z;
+			auto vel = *car->GetVelocity();
+			auto velNorm = vel;
+			velNorm.Normalize();
+			auto dot = fwd.Dot(velNorm);
+			DrawDebugMenuViewerOption(std::format("Player Drift Value - {:.2f}", dot));
+			auto cross = fwd.Cross(vel);
+			DrawDebugMenuViewerOption(
+					std::format("Player Drift Cross - {:.2f} {:.2f} {:.2f}", cross.x, cross.y, cross.z));
+
+			double dropoff = 1;
+			if (vel.length() >= DriftMode::fDriftHandlingTopSpeed / 3.6) {
+				dropoff = 1 - ((vel.length() - (DriftMode::fDriftHandlingTopSpeed / 3.6)) *
+							   DriftMode::fDriftHandlingSpeedDropoffFactor);
+				if (dropoff < 0) dropoff = 0;
+			}
+			DrawDebugMenuViewerOption(std::format("Player Drift Power - {:.2f}", dropoff));
+		}
 	}
 
 	ChloeMenuLib::EndMenu();
