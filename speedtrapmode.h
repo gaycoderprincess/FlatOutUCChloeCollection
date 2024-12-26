@@ -14,7 +14,7 @@ namespace SpeedtrapMode {
 
 	void AddScore(int playerId, const wchar_t* str, float amount, int category) {
 		auto playerScore = GetPlayerScore<PlayerScoreArcadeRace>(playerId+1);
-		GameFlow::AddArcadeRaceScore(str, category, pGameFlow, amount, playerScore->nUnknownScoringRelated);
+		GameFlow::AddArcadeRaceScore(str, category, pGameFlow, amount, playerScore->nPosition);
 	}
 
 	std::string GetStringNarrow(const wchar_t* string) {
@@ -205,6 +205,7 @@ namespace SpeedtrapMode {
 
 	int __fastcall GetSpeedtrapPointReward(PlayerScoreArcadeRace* score) {
 		int pos = GetPlayerPosition(score->nPlayerId);
+		score->nPosition = pos;
 		int pts[9];
 		pts[1] = 10;
 		pts[2] = 8;
@@ -287,7 +288,5 @@ namespace SpeedtrapMode {
 
 		// don't write arcade data to the gameflow results, fixes career scoring
 		NyaHookLib::Patch<uint64_t>(0x48DB89, apply ? 0x868D9000000156E9 : 0x868D000001558E0F);
-
-		// cup standings are done at 45FF14
 	}
 }

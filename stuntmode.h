@@ -175,7 +175,7 @@ namespace StuntMode {
 
 	void AddScore(const wchar_t* str, float amount) {
 		auto playerScore = GetPlayerScore<PlayerScoreArcadeRace>(1);
-		GameFlow::AddArcadeRaceScore(str, 0, pGameFlow, amount * fSameyMultiplier, playerScore->nUnknownScoringRelated);
+		GameFlow::AddArcadeRaceScore(str, 0, pGameFlow, amount * fSameyMultiplier, playerScore->nPosition);
 	}
 
 	void __fastcall ProcessPlayerCarStunt(Player* pPlayer) {
@@ -201,16 +201,16 @@ namespace StuntMode {
 			ResetStuntTricks();
 			fLastReset = 0;
 
-			GameFlow::AddArcadeRaceScore(L"RESET PENALTY", 0, pGameFlow, nCheesePenalty, playerScore->nUnknownScoringRelated);
+			GameFlow::AddArcadeRaceScore(L"RESET PENALTY", 0, pGameFlow, nCheesePenalty, playerScore->nPosition);
 		}
 
 		if (pPlayer->nGhosting && !bIsGhosting && fLastReset > 3 && !bIsRagdolled && playerScore->fScore >= -nResetPenalty) {
-			GameFlow::AddArcadeRaceScore(L"RESET PENALTY", 0, pGameFlow, nResetPenalty, playerScore->nUnknownScoringRelated);
+			GameFlow::AddArcadeRaceScore(L"RESET PENALTY", 0, pGameFlow, nResetPenalty, playerScore->nPosition);
 		}
 		bIsGhosting = pPlayer->nGhosting;
 
 		if (car->nIsRagdolled && !bIsRagdolled) {
-			GameFlow::AddArcadeRaceScore(L"CRASH OUT!", 0, pGameFlow, nCrashOutBonus, playerScore->nUnknownScoringRelated);
+			GameFlow::AddArcadeRaceScore(L"CRASH OUT!", 0, pGameFlow, nCrashOutBonus, playerScore->nPosition);
 		}
 		bIsRagdolled = car->nIsRagdolled;
 
@@ -221,8 +221,7 @@ namespace StuntMode {
 		}
 		else {
 			if (fTimeTwoWheeling > fMinTwoWheelTime) {
-				GameFlow::AddArcadeRaceScore(L"TWO WHEELING", 0, pGameFlow, fTwoWheelMultiplier * fTimeTwoWheeling,
-								   playerScore->nUnknownScoringRelated);
+				GameFlow::AddArcadeRaceScore(L"TWO WHEELING", 0, pGameFlow, fTwoWheelMultiplier * fTimeTwoWheeling, playerScore->nPosition);
 			}
 			fTimeTwoWheeling = 0;
 		}
@@ -370,7 +369,7 @@ namespace StuntMode {
 				else if (fGrindingTimer > 0.5 && fGrindingDistance > 10) {
 					GameFlow::AddArcadeRaceScore(L"GRINDING", 0, pGameFlow,
 									   fGrindMultiplier * abs(fGrindingDistance),
-									   playerScore->nUnknownScoringRelated);
+									   playerScore->nPosition);
 					fGrindingTimer = 0;
 					fGrindingDistance = 0;
 				}
