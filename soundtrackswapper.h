@@ -167,6 +167,7 @@ void SetSoundtrack() {
 				isCarnageRace = true;
 			}
 			if (bIsStuntMode) soundtrackId = nIngameStuntShowSoundtrack;
+			if (bIsDriftEvent) soundtrackId = nIngameDriftSoundtrack;
 		}
 
 		auto playlist = &aPlaylists[soundtrackId];
@@ -226,6 +227,7 @@ void ApplySoundtrackPatches() {
 	int defaultArcade = config["main"]["default_arcade_race"].value_or(1) - 1;
 	int defaultStunt = config["main"]["default_stunt"].value_or(1) - 1;
 	int defaultStuntShow = config["main"]["default_stuntshow"].value_or(1) - 1;
+	int defaultDrift = config["main"]["default_drift"].value_or(1) - 1;
 	for (int i = 0; i < numPlaylists; i++) {
 		tPlaylist playlist;
 		playlist.name = config[std::format("playlist{}", i+1)]["name"].value_or(L"");
@@ -264,6 +266,7 @@ void ApplySoundtrackPatches() {
 	if (defaultFragDerby < 0 || defaultFragDerby >= aPlaylists.size()) defaultFragDerby = 0;
 	if (defaultArcade < 0 || defaultArcade >= aPlaylists.size()) defaultArcade = 0;
 	if (defaultStuntShow < 0 || defaultStuntShow >= aPlaylists.size()) defaultStuntShow = 0;
+	if (defaultDrift < 0 || defaultDrift >= aPlaylists.size()) defaultDrift = 0;
 	nMenuSoundtrack = defaultMenu;
 	nIngameSoundtrack = defaultIngame;
 	nIngameFO1Soundtrack = defaultFO1;
@@ -274,6 +277,7 @@ void ApplySoundtrackPatches() {
 	nIngameArcadeRaceSoundtrack = defaultArcade;
 	nIngameStuntSoundtrack = defaultStunt;
 	nIngameStuntShowSoundtrack = defaultStuntShow;
+	nIngameDriftSoundtrack = defaultDrift;
 
 	for (auto& setting : aNewGameSettings) {
 		if (setting.value == &nMenuSoundtrack) setting.maxValue = aMenuPlaylists.size()-1;
@@ -286,6 +290,7 @@ void ApplySoundtrackPatches() {
 		if (setting.value == &nIngameFragDerbySoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameArcadeRaceSoundtrack) setting.maxValue = aPlaylists.size()-1;
 		if (setting.value == &nIngameStuntShowSoundtrack) setting.maxValue = aPlaylists.size()-1;
+		if (setting.value == &nIngameDriftSoundtrack) setting.maxValue = aPlaylists.size()-1;
 	}
 
 	NyaHookLib::Patch(0x41D2C3 + 1, aPlaylistTitlePath);
