@@ -399,11 +399,8 @@ int ChloeCollection_GetFragDerbyRewardAmount(void* a1) {
 	return 1;
 }
 
-void SetSlideControl(bool disabled);
-void SetBetaHandling(bool enabled);
 int ChloeCollection_SetHandlingMode(void* a1) {
-	SetSlideControl(luaL_checknumber(a1, 1) == 1);
-	SetBetaHandling(nHandlingMode == 2);
+	nMultiplayerHandlingMode = luaL_checknumber(a1, 1);
 	return 0;
 }
 

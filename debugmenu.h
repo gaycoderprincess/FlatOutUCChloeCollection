@@ -368,7 +368,8 @@ void ProcessDebugMenu() {
 	if (DrawMenuOption("Drift Mode Tweaks")) {
 		ChloeMenuLib::BeginMenu();
 
-		/*if (DrawMenuOption(std::format("Drift Score Speed Factor - {}", DriftMode::fDriftScoreSpeedFactor))) {
+#ifdef DRIFT_DEBUG
+		if (DrawMenuOption(std::format("Drift Score Speed Factor - {}", DriftMode::fDriftScoreSpeedFactor))) {
 			ValueEditorMenu(DriftMode::fDriftScoreSpeedFactor);
 		}
 
@@ -402,7 +403,8 @@ void ProcessDebugMenu() {
 
 		if (DrawMenuOption(std::format("Speed Dropoff Factor - {}", DriftMode::fDriftHandlingSpeedDropoffFactor))) {
 			ValueEditorMenu(DriftMode::fDriftHandlingSpeedDropoffFactor);
-		}*/
+		}
+#endif
 
 		if (DrawMenuOption(std::format("Drift Lookat Offset - {}", DriftCamera::fLookatOffset))) {
 			ValueEditorMenu(DriftCamera::fLookatOffset);

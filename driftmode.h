@@ -174,18 +174,29 @@ namespace DriftMode {
 		//}
 	}
 
+	double GetPlayerSteeringInput(Player* pPlayer) {
+		double steeringInput = GetPadKeyState(NYA_PAD_KEY_LSTICK_X) / 32767.0;
+		if (pPlayer->nIsUsingKeyboard) {
+			steeringInput = 0;
+			if (pPlayer->nSteeringKeyboardLeft) steeringInput = -1;
+			if (pPlayer->nSteeringKeyboardRight) steeringInput += 1;
+		}
+		return steeringInput;
+	}
+
 	void ProcessDriftSteering(Player* pPlayer) {
 		auto car = pPlayer->pCar;
 		auto vel = *car->GetVelocity();
 
-		if (std::abs(pPlayer->fOutputSteerAngle) > 0) {
+		auto steerAngle = GetPlayerSteeringInput(pPlayer);
+		if (std::abs(steerAngle) > 0) {
 			auto turnSpeed = fDriftTurnSpeed;
 			if (vel.length() < fDriftTurnTopSpeed) {
 				turnSpeed *= vel.length() / fDriftTurnTopSpeed;
 			}
 			auto angVel = pPlayer->pCar->GetAngVelocity();
 			auto tmpAngVel = *angVel;
-			tmpAngVel += pPlayer->pCar->GetMatrix()->y * turnSpeed * pPlayer->fOutputSteerAngle * 0.01;
+			tmpAngVel += pPlayer->pCar->GetMatrix()->y * turnSpeed * steerAngle * 0.01;
 			if (tmpAngVel.length() < fDriftTurnAngSpeedCap || tmpAngVel.length() < angVel->length()) {
 				*angVel = tmpAngVel;
 			}

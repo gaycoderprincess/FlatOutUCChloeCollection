@@ -38,11 +38,17 @@ void SetBetaHandling(bool enabled) {
 	NyaHookLib::Patch(0x45D7B6 + 1, enabled ? "BetaTires" : "Tires");
 }
 
+int nMultiplayerHandlingMode = 0;
 void SetSlideControl() {
 	static int nLastHandling = -1;
-	if (nLastHandling != nHandlingMode) {
-		SetSlideControl(nHandlingMode == 1);
-		SetBetaHandling(nHandlingMode == 2);
-		nLastHandling = nHandlingMode;
+	static bool bLastDriftEvent = false;
+
+	int nCurrentHandling = nHandlingMode;
+	if (bIsInMultiplayer) nCurrentHandling = nMultiplayerHandlingMode;
+	if (nLastHandling != nCurrentHandling/* || bLastDriftEvent != bIsDriftEvent*/) {
+		SetSlideControl(nCurrentHandling == 1/* || bIsDriftEvent*/);
+		SetBetaHandling(nCurrentHandling == 2);
+		nLastHandling = nCurrentHandling;
+		bLastDriftEvent = bIsDriftEvent;
 	}
 }
