@@ -1206,7 +1206,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_TIMETRIAL, "PLAYTIME_INGAME_TIMETRIAL");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.57 - Drift Edition";
+	static auto sVersionString = "Chloe's Collection v1.58 - Drift Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

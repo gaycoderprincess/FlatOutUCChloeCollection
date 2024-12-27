@@ -162,7 +162,7 @@ void SetSoundtrack() {
 			if (pGameFlow->nGameRules == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) {
 				soundtrackId = pGameFlow->nDerbyType == DERBY_FRAG ? nIngameFragDerbySoundtrack : nIngameDerbySoundtrack;
 			}
-			if (pGameFlow->nGameRules == GR_ARCADE_RACE) {
+			if (!bIsStuntMode && !bIsSpeedtrap && !bIsDriftEvent && pGameFlow->nGameRules == GR_ARCADE_RACE) {
 				soundtrackId = nIngameArcadeRaceSoundtrack;
 				isCarnageRace = true;
 			}
