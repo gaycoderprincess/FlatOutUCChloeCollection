@@ -3,6 +3,9 @@ namespace DriftMode {
 
 	bool bSimpleUI = false;
 
+	const float fMinDotAngleForDrift = 0.97;
+	const float fMinDotAngleForMultiplier = 0.92;
+	const float fMinDotAngleForSpinOut = 0.05;
 	const float fMaxDriftTimeout = 3;
 	float fDriftScoreSpeedFactor = 50;
 
@@ -273,14 +276,14 @@ namespace DriftMode {
 				// ideal drifts seem around 0.7-0.6 or so
 				auto dot = fwd.Dot(velNorm);
 				// spun out, break drift
-				if (dot <= 0.05) {
+				if (dot <= fMinDotAngleForSpinOut) {
 					if (fCurrentDriftChain > 0) {
 						AddNotif("SPUN OUT!\nDRIFT ENDED");
 						EndDriftChain(false);
 					}
 					return;
 				}
-				else if (dot <= 0.96) {
+				else if (dot <= fMinDotAngleForDrift) {
 					fDriftChainTimer = 0;
 
 					auto dotFactor = 1 - dot;
@@ -294,7 +297,7 @@ namespace DriftMode {
 					auto cross = fwd.Cross(vel);
 					auto dir = cross.y >= 0;
 
-					if (dot < 0.92) {
+					if (dot < fMinDotAngleForMultiplier) {
 						if (dir != bLastDriftDirection && bDriftDirectionInited && nDriftChainMultiplier < 5) {
 							nDriftChainMultiplier++;
 						}
