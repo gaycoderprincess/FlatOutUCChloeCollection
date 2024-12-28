@@ -1,10 +1,10 @@
 namespace LapKnockoutMode {
 	int GetNumPlayersKnockedOutPerLap() {
-		int numPlayersToLeave = pGameFlow->pHost->GetNumPlayers() - 1;
+		int numPlayers = pGameFlow->pHost->GetNumPlayers();
 		int numLaps = pScoreManager->nNumLaps;
 
-		int div = numPlayersToLeave / numLaps;
-		while (div * numLaps > numPlayersToLeave) {
+		int div = numPlayers / numLaps;
+		while (div * numLaps > numPlayers) {
 			div--;
 		}
 		if (div < 1) div = 1;
@@ -16,7 +16,7 @@ namespace LapKnockoutMode {
 	}
 
 	void GetRaceDescString(wchar_t* str, size_t len) {
-		const wchar_t* descString = L"\n\nKnockout races always take place on circuit tracks.\n\nAt the end of each lap the slowest racer is knocked out.\n\nTry to keep to the front of the pack, otherwise you won't last long.";
+		const wchar_t* descString = L"\n\nKnockout races always take place on circuit tracks.\n\nAt the end of each lap the slowest racers are knocked out.\n\nTry to keep to the front of the pack, otherwise you won't last long.";
 		_snwprintf(str, len, descString);
 	}
 
@@ -47,7 +47,8 @@ namespace LapKnockoutMode {
 		// 13 - 1 * 1
 		// 12
 		// knock out 12th
-		int highestPos =  pGameFlow->pHost->GetNumPlayers() - (lap * GetNumPlayersKnockedOutPerLap());
+		int highestPos = pGameFlow->pHost->GetNumPlayers() - (lap * GetNumPlayersKnockedOutPerLap());
+		if (lap > pScoreManager->nNumLaps) highestPos = 1; // always knock out every player once 1st place finishes
 
 		for (int i = 0; i < 32; i++) {
 			auto ply = GetPlayer(i);
