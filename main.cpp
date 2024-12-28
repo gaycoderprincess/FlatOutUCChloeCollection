@@ -31,6 +31,7 @@ void WriteLog(const std::string& str) {
 #include "customsettings.h"
 #include "stuntmode.h"
 #include "speedtrapmode.h"
+#include "lapknockoutmode.h"
 #include "driftcamera.h"
 #include "driftmode.h"
 #include "soundtrackswapper.h"

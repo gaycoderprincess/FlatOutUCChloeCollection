@@ -685,6 +685,11 @@ int ChloeCollection_SetDriftMode(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_SetLapKnockoutMode(void* a1) {
+	LapKnockoutMode::ApplyPatches(luaL_checknumber(a1, 1));
+	return 0;
+}
+
 int ChloeCollection_SetDriftSimpleUI(void* a1) {
 	DriftMode::bSimpleUI = luaL_checknumber(a1, 1);
 	return 0;
@@ -740,12 +745,18 @@ int ChloeCollection_WasLastRaceDrift(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_WasLastRaceLapKnockout(void* a1) {
+	lua_pushboolean(a1, bIsLapKnockout);
+	return 1;
+}
+
 void ApplyAIExtenderPatches();
 int ChloeCollection_ReinitHooks(void* a1) {
 	ApplyAIExtenderPatches();
 	StuntMode::ApplyPatches(false);
 	SpeedtrapMode::ApplyPatches(false);
 	DriftMode::ApplyPatches(false);
+	LapKnockoutMode::ApplyPatches(false);
 	CareerTimeTrial::ApplyPatches(false);
 	return 0;
 }
@@ -1148,6 +1159,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetHandlingMode, "ChloeCollection_SetHandlingMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SaveSettings, "ChloeCollection_SaveSettings");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetLapKnockoutMode, "ChloeCollection_SetLapKnockoutMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftMode, "ChloeCollection_SetDriftMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftSimpleUI, "ChloeCollection_SetDriftSimpleUI");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftTime, "ChloeCollection_SetDriftTime");
@@ -1162,6 +1174,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceStuntMode, "ChloeCollection_WasLastRaceStuntMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceSpeedtrap, "ChloeCollection_WasLastRaceSpeedtrap");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceDrift, "ChloeCollection_WasLastRaceDrift");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_WasLastRaceLapKnockout, "ChloeCollection_WasLastRaceLapKnockout");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ReinitHooks, "ChloeCollection_ReinitHooks");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetIsInMultiplayer, "ChloeCollection_SetIsInMultiplayer");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetRandom, "ChloeCollection_GetRandom");
@@ -1183,6 +1196,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 	RegisterLUAEnum(a1, GR_SPEEDTRAP, "GR_SPEEDTRAP");
 	RegisterLUAEnum(a1, GR_DRIFT, "GR_DRIFT");
+	RegisterLUAEnum(a1, GR_LAPKNOCKOUT, "GR_LAPKNOCKOUT");
 
 	RegisterLUAEnum(a1, PLAYTIME_TOTAL, "PLAYTIME_TOTAL");
 	RegisterLUAEnum(a1, PLAYTIME_MENU, "PLAYTIME_MENU");

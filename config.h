@@ -122,4 +122,5 @@ bool bIsTimeTrial = false;
 bool bIsStuntMode = false;
 bool bIsSpeedtrap = false;
 bool bIsDriftEvent = false;
+bool bIsLapKnockout = false;
 bool bIsInMultiplayer = false;

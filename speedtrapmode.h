@@ -132,6 +132,7 @@ namespace SpeedtrapMode {
 	}
 
 	void OnEvent(tEventData* event, void* data) {
+		if (!bIsSpeedtrap) return;
 		if (event->type != EVENT_PLAYER_ON_ARCADE_CHECKPOINT) return;
 
 		int playerId = event->data[1] - 1;
