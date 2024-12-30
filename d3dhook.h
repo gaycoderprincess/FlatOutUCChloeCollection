@@ -14,10 +14,10 @@ void HookLoop() {
 }
 
 void UpdateD3DProperties() {
-	g_pd3dDevice = *(IDirect3DDevice9**)(0x7242B0 + 0x60);
-	ghWnd = *(HWND*)(0x7242B0 + 0x7C);
-	nResX = *(int*)0x764A84;
-	nResY = *(int*)0x764A88;
+	g_pd3dDevice = pDeviceD3d->pD3DDevice;
+	ghWnd = pDeviceD3d->hWnd;
+	nResX = nGameResolutionX;
+	nResY = nGameResolutionY;
 }
 
 bool bDeviceJustReset = false;

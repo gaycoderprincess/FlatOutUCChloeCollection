@@ -646,7 +646,7 @@ void DrawSplitHUD() {
 		}
 
 		comp = GetFastestOpponentSpeedForSplit(nLastSplitID);
-		if (comp && nDisplaySplits >= 2) {
+		if (comp && nSplitType >= 2) {
 			auto diff = fLastSplitSpeed - comp;
 
 			bool ahead = diff <= 0;
