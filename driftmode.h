@@ -223,7 +223,10 @@ namespace DriftMode {
 
 	void __fastcall ProcessPlayerCarDrift(Player* pPlayer) {
 		if (!bIsDriftEvent) return;
+		if (!pScoreManager) return;
 		if (pGameFlow->nGameRules != GR_ARCADE_RACE) return;
+
+		pScoreManager->nNumLaps = 10;
 
 		// cash out any drifts in the last second of play
 		auto score = GetPlayerScore<PlayerScoreArcadeRace>(1);
