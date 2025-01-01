@@ -419,7 +419,11 @@ std::string GetPacenoteFilenameWithVoice() {
 }
 
 void AddPacenote(tPacenote note) {
-	if (note.data.types[0] < 0) return;
+	int numValid = 0;
+	for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
+		if (note.data.types[i] >= 0) numValid++;
+	}
+	if (numValid <= 0) return;
 	aPacenotes.push_back(note);
 }
 
