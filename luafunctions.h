@@ -1193,6 +1193,11 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialBestTime, "ChloeCollection_GetCareerTimeTrialBestTime");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 
+	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
+	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");
+	RegisterLUAEnum(a1, HANDLING_PROFESSIONAL, "HANDLING_PROFESSIONAL");
+	RegisterLUAEnum(a1, HANDLING_BETA, "HANDLING_BETA");
+
 	RegisterLUAEnum(a1, GR_TONYHAWK, "GR_TONYHAWK");
 	RegisterLUAEnum(a1, GR_SPEEDTRAP, "GR_SPEEDTRAP");
 	RegisterLUAEnum(a1, GR_DRIFT, "GR_DRIFT");
@@ -1220,7 +1225,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_TIMETRIAL, "PLAYTIME_INGAME_TIMETRIAL");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.58 - Lap Knockout Edition";
+	static auto sVersionString = "Chloe's Collection v1.59 - FO2 Downforce Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

@@ -1,3 +1,11 @@
+enum eHandlingMode {
+	HANDLING_NORMAL,
+	HANDLING_NORMAL_FO2DOWNFORCE,
+	HANDLING_PROFESSIONAL,
+	HANDLING_BETA,
+	NUM_HANDLING_MODES
+};
+
 uint32_t nCareerHandlingDamage = 0;
 uint32_t nCareerRallyTrophyCars = 0;
 uint32_t nMenuSoundtrack = 0;
@@ -24,7 +32,7 @@ uint32_t nAIFudgeDisabled = 1;
 uint32_t nMPInterpolation = 1;
 uint32_t nInterpMinRange = 50;
 uint32_t nUseRelativePosition = 1;
-uint32_t nHandlingMode = 0;
+uint32_t nHandlingMode = HANDLING_NORMAL;
 uint32_t nPlayerFlag = 0;
 uint32_t nPlayerFlag2 = 0;
 uint32_t nWindowedMode = 0;

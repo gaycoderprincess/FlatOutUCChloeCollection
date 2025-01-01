@@ -38,17 +38,67 @@ void SetBetaHandling(bool enabled) {
 	NyaHookLib::Patch(0x45D7B6 + 1, enabled ? "BetaTires" : "Tires");
 }
 
+int GetCarNumWheelsOnGround(Car* car) {
+	int count = 0;
+	for (int i = 0; i < 4; i++) {
+		if (car->aTires[i].bOnGround) count++;
+	}
+	return count;
+}
+
 int nMultiplayerHandlingMode = 0;
+int GetHandlingMode() {
+	// only allow normal and professional for career
+	if (CareerTimeTrial::bIsCareerTimeTrial) {
+		if (nHandlingMode == HANDLING_PROFESSIONAL) return HANDLING_PROFESSIONAL;
+		return HANDLING_NORMAL;
+	}
+	if (bIsInMultiplayer) return nMultiplayerHandlingMode;
+	return nHandlingMode;
+}
+
+void __fastcall DoFO2Downforce(Car* pCar) {
+	int handlingMode = GetHandlingMode();
+	if (CareerTimeTrial::bIsCareerTimeTrial) return; // no downforce in career time trials
+	if (handlingMode == HANDLING_PROFESSIONAL) return; // no downforce on professional
+	if (handlingMode == HANDLING_NORMAL && GetCarNumWheelsOnGround(pCar) > 0) return; // no downforce on ground on normal
+	*pCar->GetVelocityGravity() += pCar->GetMatrix()->y * -pCar->GetVelocity()->LengthSqr() * pCar->fMass * 0.0011772001;
+}
+
+uintptr_t FO2SlideControlWrappedASM_jmp = 0x42AFBF;
+void __attribute__((naked)) FO2DownforceASM() {
+	__asm__ (
+		"pushad\n\t"
+		"mov ecx, ebp\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"fld dword ptr [ebp+0x290]\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (FO2SlideControlWrappedASM_jmp), "i" (DoFO2Downforce)
+	);
+}
+
+void SetFO2Downforce(bool on) {
+	NyaHookLib::Patch<uint64_t>(0x42B11C, on ? 0x86D990909090D8DD : 0x86D9000000F09ED9); // downforce x
+	NyaHookLib::Patch<uint64_t>(0x42B132, on ? 0x44D990909090D8DD : 0x44D9000000F49ED9); // downforce y
+	NyaHookLib::Patch<uint64_t>(0x42B144, on ? 0x44D990909090D8DD : 0x44D9000000F89ED9); // downforce z
+	NyaHookLib::Patch<uint64_t>(0x42B18D, on ? 0x44D990909090D8DD : 0x44D9000001009ED9); // downforce rx
+	NyaHookLib::Patch<uint64_t>(0x42B1B5, on ? 0xCAD990909090D8DD : 0xCAD9000001049ED9); // downforce ry
+	NyaHookLib::Patch<uint64_t>(0x42B1D3, on ? 0x1DD890909090D8DD : 0x1DD8000001089ED9); // downforce rz
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x42AFB9, &FO2DownforceASM);
+}
+
 void SetSlideControl() {
 	static int nLastHandling = -1;
-	static bool bLastDriftEvent = false;
+	static bool bLastCareerTimeTrial = false;
 
-	int nCurrentHandling = nHandlingMode;
-	if (bIsInMultiplayer) nCurrentHandling = nMultiplayerHandlingMode;
-	if (nLastHandling != nCurrentHandling/* || bLastDriftEvent != bIsDriftEvent*/) {
-		SetSlideControl(nCurrentHandling == 1/* || bIsDriftEvent*/);
-		SetBetaHandling(nCurrentHandling == 2);
+	int nCurrentHandling = GetHandlingMode();
+	if (nLastHandling != nCurrentHandling || bLastCareerTimeTrial != CareerTimeTrial::bIsCareerTimeTrial) {
+		SetFO2Downforce(nCurrentHandling != HANDLING_PROFESSIONAL && !CareerTimeTrial::bIsCareerTimeTrial);
+		SetSlideControl(nCurrentHandling == HANDLING_PROFESSIONAL);
+		SetBetaHandling(nCurrentHandling == HANDLING_BETA);
 		nLastHandling = nCurrentHandling;
-		bLastDriftEvent = bIsDriftEvent;
+		bLastCareerTimeTrial = CareerTimeTrial::bIsCareerTimeTrial;
 	}
 }

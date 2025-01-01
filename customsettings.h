@@ -31,7 +31,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "OpponentStrength", &nAIFudgeDisabled, 0, 0, 2 },
 		{ "Game", "HUDType", &nHUDType, 0, 0, 1 },
 		//{ "Game", "FragDerbyCrashRewards", &nFragDerbyCrashRewards, 1, 0, 0 },
-		{ "Game", "HandlingMode", &nHandlingMode, 0, 0, 2 },
+		{ "Game", "HandlingMode", &nHandlingMode, 0, 0, NUM_HANDLING_MODES-1 },
 		{ "Game", "PlayerFlag", &nPlayerFlag, 0, 0, 12 },
 		{ "Game", "PlayerFlag2", &nPlayerFlag2, 1, 0, 0 },
 		{ "Game", "HighCarCam", &nHighCarCam, 1, 0, 0 },

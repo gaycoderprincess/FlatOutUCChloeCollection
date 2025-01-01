@@ -102,7 +102,7 @@ namespace CareerTimeTrial {
 
 	void OnTick() {
 		if (bIsTimeTrial && pGameFlow->nGameState == GAME_STATE_RACE && GetPlayer(0)) {
-			GetPlayer(0)->nPlayerStartPosition = bIsCareerTimeTrial ? nStartPosition : 1;
+			GetPlayer(0)->nStartPosition = bIsCareerTimeTrial ? nStartPosition : 1;
 		}
 
 		if (!bIsCareerTimeTrial) return;
