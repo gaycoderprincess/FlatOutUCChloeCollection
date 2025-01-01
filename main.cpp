@@ -353,6 +353,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// not sure if this ever does anything otherwise but it makes the FO2 Chili crash for some reason???
 			NyaHookLib::Patch<uint8_t>(0x631C88, 0xEB);
 
+			NyaHookLib::Patch(0x4D899F+1, "data/global/overlay/checkpoint2.tga");
+
 			srand(time(0));
 		} break;
 		default:
