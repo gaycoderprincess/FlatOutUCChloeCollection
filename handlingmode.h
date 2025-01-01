@@ -60,7 +60,7 @@ int GetHandlingMode() {
 void __fastcall DoFO2Downforce(Car* pCar) {
 	int handlingMode = GetHandlingMode();
 	if (CareerTimeTrial::bIsCareerTimeTrial) return; // no downforce in career time trials
-	if (handlingMode == HANDLING_PROFESSIONAL) return; // no downforce on professional
+	if (handlingMode == HANDLING_PROFESSIONAL || handlingMode == HANDLING_NORMAL_LEGACY) return; // no downforce on professional or legacy
 	if (handlingMode == HANDLING_NORMAL && GetCarNumWheelsOnGround(pCar) > 0) return; // no downforce on ground on normal
 	*pCar->GetVelocityGravity() += pCar->GetMatrix()->y * -pCar->GetVelocity()->LengthSqr() * pCar->fMass * 0.0011772001;
 }
@@ -95,7 +95,7 @@ void SetSlideControl() {
 
 	int nCurrentHandling = GetHandlingMode();
 	if (nLastHandling != nCurrentHandling || bLastCareerTimeTrial != CareerTimeTrial::bIsCareerTimeTrial) {
-		SetFO2Downforce(nCurrentHandling != HANDLING_PROFESSIONAL && !CareerTimeTrial::bIsCareerTimeTrial);
+		SetFO2Downforce(nCurrentHandling != HANDLING_PROFESSIONAL && nCurrentHandling != HANDLING_NORMAL_LEGACY && !CareerTimeTrial::bIsCareerTimeTrial);
 		SetSlideControl(nCurrentHandling == HANDLING_PROFESSIONAL);
 		SetBetaHandling(nCurrentHandling == HANDLING_BETA);
 		nLastHandling = nCurrentHandling;
