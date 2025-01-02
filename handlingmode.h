@@ -60,6 +60,7 @@ int GetHandlingMode() {
 void __fastcall DoFO2Downforce(Car* pCar) {
 	int handlingMode = GetHandlingMode();
 	if (CareerTimeTrial::bIsCareerTimeTrial) return; // no downforce in career time trials
+	if (handlingMode == HANDLING_NORMAL && bIsStuntMode) return; // no downforce in stunt show on normal
 	if (handlingMode == HANDLING_PROFESSIONAL || handlingMode == HANDLING_NORMAL_LEGACY) return; // no downforce on professional or legacy
 	if (handlingMode == HANDLING_NORMAL && GetCarNumWheelsOnGround(pCar) > 0) return; // no downforce on ground on normal
 	*pCar->GetVelocityGravity() += pCar->GetMatrix()->y * -pCar->GetVelocity()->LengthSqr() * pCar->fMass * 0.0011772001;

@@ -492,6 +492,13 @@ int ChloeProfiles_GetProfilePortrait(void* a1) {
 	return 1;
 }
 
+int ChloeProfiles_GetProfileFlag(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileFlag(id));
+	return 1;
+}
+
 int ChloeProfiles_GetProfileMoney(void* a1) {
 	int id = luaL_checknumber(a1, 1);
 	if (!IsProfileValid(id)) return 0;
@@ -1127,6 +1134,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCarsUnlocked, "ChloeProfiles_GetProfileCarsUnlocked");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileProgress, "ChloeProfiles_GetProfileProgress");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfilePortrait, "ChloeProfiles_GetProfilePortrait");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileFlag, "ChloeProfiles_GetProfileFlag");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileMoney, "ChloeProfiles_GetProfileMoney");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetProfileSlot, "ChloeProfiles_SetProfileSlot");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_HasLoaded, "ChloeProfiles_HasLoaded");
