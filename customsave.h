@@ -4,6 +4,9 @@ const int nNumArcadeRacesY = 6;
 const int nNumCareerEventsX = 8;
 const int nNumCareerEventsY = 16;
 
+const int nNumRallyCareerEventsX = 16;
+const int nNumRallyCareerEventsY = 16;
+
 int nSaveSlot = 999;
 
 std::string GetCustomSavePath(int id) {
@@ -98,12 +101,50 @@ struct tCustomSaveStructure {
 	uint8_t displaySplits;
 	uint8_t splitType;
 	uint8_t splitsInitialized;
+	struct {
+		uint8_t bEventUnlocked;
+		uint8_t nEventPosition;
+	} aRallyCareer[nNumRallyCareerEventsX][nNumRallyCareerEventsY];
+	uint32_t nRallyCash;
+	uint8_t nRallyCarId;
+	uint8_t nRallyCarSkinId;
+	int8_t nRallyClass;
+	int8_t nRallyCup;
+	uint8_t nRallyCupNextStage;
+	uint8_t nRallyCupPoints[32];
+	uint8_t nRallyCupStagePosition[16];
+	uint8_t nRallyCupStagePoints[16][32];
 
+	static inline uint8_t aRallyPlayersByPosition[32];
+	static inline uint8_t aRallyPlayerPosition[32];
 	static inline bool bOverrideAllArcadeScores = false;
+
+	void CalculateRallyPlayersByPosition() {
+		struct tLeaderboardEntry {
+			int playerId;
+			int score;
+
+			static bool compFunction(tLeaderboardEntry a, tLeaderboardEntry b) {
+				if (a.score == b.score) return a.playerId < b.playerId;
+				return a.score > b.score;
+			}
+		};
+		std::vector<tLeaderboardEntry> players;
+
+		for (int i = 0; i < 32; i++) {
+			players.push_back({i, nRallyCupPoints[i]});
+		}
+		sort(players.begin(), players.end(), tLeaderboardEntry::compFunction);
+		for (int i = 0; i < 32; i++) {
+			aRallyPlayersByPosition[i] = players[i].playerId;
+			aRallyPlayerPosition[players[i].playerId] = i;
+		}
+	}
 
 	tCustomSaveStructure() {
 		memset(this,0,sizeof(*this));
 		SetDefaultPlayerSettings();
+		nRallyCup = -1;
 	}
 	void SetDefaultPlayerSettings() {
 		imperialUnits = gGameRegion == 1;

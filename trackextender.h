@@ -315,6 +315,7 @@ void ProcessNewReset() {
 	// reset if no ground was found
 	if (bVoidResetEnabled) {
 		auto origin = ply->pCar->GetMatrix()->p;
+		origin.y += 2;
 		auto dir = NyaVec3(0,-1,0);
 
 		tLineOfSightIn prop;

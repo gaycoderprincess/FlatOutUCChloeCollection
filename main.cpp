@@ -43,6 +43,7 @@ void WriteLog(const std::string& str) {
 #include "aiextender.h"
 #include "pacenotes.h"
 #include "careertimetrial.h"
+#include "careerrally.h"
 #include "handlingmode.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"

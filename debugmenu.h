@@ -195,6 +195,22 @@ void ValueEditorMenu(float& value) {
 	ChloeMenuLib::EndMenu();
 }
 
+void ValueEditorMenu(int& value) {
+	ChloeMenuLib::BeginMenu();
+
+	static char inputString[1024] = {};
+	ChloeMenuLib::AddTextInputToString(inputString, 1024, true);
+	ChloeMenuLib::SetEnterHint("Apply");
+
+	if (DrawMenuOption(inputString + (std::string)"...", "", false, false) && inputString[0]) {
+		value = std::stoi(inputString);
+		memset(inputString,0,sizeof(inputString));
+		ChloeMenuLib::BackOut();
+	}
+
+	ChloeMenuLib::EndMenu();
+}
+
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -412,6 +428,30 @@ void ProcessDebugMenu() {
 
 		if (DrawMenuOption(std::format("Drift Follow Offset - {}", DriftCamera::fFollowOffset))) {
 			ValueEditorMenu(DriftCamera::fFollowOffset);
+		}
+
+		ChloeMenuLib::EndMenu();
+	}
+
+	if (DrawMenuOption("Rally Career")) {
+		ChloeMenuLib::BeginMenu();
+
+		if (DrawMenuOption(std::format("Current Class - {}", gCustomSave.nRallyClass))) {
+			int i = gCustomSave.nRallyClass;
+			ValueEditorMenu(i);
+			gCustomSave.nRallyClass = i;
+		}
+
+		if (DrawMenuOption(std::format("Current Cup - {}", gCustomSave.nRallyCup))) {
+			int i = gCustomSave.nRallyCup;
+			ValueEditorMenu(i);
+			gCustomSave.nRallyCup = i;
+		}
+
+		if (DrawMenuOption(std::format("Next Stage - {}", gCustomSave.nRallyCupNextStage))) {
+			int i = gCustomSave.nRallyCupNextStage;
+			ValueEditorMenu(i);
+			gCustomSave.nRallyCupNextStage = i;
 		}
 
 		ChloeMenuLib::EndMenu();

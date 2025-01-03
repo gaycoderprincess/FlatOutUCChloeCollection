@@ -765,6 +765,7 @@ int ChloeCollection_ReinitHooks(void* a1) {
 	DriftMode::ApplyPatches(false);
 	LapKnockoutMode::ApplyPatches(false);
 	CareerTimeTrial::ApplyPatches(false);
+	CareerRally::bIsCareerRally = false;
 	return 0;
 }
 
@@ -1069,6 +1070,160 @@ int ChloeCollection_GetCareerTimeTrialBestTime(void* a1) {
 	return 1;
 }
 
+int ChloeRally_AddCash(void* a1) {
+	gCustomSave.nRallyCash += luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeRally_SetCash(void* a1) {
+	gCustomSave.nRallyCash = luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeRally_GetCash(void* a1) {
+	lua_pushnumber(a1, gCustomSave.nRallyCash);
+	return 1;
+}
+
+int ChloeRally_GetCupPosition(void* a1) {
+	int classId = luaL_checknumber(a1, 1)-1;
+	int cupId = luaL_checknumber(a1, 2)-1;
+	lua_pushnumber(a1, gCustomSave.aRallyCareer[classId][cupId].nEventPosition);
+	return 1;
+}
+
+int ChloeRally_IsCupLocked(void* a1) {
+	int classId = luaL_checknumber(a1, 1)-1;
+	int cupId = luaL_checknumber(a1, 2)-1;
+	lua_pushboolean(a1, gCustomSave.aRallyCareer[classId][cupId].bEventUnlocked);
+	return 1;
+}
+
+int ChloeRally_GetNextStage(void* a1) {
+	lua_pushnumber(a1, gCustomSave.nRallyCupNextStage+1);
+	return 1;
+}
+
+int ChloeRally_GetPlayerByPosition(void* a1) {
+	gCustomSave.CalculateRallyPlayersByPosition();
+	int playerId = luaL_checknumber(a1,1)-1;
+	lua_pushnumber(a1, gCustomSave.aRallyPlayersByPosition[playerId]+1);
+	return 1;
+}
+
+int ChloeRally_GetPlayerPosition(void* a1) {
+	gCustomSave.CalculateRallyPlayersByPosition();
+	int playerId = luaL_checknumber(a1,1)-1;
+	lua_pushnumber(a1, gCustomSave.aRallyPlayerPosition[playerId]+1);
+	return 1;
+}
+
+int ChloeRally_GetPlayerCupPoints(void* a1) {
+	int playerId = luaL_checknumber(a1,1)-1;
+	lua_pushnumber(a1, gCustomSave.nRallyCupPoints[playerId]);
+	return 1;
+}
+
+int ChloeRally_GetPlayerCupPointsForStage(void* a1) {
+	int stageId = luaL_checknumber(a1,1)-1;
+	int playerId = luaL_checknumber(a1,2)-1;
+	lua_pushnumber(a1, gCustomSave.nRallyCupStagePoints[stageId][playerId]);
+	return 1;
+}
+
+int ChloeRally_GetCupStagePosition(void* a1) {
+	int stageId = luaL_checknumber(a1,1)-1;
+	lua_pushnumber(a1, gCustomSave.nRallyCupStagePosition[stageId]);
+	return 1;
+}
+
+int ChloeRally_GetPlayerName(void* a1) {
+	int playerId = luaL_checknumber(a1,1)-1;
+	if (playerId == 0) {
+		auto str = (std::wstring)gCustomSave.playerName;
+		lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	}
+	else {
+		auto str = (std::wstring)GetAIName(playerId-1);
+		lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	}
+	return 1;
+}
+
+int ChloeRally_GetCurrentClass(void* a1) {
+	lua_pushnumber(a1, gCustomSave.nRallyClass+1);
+	return 1;
+}
+
+int ChloeRally_GetCurrentCup(void* a1) {
+	lua_pushnumber(a1, gCustomSave.nRallyCup+1);
+	return 1;
+}
+
+int ChloeRally_SetCurrentCup(void* a1) {
+	gCustomSave.nRallyClass = luaL_checknumber(a1, 1)-1;
+	gCustomSave.nRallyCup = luaL_checknumber(a1, 2)-1;
+	gCustomSave.nRallyCupNextStage = 0;
+	memset(gCustomSave.nRallyCupPoints, 0, sizeof(gCustomSave.nRallyCupPoints));
+	memset(gCustomSave.nRallyCupStagePosition, 0, sizeof(gCustomSave.nRallyCupStagePosition));
+	memset(gCustomSave.nRallyCupStagePoints, 0, sizeof(gCustomSave.nRallyCupStagePoints));
+	// save when a cup ends
+	if (gCustomSave.nRallyCup < 0) {
+		gCustomSave.Save();
+	}
+	return 0;
+}
+
+int ChloeRally_GetCurrentCar(void* a1) {
+	lua_pushnumber(a1, gCustomSave.nRallyCarId);
+	return 1;
+}
+
+int ChloeRally_GetCurrentCarSkin(void* a1) {
+	lua_pushnumber(a1, gCustomSave.nRallyCarSkinId);
+	return 1;
+}
+
+int ChloeRally_SetCurrentCar(void* a1) {
+	gCustomSave.nRallyCarId = luaL_checknumber(a1, 1);
+	return 1;
+}
+
+int ChloeRally_SetCurrentCarSkin(void* a1) {
+	gCustomSave.nRallyCarSkinId = luaL_checknumber(a1, 1);
+	return 1;
+}
+
+int ChloeRally_GetCupNumPlayers(void* a1) {
+	lua_pushnumber(a1, nNumAIProfiles+1);
+	return 1;
+}
+
+int ChloeRally_SetIsCareerRally(void* a1) {
+	CareerRally::bIsCareerRally = luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeRally_GetIsCareerRally(void* a1) {
+	lua_pushboolean(a1, CareerRally::bIsCareerRally);
+	return 1;
+}
+
+int ChloeRally_SetNumRacesInCup(void* a1) {
+	CareerRally::nNumRacesInThisCup = luaL_checknumber(a1, 1);
+	return 0;
+}
+
+int ChloeRally_IsCupFinished(void* a1) {
+	lua_pushboolean(a1, gCustomSave.nRallyCupNextStage >= CareerRally::nNumRacesInThisCup);
+	return 1;
+}
+
+int ChloeRally_AdvanceCup(void* a1) {
+	CareerRally::AdvanceCup();
+	return 0;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1200,6 +1355,31 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialResult, "ChloeCollection_GetCareerTimeTrialResult");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialBestTime, "ChloeCollection_GetCareerTimeTrialBestTime");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_AddCash, "ChloeRally_AddCash");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCash, "ChloeRally_SetCash");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCash, "ChloeRally_GetCash");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCupPosition, "ChloeRally_GetCupPosition");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_IsCupLocked, "ChloeRally_IsCupLocked");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetNextStage, "ChloeRally_GetNextStage");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerByPosition, "ChloeRally_GetPlayerByPosition");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerPosition, "ChloeRally_GetPlayerPosition");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerCupPoints, "ChloeRally_GetPlayerCupPoints");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerCupPointsForStage, "ChloeRally_GetPlayerCupPointsForStage");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentClass, "ChloeRally_GetCurrentClass");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCup, "ChloeRally_GetCurrentCup");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentCup, "ChloeRally_SetCurrentCup");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCar, "ChloeRally_GetCurrentCar");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCarSkin, "ChloeRally_GetCurrentCarSkin");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentCar, "ChloeRally_SetCurrentCar");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentCarSkin, "ChloeRally_SetCurrentCarSkin");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCupNumPlayers, "ChloeRally_GetCupNumPlayers");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerName, "ChloeRally_GetPlayerName");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCupStagePosition, "ChloeRally_GetCupStagePosition");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetIsCareerRally, "ChloeRally_SetIsCareerRally");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetIsCareerRally, "ChloeRally_GetIsCareerRally");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetNumRacesInCup, "ChloeRally_SetNumRacesInCup");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_IsCupFinished, "ChloeRally_IsCupFinished");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_AdvanceCup, "ChloeRally_AdvanceCup");
 
 	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
 	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");
