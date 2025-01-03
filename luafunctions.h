@@ -1095,8 +1095,20 @@ int ChloeRally_GetCupPosition(void* a1) {
 int ChloeRally_IsCupLocked(void* a1) {
 	int classId = luaL_checknumber(a1, 1)-1;
 	int cupId = luaL_checknumber(a1, 2)-1;
-	lua_pushboolean(a1, gCustomSave.aRallyCareer[classId][cupId].bEventUnlocked);
+	lua_pushboolean(a1, !gCustomSave.aRallyCareer[classId][cupId].bEventUnlocked);
 	return 1;
+}
+
+int ChloeRally_IsClassLocked(void* a1) {
+	int classId = luaL_checknumber(a1, 1)-1;
+	lua_pushboolean(a1, classId != 0 && !gCustomSave.bRallyClassUnlocked[classId]);
+	return 1;
+}
+
+int ChloeRally_SetClassUnlocked(void* a1) {
+	int classId = luaL_checknumber(a1, 1)-1;
+	gCustomSave.bRallyClassUnlocked[classId] = luaL_checknumber(a1, 2);
+	return 0;
 }
 
 int ChloeRally_GetNextStage(void* a1) {
@@ -1157,6 +1169,11 @@ int ChloeRally_GetCurrentClass(void* a1) {
 
 int ChloeRally_GetCurrentCup(void* a1) {
 	lua_pushnumber(a1, gCustomSave.nRallyCup+1);
+	return 1;
+}
+
+int ChloeRally_IsCupActive(void* a1) {
+	lua_pushboolean(a1, gCustomSave.nRallyCup >= 0 && gCustomSave.nRallyCupNextStage > 0);
 	return 1;
 }
 
@@ -1365,6 +1382,8 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCash, "ChloeRally_GetCash");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCupPosition, "ChloeRally_GetCupPosition");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_IsCupLocked, "ChloeRally_IsCupLocked");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_IsClassLocked, "ChloeRally_IsClassLocked");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetClassUnlocked, "ChloeRally_SetClassUnlocked");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetNextStage, "ChloeRally_GetNextStage");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerByPosition, "ChloeRally_GetPlayerByPosition");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerPosition, "ChloeRally_GetPlayerPosition");
@@ -1372,6 +1391,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerCupPointsForStage, "ChloeRally_GetPlayerCupPointsForStage");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentClass, "ChloeRally_GetCurrentClass");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCup, "ChloeRally_GetCurrentCup");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_IsCupActive, "ChloeRally_IsCupActive");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentClass, "ChloeRally_SetCurrentClass");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentCup, "ChloeRally_SetCurrentCup");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCar, "ChloeRally_GetCurrentCar");

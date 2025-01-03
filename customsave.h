@@ -114,6 +114,7 @@ struct tCustomSaveStructure {
 	uint8_t nRallyCupPoints[32];
 	uint8_t nRallyCupStagePosition[16];
 	uint8_t nRallyCupStagePoints[16][32];
+	uint8_t bRallyClassUnlocked[8];
 
 	static inline uint8_t aRallyPlayersByPosition[32];
 	static inline uint8_t aRallyPlayerPosition[32];
@@ -160,6 +161,12 @@ struct tCustomSaveStructure {
 
 		// default the rally cup to none
 		nRallyCup = -1;
+		// unlock first cup of each class
+		for (int i = 0; i < 16; i++) {
+			aRallyCareer[i][0].bEventUnlocked = 1;
+		}
+		// unlock novice class
+		bRallyClassUnlocked[0] = 1;
 	}
 	void ApplyPlayerSettings() const {
 		bImperialUnits = imperialUnits;

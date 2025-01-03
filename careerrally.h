@@ -23,10 +23,15 @@ namespace CareerRally {
 	void OnCupFinished() {
 		gCustomSave.CalculateRallyPlayersByPosition();
 		auto cup = &gCustomSave.aRallyCareer[gCustomSave.nRallyClass][gCustomSave.nRallyCup];
+		auto nextCup = &gCustomSave.aRallyCareer[gCustomSave.nRallyClass][gCustomSave.nRallyCup+1];
 		cup->bEventUnlocked = 1;
 		int pos = gCustomSave.aRallyPlayerPosition[0]+1;
 		if (!cup->nEventPosition || pos < cup->nEventPosition) {
 			cup->nEventPosition = pos;
+		}
+		// unlock the next cup if finished 3rd or higher
+		if (cup->nEventPosition && cup->nEventPosition <= 3) {
+			nextCup->bEventUnlocked = 1;
 		}
 	}
 
