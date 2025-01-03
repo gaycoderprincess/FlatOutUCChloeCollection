@@ -2,8 +2,11 @@ namespace CareerRally {
 	bool bIsCareerRally = false;
 	int nNumRacesInThisCup = 0;
 
-	void Process() {
-
+	void OnTick() {
+		// already done by the time trial check in careertimetrial
+		//if (bIsTimeTrial && pGameFlow->nGameState == GAME_STATE_RACE && GetPlayer(0)) {
+		//	GetPlayer(0)->nStartPosition = 1;
+		//}
 	}
 
 	int pointsPerPosition[32] = {
@@ -21,7 +24,10 @@ namespace CareerRally {
 		gCustomSave.CalculateRallyPlayersByPosition();
 		auto cup = &gCustomSave.aRallyCareer[gCustomSave.nRallyClass][gCustomSave.nRallyCup];
 		cup->bEventUnlocked = 1;
-		cup->nEventPosition = gCustomSave.aRallyPlayerPosition[0]+1;
+		int pos = gCustomSave.aRallyPlayerPosition[0]+1;
+		if (!cup->nEventPosition || pos < cup->nEventPosition) {
+			cup->nEventPosition = pos;
+		}
 	}
 
 	void AdvanceCup() {

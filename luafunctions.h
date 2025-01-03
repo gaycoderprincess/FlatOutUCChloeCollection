@@ -1160,9 +1160,14 @@ int ChloeRally_GetCurrentCup(void* a1) {
 	return 1;
 }
 
-int ChloeRally_SetCurrentCup(void* a1) {
+int ChloeRally_SetCurrentClass(void* a1) {
 	gCustomSave.nRallyClass = luaL_checknumber(a1, 1)-1;
-	gCustomSave.nRallyCup = luaL_checknumber(a1, 2)-1;
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeRally_SetCurrentCup(void* a1) {
+	gCustomSave.nRallyCup = luaL_checknumber(a1, 1)-1;
 	gCustomSave.nRallyCupNextStage = 0;
 	memset(gCustomSave.nRallyCupPoints, 0, sizeof(gCustomSave.nRallyCupPoints));
 	memset(gCustomSave.nRallyCupStagePosition, 0, sizeof(gCustomSave.nRallyCupStagePosition));
@@ -1367,6 +1372,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerCupPointsForStage, "ChloeRally_GetPlayerCupPointsForStage");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentClass, "ChloeRally_GetCurrentClass");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCup, "ChloeRally_GetCurrentCup");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentClass, "ChloeRally_SetCurrentClass");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentCup, "ChloeRally_SetCurrentCup");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCar, "ChloeRally_GetCurrentCar");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCarSkin, "ChloeRally_GetCurrentCarSkin");

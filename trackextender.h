@@ -313,7 +313,7 @@ void ProcessNewReset() {
 	}
 
 	// reset if no ground was found
-	if (bVoidResetEnabled) {
+	if (bVoidResetEnabled && !pEnvironment->bWaterPlane && !bInvisWaterPlane) {
 		auto origin = ply->pCar->GetMatrix()->p;
 		origin.y += 2;
 		auto dir = NyaVec3(0,-1,0);
