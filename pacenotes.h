@@ -191,10 +191,14 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Extra Long", "ExtraLong", "Long"},
 		{"Left Entry Chicane","LeftEntryChicane"},
 		{"Right Entry Chicane","RightEntryChicane"},
-		{"Careful - Tunnel", "CarefulTunnel", "Careful"},
+		{"Over", "Over"},
 		{"Onto Concrete", "OntoConcrete"},
 		{"Uphill", "Uphill"},
 		{"Immediate", "Immediate"},
+		{"Onto Snow", "OntoSnow"},
+		{"Onto Mud", "OntoMud"},
+		{"Caution - Fence", "CautionFence", "Caution"},
+		{"Don't Cut - Fence", "DontcutFence", "Dontcut"},
 };
 
 CNyaTimer gPacenoteTimer;

@@ -144,7 +144,6 @@ struct tCustomSaveStructure {
 	tCustomSaveStructure() {
 		memset(this,0,sizeof(*this));
 		SetDefaultPlayerSettings();
-		nRallyCup = -1;
 	}
 	void SetDefaultPlayerSettings() {
 		imperialUnits = gGameRegion == 1;
@@ -158,6 +157,9 @@ struct tCustomSaveStructure {
 		highCarCam = 0;
 		displaySplits = 1;
 		splitType = 1;
+
+		// default the rally cup to none
+		nRallyCup = -1;
 	}
 	void ApplyPlayerSettings() const {
 		bImperialUnits = imperialUnits;
