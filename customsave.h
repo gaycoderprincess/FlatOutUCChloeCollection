@@ -196,6 +196,7 @@ struct tCustomSaveStructure {
 		playerPortrait = nAvatarID;
 		playerColor = nArrowColor;
 		hudType = nHUDType;
+		highCarCam = nHighCarCam;
 		displaySplits = nDisplaySplits;
 		splitType = nSplitType;
 	}

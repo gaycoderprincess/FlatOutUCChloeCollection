@@ -1,6 +1,7 @@
 namespace CareerRally {
 	bool bIsCareerRally = false;
 	int nNumRacesInThisCup = 0;
+	bool bNewCupJustFinished = false; // only hit if the cup wasn't finished before
 
 	void OnTick() {
 		// already done by the time trial check in careertimetrial
@@ -21,6 +22,8 @@ namespace CareerRally {
 	};
 
 	void OnCupFinished() {
+		bNewCupJustFinished = false;
+
 		gCustomSave.CalculateRallyPlayersByPosition();
 		auto cup = &gCustomSave.aRallyCareer[gCustomSave.nRallyClass][gCustomSave.nRallyCup];
 		auto nextCup = &gCustomSave.aRallyCareer[gCustomSave.nRallyClass][gCustomSave.nRallyCup+1];
@@ -31,6 +34,7 @@ namespace CareerRally {
 		}
 		// unlock the next cup if finished 3rd or higher
 		if (cup->nEventPosition && cup->nEventPosition <= 3) {
+			if (!nextCup->bEventUnlocked) bNewCupJustFinished = true;
 			nextCup->bEventUnlocked = 1;
 		}
 	}

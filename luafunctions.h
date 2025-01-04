@@ -185,7 +185,7 @@ int GetUnlockIDForCustomCar(int id, bool warn) {
 
 int IsCarAlwaysUnlocked(int id) {
 	static auto config = toml::parse_file("Config/CarUnlocks.toml");
-	return config["always_unlocked"]["car" + std::to_string(GetCarDataID(id))].value_or(true);
+	return config["always_unlocked"]["car" + std::to_string(GetCarDataID(id))].value_or(false);
 }
 
 void GenerateUnlockList() {
@@ -1268,6 +1268,12 @@ int ChloeRally_AdvanceEvent(void* a1) {
 	return 0;
 }
 
+int ChloeRally_IsNewCupJustFinished(void* a1) {
+	lua_pushboolean(a1, CareerRally::bNewCupJustFinished);
+	CareerRally::bNewCupJustFinished = false;
+	return 1;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1432,6 +1438,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_IsCupFinished, "ChloeRally_IsCupFinished");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AdvanceCup, "ChloeRally_AdvanceCup");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AdvanceEvent, "ChloeRally_AdvanceEvent");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_IsNewCupJustFinished, "ChloeRally_IsNewCupJustFinished");
 
 	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
 	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");
