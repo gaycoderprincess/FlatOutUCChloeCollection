@@ -35,6 +35,20 @@ namespace CareerRally {
 		}
 	}
 
+	void OnEventFinished() {
+		auto event = &gCustomSave.aRallyCareerEvents[gCustomSave.nRallyClass][gCustomSave.nRallyEvent];
+		auto nextEvent = &gCustomSave.aRallyCareerEvents[gCustomSave.nRallyClass][gCustomSave.nRallyEvent+1];
+		event->bEventUnlocked = 1;
+		int pos = pGameFlow->PostRace.nPlayerPosition[0];
+		if (!event->nEventPosition || pos < event->nEventPosition) {
+			event->nEventPosition = pos;
+		}
+		// unlock the next event if finished 3rd or higher
+		if (event->nEventPosition && event->nEventPosition <= 3) {
+			nextEvent->bEventUnlocked = 1;
+		}
+	}
+
 	void AdvanceCup() {
 		for (int i = 0; i < 32; i++) {
 			auto pos = pGameFlow->PostRace.nPlayerPosition[i]-1;
@@ -47,6 +61,11 @@ namespace CareerRally {
 		if (gCustomSave.nRallyCupNextStage >= CareerRally::nNumRacesInThisCup) {
 			OnCupFinished();
 		}
+		gCustomSave.Save();
+	}
+
+	void AdvanceEvent() {
+		OnEventFinished();
 		gCustomSave.Save();
 	}
 }
