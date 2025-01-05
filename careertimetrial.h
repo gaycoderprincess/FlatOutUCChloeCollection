@@ -17,10 +17,11 @@ namespace CareerTimeTrial {
 	void DoRaceStandings() {
 		// if super author opponents are on, subtract 2 from player position so you still finish 1st
 		auto ply = GetPlayerScore<PlayerScoreRace>(1);
-		if (nShowSuperAuthors >= 2) {
-			ply->nPosition -= 2;
-			if (ply->nPosition < 1) ply->nPosition = 1;
-		}
+		if (!ply) return;
+		if (nShowSuperAuthors < 2) return;
+
+		ply->nPosition -= 2;
+		if (ply->nPosition < 1) ply->nPosition = 1;
 	}
 
 	void __attribute__((naked)) __fastcall RaceStandingsASM() {
@@ -38,6 +39,11 @@ namespace CareerTimeTrial {
 		);
 	}
 
+	void ApplyAutoresolvePatch(bool apply) {
+		// race autoresolve
+		NyaHookLib::Patch<uint8_t>(0x493411, apply ? 0xEB : 0x75);
+	}
+
 	void ApplyPatches(bool apply) {
 		bIsTimeTrial = apply;
 		bIsCareerTimeTrial = apply;
@@ -46,6 +52,7 @@ namespace CareerTimeTrial {
 		NyaHookLib::Patch<uint64_t>(0x469BFE, apply ? 0xF883909090909090 : 0xF8830000020A840F); // use UpgradeLevel
 		NyaHookLib::Patch<uint8_t>(0x469CE1, apply && bUpgrades ? 0xEB : 0x74); // use UpgradeLevel SingleRace
 		NyaHookLib::Patch(0x4DC0FF + 1, apply ? "Data.Overlay.HUD.ChloeTimeTrial" : "Data.Overlay.HUD.Race"); // use UpgradeLevel SingleRace
+		ApplyAutoresolvePatch(apply);
 
 		if (apply) {
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x48BBAE, &RaceStandingsASM);
