@@ -268,6 +268,10 @@ NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
 NyaMat4x4* pNewResetpoint = nullptr;
 float fNewResetpointSpeed = 0;
 void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
+	// never reset ai cars during career time trials
+	if ((CareerTimeTrial::bIsCareerTimeTrial || CareerRally::bIsCareerRally) && car->pPlayer->nPlayerId != 1) {
+		return;
+	}
 	if (pLastPlayerResetpoint && car->pPlayer->nPlayerId == 1) {
 		pNewResetpoint = pLastPlayerResetpoint;
 	}

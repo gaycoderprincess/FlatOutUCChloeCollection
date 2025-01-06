@@ -10,6 +10,12 @@ namespace CareerRally {
 		//}
 	}
 
+	//void ApplyPatches(bool apply) {
+	//	// make the scoreboard display 13 players at a time
+	//	NyaHookLib::Patch<uint8_t>(0x4B3DD7, apply && GetOpponentCount() >= 11 ? 13 : 12);
+	//	NyaHookLib::Patch<uint8_t>(0x4B3DDD, apply && GetOpponentCount() >= 11 ? 13 : 12);
+	//}
+
 	int pointsPerPosition[32] = {
 			10,
 			8,
