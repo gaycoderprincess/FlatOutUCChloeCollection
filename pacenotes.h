@@ -680,7 +680,7 @@ void DrawSplitHUD() {
 }
 
 void DrawRallyHUD() {
-	//if (GameFlow::gPauseMenuUp) return;
+	if (pGameFlow->nIsPauseMenuUp) return;
 
 	// left transparent bg
 	DrawRectangle_1080pScaled(81, 159, 18, 653, {0,0,0,50});
