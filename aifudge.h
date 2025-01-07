@@ -14,4 +14,14 @@ void SetAIFudgeFactor() {
 		//NyaHookLib::Patch<uint64_t>(0x481D9A, nAIFudgeDisabled > 1 ? 0x44D990000000D4E9 : 0x44D9000000D38E0F); // disable velocity limits
 		nLastAIFudgeDisabled = currentAIFudge;
 	}
+
+	// set the bump mass of all opponents to 1x if on competitive or above
+	if (currentAIFudge >= 1 && pGameFlow->nGameState == GAME_STATE_RACE) {
+		for (int i = 0; i < 32; i++) {
+			auto ply = (AIPlayer*)GetPlayer(i);
+			if (!ply) continue;
+			if (ply->nPlayerType != PLAYERTYPE_AI) continue;
+			ply->AIProfile.fBumpMassDriver = 1.0;
+		}
+	}
 }
