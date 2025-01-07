@@ -48,7 +48,7 @@ uint32_t nPacenoteVolume = 90;
 uint32_t nPacenoteType = 2;
 uint32_t nPacenoteVisualType = 2;
 uint32_t nShowSuperAuthors = 0;
-uint32_t nMuteMusicInRally = 1;
+uint32_t nRallyMusicVolume = 45;
 uint32_t nDisplaySplits = 1;
 uint32_t nSplitType = 1;
 

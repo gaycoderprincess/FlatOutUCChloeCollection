@@ -20,7 +20,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "ArcadeRaceSoundtrack", &nIngameArcadeRaceSoundtrack, 0, 0, 1 },
 		{ "Game", "FO1Soundtrack", &nIngameFO1Soundtrack, 0, 0, 1 },
 		{ "Game", "TTSoundtrack", &nIngameTTSoundtrack, 0, 0, 1 },
-		{ "Game", "RTSoundtrack", &nIngameRTSoundtrack, 0, 0, 1 },
+		{ "Game", "RallySoundtrack", &nIngameRTSoundtrack, 0, 0, 1 },
 		{ "Game", "StuntSoundtrack", &nIngameStuntSoundtrack, 0, 0, 1 },
 		{ "Game", "StuntModeSoundtrack", &nIngameStuntShowSoundtrack, 0, 0, 1 },
 		{ "Game", "DriftSoundtrack", &nIngameDriftSoundtrack, 0, 0, 1 },
@@ -81,10 +81,10 @@ tGameSetting aNewGameSettings[] = {
 		{ "Audio", "InterfaceSfxVolume", (void*)0x849550, 0, 0, 100 },
 		{ "Audio", "IngameMusicVolume", (void*)0x849548, 0, 0, 100 },
 		{ "Audio", "IngameSfxVolume", (void*)0x849550, 0, 0, 100 },
+		{ "Audio", "RallyMusicVolume", &nRallyMusicVolume, 0, 0, 100 },
 		{ "Audio", "PacenoteVolume", &nPacenoteVolume, 0, 0, 100 },
 		{ "Audio", "PacenoteType", &nPacenoteType, 0, 0, 2 },
 		{ "Audio", "PacenoteVisualType", &nPacenoteVisualType, 0, 0, 2 },
-		{ "Audio", "MuteMusicInRally", &nMuteMusicInRally, 1, 0, 0 },
 		{ "Audio", "DopplerEffects", (void*)0x849554, 1, 0, 0 },
 		{ "Audio", "ChannelMode", (void*)0x84955C, 0, 0, 2 },
 		{ "Network", "Port", (void*)0x849560, 0, 0, 65536 },
@@ -115,8 +115,8 @@ void SetNewDefaultOptions() {
 	SetDefaultOptions();
 
 	// halve music & sfx volume by default
-	*(int*)0x849548 = 25;
-	*(int*)0x849550 = 40;
+	*(int*)0x849550 = 25; // sfx volume
+	*(int*)0x849548 = 30; // music volume
 }
 
 auto InitXInputController = (void(__thiscall*)(GameController*))0x5BA340;

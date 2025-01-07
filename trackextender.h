@@ -152,12 +152,11 @@ void SetTrackCustomProperties() {
 	NyaHookLib::Patch<const char*>(0x58C3D3, textureFolder);
 	NyaHookLib::Patch<const char*>(0x58C40E, textureFolder);
 
-	bool muteMusic = pGameFlow->nGameState == GAME_STATE_RACE && !aPacenotes.empty() && nMuteMusicInRally;
-
-	static uint32_t tmpMusicVolume = 0;
-	NyaHookLib::Patch(0x41D348, muteMusic ? (uintptr_t)&tmpMusicVolume : 0x849548);
-	NyaHookLib::Patch(0x41DEAB, muteMusic ? (uintptr_t)&tmpMusicVolume : 0x849548);
-	NyaHookLib::Patch(0x4AF18C, muteMusic ? (uintptr_t)&tmpMusicVolume : 0x849548);
+	bool muteMusic = pGameFlow->nGameState == GAME_STATE_RACE && !aPacenotes.empty();
+	NyaHookLib::Patch(0x41D348, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);
+	NyaHookLib::Patch(0x41DEAB, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);
+	NyaHookLib::Patch(0x4AF18C, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);
+	NyaHookLib::Patch(0x715184, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);
 
 	// increase VisibilitySet grid extents for rally trophy tracks
 	// rally russia extends to about 4600 for reference

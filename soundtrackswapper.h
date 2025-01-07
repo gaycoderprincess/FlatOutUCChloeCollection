@@ -187,7 +187,7 @@ void SetSoundtrack() {
 
 		auto playlist = &aPlaylists[soundtrackId];
 		if (isCarnageRace && playlist->filename == "playlist_ingamemodern") playlist = &gCarnageModernPlaylist;
-		if (isRally && playlist->filename == "playlist_ingamerally1") playlist = &gRallyPlaylists[rallyId];
+		if (isRally && playlist->filename == "playlist_ingamerally") playlist = &gRallyPlaylists[rallyId];
 
 		if (playlist != pLastSoundtrack) {
 			LoadSoundtrackWithBackup(1, playlist);
@@ -255,7 +255,7 @@ void ApplySoundtrackPatches() {
 			gCarnageModernPlaylist = playlist;
 			gCarnageModernPlaylist.filename = "playlist_ingamemodern2";
 		}
-		if (playlist.filename == "playlist_ingamerally1") {
+		if (playlist.filename == "playlist_ingamerally") {
 			for (int j = 0; j < 5; j++) {
 				gRallyPlaylists[j] = playlist;
 				gRallyPlaylists[j].filename = std::format("playlist_ingamerally{}",j+1);
