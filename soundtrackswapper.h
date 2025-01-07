@@ -22,6 +22,7 @@ std::vector<tPlaylist> aPlaylists;
 std::vector<tPlaylist> aMenuPlaylists;
 std::vector<tPlaylist> aStuntPlaylists;
 
+tPlaylist gRallyPlaylists[5];
 tPlaylist gCarnageModernPlaylist;
 tPlaylist* pCurrentPlaylist[3] = {};
 
@@ -137,6 +138,12 @@ void SetSoundtrack() {
 			LoadSoundtrackWithBackup(1, &gCarnageModernPlaylist);
 			pCurrentPlaylist[1] = nullptr;
 		}
+		for (auto& playlist : gRallyPlaylists) {
+			if (!playlist.filename.empty()) {
+				LoadSoundtrackWithBackup(1, &playlist);
+				pCurrentPlaylist[1] = nullptr;
+			}
+		}
 		for (auto& playlist : aMenuPlaylists) {
 			LoadSoundtrackWithBackup(0, &playlist);
 			pCurrentPlaylist[0] = nullptr;
@@ -153,12 +160,20 @@ void SetSoundtrack() {
 
 	if (pGameFlow && (pGameFlow->nGameState == GAME_STATE_RACE || !pLastSoundtrack)) {
 		bool isCarnageRace = false;
+		bool isRally = false;
+		int rallyId = 0;
 
 		int soundtrackId = nIngameSoundtrack;
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
 			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseFO1Soundtrack")) soundtrackId = nIngameFO1Soundtrack;
 			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseToughTrucksSoundtrack")) soundtrackId = nIngameTTSoundtrack;
-			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseRallyTrophySoundtrack")) soundtrackId = nIngameRTSoundtrack;
+			if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseRallyTrophySoundtrack")) {
+				soundtrackId = nIngameRTSoundtrack;
+				isRally = true;
+				rallyId = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "RallyTrophySoundtrackID")-1;
+				if (rallyId < 0) rallyId = 0;
+				if (rallyId > 4) rallyId = 4;
+			}
 			if (pGameFlow->nGameRules == GR_DERBY || pGameFlow->nDerbyType != DERBY_NONE) {
 				soundtrackId = pGameFlow->nDerbyType == DERBY_FRAG ? nIngameFragDerbySoundtrack : nIngameDerbySoundtrack;
 			}
@@ -172,6 +187,7 @@ void SetSoundtrack() {
 
 		auto playlist = &aPlaylists[soundtrackId];
 		if (isCarnageRace && playlist->filename == "playlist_ingamemodern") playlist = &gCarnageModernPlaylist;
+		if (isRally && playlist->filename == "playlist_ingamerally1") playlist = &gRallyPlaylists[rallyId];
 
 		if (playlist != pLastSoundtrack) {
 			LoadSoundtrackWithBackup(1, playlist);
@@ -238,6 +254,12 @@ void ApplySoundtrackPatches() {
 		if (playlist.filename == "playlist_ingamemodern") {
 			gCarnageModernPlaylist = playlist;
 			gCarnageModernPlaylist.filename = "playlist_ingamemodern2";
+		}
+		if (playlist.filename == "playlist_ingamerally1") {
+			for (int j = 0; j < 5; j++) {
+				gRallyPlaylists[j] = playlist;
+				gRallyPlaylists[j].filename = std::format("playlist_ingamerally{}",j+1);
+			}
 		}
 	}
 	for (int i = 0; i < numMenuPlaylists; i++) {
