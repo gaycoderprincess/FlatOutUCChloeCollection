@@ -1,8 +1,8 @@
 float __fastcall NoAILookahead(void* a1, uintptr_t a2) {
-	auto ai = *(Player**)(a2 + 0x1C);
-	ai->fLookAheadMin = 10.0;
-	ai->fLookAheadMax = 10.0;
-	ai->fLookAheadModifier = 0.1;
+	auto ai = *(AIPlayer**)(a2 + 0x1C);
+	ai->AIProfile.fLookAheadMin = 10.0;
+	ai->AIProfile.fLookAheadMax = 10.0;
+	ai->AIProfile.fLookAheadModifier = 0.1;
 	return 10.0;
 }
 

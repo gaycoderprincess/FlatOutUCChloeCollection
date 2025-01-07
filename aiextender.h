@@ -159,8 +159,8 @@ void __attribute__((naked)) __fastcall GhostForMoreOpponentsASM() {
 	);
 }
 
-void __fastcall SetAICarDataID(Player* pPlayer) {
-	pPlayer->nCarId = GetCarDBID(pPlayer->nAICarNum);
+void __fastcall SetAICarDataID(AIPlayer* pPlayer) {
+	pPlayer->nCarId = GetCarDBID(pPlayer->AIProfile.nCarNum);
 }
 
 uintptr_t AICarDataIDsASM_jmp = 0x409308;
@@ -179,7 +179,7 @@ void __attribute__((naked)) __fastcall AICarDataIDsASM() {
 
 bool bRayAltProfileState = false;
 bool bForceRayAltProfile = false;
-void __fastcall SetCustomAIProfiles(Player* pPlayer) {
+void __fastcall SetCustomAIProfiles(AIPlayer* pPlayer) {
 	NyaHookLib::Patch(0x40953D + 1, "%s.Class[%d]");
 	NyaHookLib::Patch(0x409400 + 1, "%s[%d].Class[%d]");
 
