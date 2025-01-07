@@ -63,7 +63,7 @@ void __fastcall DoFO2Downforce(Car* pCar) {
 	if (handlingMode == HANDLING_NORMAL && bIsStuntMode) return; // no downforce in stunt show on normal
 	if (handlingMode == HANDLING_PROFESSIONAL || handlingMode == HANDLING_NORMAL_LEGACY) return; // no downforce on professional or legacy
 	if (handlingMode == HANDLING_NORMAL && GetCarNumWheelsOnGround(pCar) > 0) return; // no downforce on ground on normal
-	*pCar->GetVelocityGravity() += pCar->GetMatrix()->y * -pCar->GetVelocity()->LengthSqr() * pCar->fMass * 0.0011772001;
+	*pCar->GetImpulse() += pCar->GetMatrix()->y * -pCar->GetVelocity()->LengthSqr() * pCar->fMass * 0.0011772001;
 }
 
 uintptr_t FO2SlideControlWrappedASM_jmp = 0x42AFBF;
