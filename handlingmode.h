@@ -38,14 +38,6 @@ void SetBetaHandling(bool enabled) {
 	NyaHookLib::Patch(0x45D7B6 + 1, enabled ? "BetaTires" : "Tires");
 }
 
-int GetCarNumWheelsOnGround(Car* car) {
-	int count = 0;
-	for (int i = 0; i < 4; i++) {
-		if (car->aTires[i].bOnGround) count++;
-	}
-	return count;
-}
-
 int nMultiplayerHandlingMode = 0;
 int GetHandlingMode() {
 	// only allow normal and professional for career
@@ -57,12 +49,17 @@ int GetHandlingMode() {
 	return nHandlingMode;
 }
 
-void __fastcall DoFO2Downforce(Car* pCar) {
+bool ShouldDoFO2Downforce(Car* pCar) {
 	int handlingMode = GetHandlingMode();
-	if (CareerTimeTrial::bIsCareerTimeTrial) return; // no downforce in career time trials
-	if (handlingMode == HANDLING_NORMAL && bIsStuntMode) return; // no downforce in stunt show on normal
-	if (handlingMode == HANDLING_PROFESSIONAL || handlingMode == HANDLING_NORMAL_LEGACY) return; // no downforce on professional or legacy
-	if (handlingMode == HANDLING_NORMAL && GetCarNumWheelsOnGround(pCar) > 0) return; // no downforce on ground on normal
+	if (CareerTimeTrial::bIsCareerTimeTrial) return false; // no downforce in career time trials
+	if (handlingMode == HANDLING_NORMAL && bIsStuntMode) return false; // no downforce in stunt show on normal
+	if (handlingMode == HANDLING_PROFESSIONAL || handlingMode == HANDLING_NORMAL_LEGACY) return false; // no downforce on professional or legacy
+	if (handlingMode == HANDLING_NORMAL && pCar->pPlayer->nTimeInAir <= 0) return false; // no downforce on ground on normal
+	return true;
+}
+
+void __fastcall DoFO2Downforce(Car* pCar) {
+	if (!ShouldDoFO2Downforce(pCar)) return;
 	*pCar->GetImpulse() += pCar->GetMatrix()->y * -pCar->GetVelocity()->LengthSqr() * pCar->fMass * 0.0011772001;
 }
 
@@ -96,7 +93,7 @@ void SetSlideControl() {
 
 	int nCurrentHandling = GetHandlingMode();
 	if (nLastHandling != nCurrentHandling || bLastCareerTimeTrial != CareerTimeTrial::bIsCareerTimeTrial) {
-		SetFO2Downforce(nCurrentHandling != HANDLING_PROFESSIONAL && nCurrentHandling != HANDLING_NORMAL_LEGACY && !CareerTimeTrial::bIsCareerTimeTrial);
+		SetFO2Downforce(nCurrentHandling != HANDLING_NORMAL && nCurrentHandling != HANDLING_PROFESSIONAL && nCurrentHandling != HANDLING_NORMAL_LEGACY && !CareerTimeTrial::bIsCareerTimeTrial);
 		SetSlideControl(nCurrentHandling == HANDLING_PROFESSIONAL);
 		SetBetaHandling(nCurrentHandling == HANDLING_BETA);
 		nLastHandling = nCurrentHandling;
