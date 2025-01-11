@@ -20,7 +20,11 @@ void SetAILookahead() {
 std::vector<NyaMat4x4> aNewResetPoints;
 void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
 	*car->GetMatrix() = pos;
-	if (GetLiteDB()->GetTable("GameFlow.PreRace")->GetPropertyAsBool("Reversed", 0)) {
+	bool isReversed = pGameFlow->PreRace.nReversed;
+	if (pGameFlow->nGameRules == GR_PONGRACE && car->pPlayer->nCurrentLap % 2 == 1) {
+		isReversed = !isReversed;
+	}
+	if (isReversed) {
 		auto mat = car->GetMatrix();
 		mat->x.x *= -1;
 		mat->x.z *= -1;
