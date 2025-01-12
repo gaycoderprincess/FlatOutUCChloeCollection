@@ -34,6 +34,7 @@ uint32_t nAIFudgeDisabled = 1;
 uint32_t nMPInterpolation = 1;
 uint32_t nInterpMinRange = 50;
 uint32_t nUseRelativePosition = 1;
+uint32_t nDefaultTickRate = 1;
 uint32_t nHandlingMode = HANDLING_NORMAL;
 uint32_t nPlayerFlag = 0;
 uint32_t nPlayerFlag2 = 0;

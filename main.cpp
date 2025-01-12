@@ -114,11 +114,8 @@ void SetExplosionEffects() {
 		float mult = nExplosionEffects ? 1 : 0.05;
 		if (nExplosionEffects == 2) mult = 0;
 
-		// Blast
 		gExplosionBloom[EXPLOSION_BLAST].fBloomScale = 20.0 * mult;
 		gExplosionBloom[EXPLOSION_BLAST].fCameraShakeScale = 1.2 * mult;
-
-		// Bomb
 		gExplosionBloom[EXPLOSION_BOMB].fBloomScale = 6.13 * mult;
 		gExplosionBloom[EXPLOSION_BOMB].fCameraShakeScale = 1.0 * mult;
 
