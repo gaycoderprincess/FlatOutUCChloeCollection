@@ -4,7 +4,22 @@ int nForceAICountNextRace = -1;
 
 int GetOpponentCount() {
 	int count = 11;
-	if (pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) {
+	if (CareerRally::bIsCareerRally) {
+		switch (nOpponentCountTypeRally) {
+			case 0:
+				count = 7;
+				break;
+			case 1:
+				count = 11;
+				break;
+			case 2:
+				count = nNumAIProfiles;
+				break;
+			default:
+				break;
+		}
+	}
+	else if (pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) {
 		switch (nOpponentCountTypeArcade) {
 			case 0:
 				count = 11;

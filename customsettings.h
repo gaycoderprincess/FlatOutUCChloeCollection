@@ -27,6 +27,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "MenuSoundtrack", &nMenuSoundtrack, 0, 0, 1 },
 		{ "Game", "OpponentCountCareer", &nOpponentCountTypeCareer, 0, 0, 3 },
 		{ "Game", "OpponentCountArcade", &nOpponentCountTypeArcade, 0, 0, 3 },
+		{ "Game", "OpponentCountRally", &nOpponentCountTypeRally, 0, 0, 2 },
 		{ "Game", "OpponentCountSingleEvent", &nOpponentCountTypeSingleEvent, 0, 0, 3 },
 		{ "Game", "OpponentStrength", &nAIFudgeDisabled, 0, 0, 2 },
 		{ "Game", "HUDType", &nHUDType, 0, 0, 1 },

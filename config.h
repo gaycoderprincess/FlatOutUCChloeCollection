@@ -22,6 +22,7 @@ uint32_t nIngameStuntShowSoundtrack = 0;
 uint32_t nIngameDriftSoundtrack = 0;
 uint32_t nOpponentCountTypeCareer = 1; // 11
 uint32_t nOpponentCountTypeArcade = 1; // numaiprofiles
+uint32_t nOpponentCountTypeRally = 2; // numaiprofiles
 uint32_t nOpponentCountTypeSingleEvent = 2; // numaiprofiles
 uint32_t nPlayerModel = 0;
 uint32_t nPlayerModelSkinID = 0;
