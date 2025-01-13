@@ -78,8 +78,7 @@ float __attribute__((naked)) MoreAIProfilesASM() {
 	);
 }
 
-auto InitAIHooked_call = (void(__stdcall*)(void*, int))0x4693F0;
-void __stdcall InitAIHooked(void* a1, int count) {
+void __stdcall InitAIHooked(GameFlow* pThis, int count) {
 	if (count >= 7) {
 		count = GetOpponentCount();
 
@@ -99,7 +98,7 @@ void __stdcall InitAIHooked(void* a1, int count) {
 			count = 11;
 		}
 	}
-	return InitAIHooked_call(a1, count);
+	return GameFlow::InitializeAI(pThis, count);
 }
 
 const wchar_t* __fastcall GetAIName(int id) {
