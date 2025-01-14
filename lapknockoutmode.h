@@ -20,15 +20,16 @@ namespace LapKnockoutMode {
 		_snwprintf(str, len, descString);
 	}
 
-	/*int GetHighestLap() {
-		int lap = -1;
+	int GetLowestLap() {
+		int lap = 99;
 		for (int i = 0; i < 32; i++) {
 			auto ply = GetPlayer(i);
 			if (!ply) continue;
-			if (ply->nCurrentLap > lap) lap = ply->nCurrentLap;
+			if (ply->nIsWrecked) continue;
+			if (ply->nCurrentLap < lap) lap = ply->nCurrentLap;
 		}
 		return lap;
-	}*/
+	}
 
 	Player* GetFirstPlacePlayer() {
 		for (int i = 0; i < 32; i++) {
@@ -40,15 +41,19 @@ namespace LapKnockoutMode {
 		return nullptr;
 	}
 
-	void KnockOutLowestPlayers() {
-		auto lap = GetFirstPlacePlayer()->nCurrentLap;
-
+	int GetHighestPositionToLeaveAlive(int lap) {
 		// on lap 1 with 13 ai this would be:
 		// 13 - 1 * 1
 		// 12
 		// knock out 12th
 		int highestPos = pGameFlow->pHost->GetNumPlayers() - (lap * GetNumPlayersKnockedOutPerLap());
 		if (lap > pScoreManager->nNumLaps) highestPos = 1; // always knock out every player once 1st place finishes
+		return highestPos;
+	}
+
+	void KnockOutLowestPlayers() {
+		//auto highestPos = GetHighestPositionToLeaveAlive(GetLowestLap());
+		auto highestPos = GetHighestPositionToLeaveAlive(GetFirstPlacePlayer()->nCurrentLap);
 
 		for (int i = 0; i < 32; i++) {
 			auto ply = GetPlayer(i);
