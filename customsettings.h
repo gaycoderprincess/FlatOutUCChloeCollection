@@ -101,6 +101,8 @@ tGameSetting aNewGameSettings[] = {
 		{ "Network", "InterpMinRange", &nInterpMinRange, 0, 0, 100 },
 		{ "Network", "UseRelativePosition", &nUseRelativePosition, 0, 0, 1 },
 		{ "Network", "DefaultTickRate", &nDefaultTickRate, 0, 0, 4 },
+		{ "Network", "AllowCheats", &nAllowCheats, 1, 0, 0 },
+		{ "Network", "JoinNotifs", &nJoinNotifs, 1, 0, 0 },
 		{ nullptr, nullptr, nullptr, 0, 0, 0 },
 };
 
