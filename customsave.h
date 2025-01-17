@@ -120,6 +120,7 @@ struct tCustomSaveStructure {
 		uint8_t bEventUnlocked;
 		uint8_t nEventPosition;
 	} aRallyCareerEvents[nNumRallyCareerEventsX][nNumRallyCareerEventsY];
+	uint8_t playerChatColor;
 
 	static inline uint8_t aRallyPlayersByPosition[32];
 	static inline uint8_t aRallyPlayerPosition[32];
@@ -163,6 +164,7 @@ struct tCustomSaveStructure {
 		highCarCam = 0;
 		displaySplits = 1;
 		splitType = 1;
+		playerChatColor = 0;
 
 		// default the rally cup to none
 		nRallyCup = -1;
@@ -186,6 +188,7 @@ struct tCustomSaveStructure {
 		nHighCarCam = highCarCam;
 		nDisplaySplits = displaySplits;
 		nSplitType = splitType;
+		nChatColor = playerChatColor;
 	}
 	void ReadPlayerSettings() {
 		imperialUnits = bImperialUnits;
@@ -199,6 +202,7 @@ struct tCustomSaveStructure {
 		highCarCam = nHighCarCam;
 		displaySplits = nDisplaySplits;
 		splitType = nSplitType;
+		playerChatColor = nChatColor;
 	}
 	void Load(int saveSlot, bool overrideArcadeScores) {
 		// override all scores on the first load since swapping profiles doesn't properly clear it
