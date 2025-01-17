@@ -10,6 +10,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "PlayerModel", &nPlayerModel, 0, 0, 24 },
 		{ "Game", "MPPortrait", &nAvatarID, 0, 0, 12 },
 		{ "Game", "ArrowColor", &nArrowColor, 0, 0, 13 },
+		{ "Game", "ChatColor", &nChatColor, 0, 0, 100 },
 		//{ "Game", "ShowBonus", (void*)0x8494D4, 1, 0, 0 },
 		{ "Game", "ShowTutorials", (void*)0x8494D8, 1, 0, 0 },
 		{ "Game", "CareerHandlingDamage", &nCareerHandlingDamage, 1, 0, 0 },
