@@ -221,8 +221,8 @@ void ProcessDebugMenu() {
 	if (DrawMenuOption("Playtime Stats")) {
 		ChloeMenuLib::BeginMenu();
 
-		for (int i = 0; i < NUM_PLAYTIME_TYPES; i++) {
-			DrawDebugMenuViewerOption(std::format("{} - {}", aPlaytimeTypeNames[i], GetTimeString(gCustomSave.playtime[i])));
+		for (int i = 0; i < NUM_PLAYTIME_TYPES_NEW; i++) {
+			DrawDebugMenuViewerOption(std::format("{} - {}", aPlaytimeTypeNames[i], GetTimeString(gCustomSave.playtimeNew[i])));
 		}
 
 		ChloeMenuLib::EndMenu();

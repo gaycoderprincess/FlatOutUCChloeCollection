@@ -765,7 +765,7 @@ int ChloeCollection_ReinitHooks(void* a1) {
 	DriftMode::ApplyPatches(false);
 	LapKnockoutMode::ApplyPatches(false);
 	CareerTimeTrial::ApplyPatches(false);
-	CareerRally::bIsCareerRally = false;
+	bIsCareerRally = false;
 	return 0;
 }
 
@@ -1004,10 +1004,10 @@ int ChloeCollection_GetCarMatchupInverse(void* a1) {
 
 int ChloeSPStats_GetPlaytimeOfType(void* a1) {
 	int id = luaL_checknumber(a1, 1);
-	if (id < 0 || id >= NUM_PLAYTIME_TYPES) {
+	if (id < 0 || id >= NUM_PLAYTIME_TYPES_NEW) {
 		return 0;
 	}
-	lua_pushnumber(a1, gCustomSave.playtime[id]);
+	lua_pushnumber(a1, gCustomSave.playtimeNew[id]);
 	return 1;
 }
 
@@ -1239,15 +1239,14 @@ int ChloeRally_GetCupNumPlayers(void* a1) {
 }
 
 int ChloeRally_SetIsCareerRally(void* a1) {
-	CareerRally::bIsCareerRally = luaL_checknumber(a1, 1);
-	if (CareerRally::bIsCareerRally) {
+	if (bIsCareerRally = luaL_checknumber(a1, 1)) {
 		CareerTimeTrial::ApplyAutoresolvePatch(true);
 	}
 	return 0;
 }
 
 int ChloeRally_GetIsCareerRally(void* a1) {
-	lua_pushboolean(a1, CareerRally::bIsCareerRally);
+	lua_pushboolean(a1, bIsCareerRally);
 	return 1;
 }
 
@@ -1474,7 +1473,11 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_STUNT, "PLAYTIME_INGAME_STUNT");
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_STUNTSHOW, "PLAYTIME_INGAME_STUNTSHOW");
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_TIMETRIAL, "PLAYTIME_INGAME_TIMETRIAL");
-	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES, "NUM_PLAYTIME_TYPES");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_DRIFT, "PLAYTIME_INGAME_DRIFT");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_LAPKNOCKOUT, "PLAYTIME_INGAME_LAPKNOCKOUT");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_SPEEDTRAP, "PLAYTIME_INGAME_SPEEDTRAP");
+	RegisterLUAEnum(a1, PLAYTIME_INGAME_RALLYMODE, "PLAYTIME_INGAME_RALLYMODE");
+	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES_NEW, "NUM_PLAYTIME_TYPES");
 
 	static auto sVersionString = "Chloe's Collection v1.63 - UI Cleanup Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");

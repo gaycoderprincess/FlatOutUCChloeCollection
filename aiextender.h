@@ -4,7 +4,7 @@ int nForceAICountNextRace = -1;
 
 int GetOpponentCount() {
 	int count = 11;
-	if (CareerRally::bIsCareerRally) {
+	if (bIsCareerRally) {
 		switch (nOpponentCountTypeRally) {
 			case 0:
 				count = 7;

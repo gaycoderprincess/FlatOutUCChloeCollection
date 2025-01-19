@@ -1,5 +1,4 @@
 namespace CareerRally {
-	bool bIsCareerRally = false;
 	int nNumRacesInThisCup = 0;
 	bool bNewCupJustFinished = false; // only hit if the cup wasn't finished before
 

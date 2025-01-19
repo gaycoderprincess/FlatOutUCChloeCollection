@@ -46,7 +46,13 @@ enum ePlaytimeType {
 	PLAYTIME_INGAME_STUNT,
 	PLAYTIME_INGAME_STUNTSHOW,
 	PLAYTIME_INGAME_TIMETRIAL,
-	NUM_PLAYTIME_TYPES
+	NUM_PLAYTIME_TYPES_OLD,
+
+	PLAYTIME_INGAME_DRIFT = NUM_PLAYTIME_TYPES_OLD,
+	PLAYTIME_INGAME_LAPKNOCKOUT,
+	PLAYTIME_INGAME_SPEEDTRAP,
+	PLAYTIME_INGAME_RALLYMODE,
+	NUM_PLAYTIME_TYPES_NEW,
 };
 
 const char* aPlaytimeTypeNames[] = {
@@ -70,6 +76,10 @@ const char* aPlaytimeTypeNames[] = {
 	"All Stunts",
 	"Stunt Show",
 	"Time Trial",
+	"Drift",
+	"Lap Knockout",
+	"Speedtrap",
+	"Rally Mode",
 };
 
 struct tCustomSaveStructure {
@@ -84,7 +94,7 @@ struct tCustomSaveStructure {
 	uint32_t gameProgress;
 	uint8_t _tmp; // old player portrait var
 	tCarTuning aCarTunings[256];
-	double playtime[NUM_PLAYTIME_TYPES];
+	double playtimeOld[NUM_PLAYTIME_TYPES_OLD];
 	struct {
 		uint32_t pbTime;
 		uint32_t medal;
@@ -121,6 +131,7 @@ struct tCustomSaveStructure {
 		uint8_t nEventPosition;
 	} aRallyCareerEvents[nNumRallyCareerEventsX][nNumRallyCareerEventsY];
 	uint8_t playerChatColor;
+	uint64_t playtimeNew[NUM_PLAYTIME_TYPES_NEW];
 
 	static inline uint8_t aRallyPlayersByPosition[32];
 	static inline uint8_t aRallyPlayerPosition[32];
@@ -280,95 +291,121 @@ void InitCustomSave() {
 }
 
 void ProcessPlayStats() {
-	if (!pGameFlow) return;
-	if (pLoadingScreen) return;
-
 	static CNyaTimer gTimer;
 	gTimer.Process();
 
-	auto time = gTimer.fDeltaTime;
-	gCustomSave.playtime[PLAYTIME_TOTAL] += time;
-	if (pGameFlow->nGameState == GAME_STATE_RACE) {
-		gCustomSave.playtime[PLAYTIME_INGAME] += time;
+	if (!pGameFlow) return;
+	if (pLoadingScreen) return;
 
-		if (!bIsInMultiplayer && pGameFlow->PreRace.nMode != GM_ONLINE_MULTIPLAYER) {
-			gCustomSave.playtime[PLAYTIME_INGAME_SINGLEPLAYER] += time;
+	// migrate playtime stats from doubles to the new int64s
+	for (int i = 0; i < NUM_PLAYTIME_TYPES_OLD; i++) {
+		if (gCustomSave.playtimeOld[i] > 0) {
+			gCustomSave.playtimeNew[i] = gCustomSave.playtimeOld[i];
+			gCustomSave.playtimeOld[i] = 0;
 		}
+	}
 
-		switch (pGameFlow->PreRace.nMode) {
-			case GM_CAREER:
-				gCustomSave.playtime[PLAYTIME_INGAME_CAREER] += time;
-				break;
-			case GM_ARCADE_CAREER:
-				gCustomSave.playtime[PLAYTIME_INGAME_CARNAGE] += time;
-				break;
-			case GM_SINGLE_RACE:
-				gCustomSave.playtime[PLAYTIME_INGAME_SINGLE] += time;
-				break;
-			// GFWL multiplayer
-			case GM_ONLINE_MULTIPLAYER:
-				gCustomSave.playtime[PLAYTIME_INGAME_MULTIPLAYER] += time;
-				break;
-			default:
-				break;
-		}
+	if (gTimer.fTotalTime > 1) {
+		gCustomSave.playtimeNew[PLAYTIME_TOTAL]++;
+		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			gCustomSave.playtimeNew[PLAYTIME_INGAME]++;
 
-		switch (pGameFlow->nDerbyType) {
-			case DERBY_LMS:
-				gCustomSave.playtime[PLAYTIME_INGAME_LMSDERBY] += time;
-				gCustomSave.playtime[PLAYTIME_INGAME_ALLDERBY] += time;
-				break;
-			case DERBY_WRECKING:
-				gCustomSave.playtime[PLAYTIME_INGAME_WRECKINGDERBY] += time;
-				gCustomSave.playtime[PLAYTIME_INGAME_ALLDERBY] += time;
-				break;
-			case DERBY_FRAG:
-				gCustomSave.playtime[PLAYTIME_INGAME_FRAGDERBY] += time;
-				gCustomSave.playtime[PLAYTIME_INGAME_ALLDERBY] += time;
-				break;
-			default:
-				break;
-		}
+			if (!bIsInMultiplayer && pGameFlow->PreRace.nMode != GM_ONLINE_MULTIPLAYER) {
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_SINGLEPLAYER]++;
+			}
 
-		if (bIsInMultiplayer) {
-			gCustomSave.playtime[PLAYTIME_INGAME_MULTIPLAYER] += time;
-		}
-
-		if (bIsTimeTrial) {
-			gCustomSave.playtime[PLAYTIME_INGAME_TIMETRIAL] += time;
-			gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
-		}
-		else if (bIsStuntMode) {
-			gCustomSave.playtime[PLAYTIME_INGAME_STUNTSHOW] += time;
-		}
-		else if (pGameFlow->nDerbyType == DERBY_NONE) {
-			switch (pGameFlow->nGameRules) {
-				case GR_DEFAULT:
-				case GR_RACE:
-					gCustomSave.playtime[PLAYTIME_INGAME_RACE] += time;
-					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+			switch (pGameFlow->PreRace.nMode) {
+				case GM_CAREER:
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_CAREER]++;
 					break;
-				case GR_PONGRACE:
-					gCustomSave.playtime[PLAYTIME_INGAME_PONGRACE] += time;
-					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+				case GM_ARCADE_CAREER:
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_CARNAGE]++;
 					break;
-				case GR_ARCADE_RACE:
-					gCustomSave.playtime[PLAYTIME_INGAME_ARCADERACE] += time;
-					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+				case GM_SINGLE_RACE:
+					if (bIsCareerRally) {
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_RALLYMODE]++;
+					}
+					else {
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_SINGLE]++;
+					}
 					break;
-				case GR_BEAT_THE_BOMB:
-					gCustomSave.playtime[PLAYTIME_INGAME_BEATTHEBOMB] += time;
-					gCustomSave.playtime[PLAYTIME_INGAME_ALLRACE] += time;
+				// GFWL multiplayer
+				case GM_ONLINE_MULTIPLAYER:
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_MULTIPLAYER]++;
 					break;
-				case GR_STUNT:
-					gCustomSave.playtime[PLAYTIME_INGAME_STUNT] += time;
+				default:
 					break;
 			}
+
+			switch (pGameFlow->nDerbyType) {
+				case DERBY_LMS:
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_LMSDERBY]++;
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLDERBY]++;
+					break;
+				case DERBY_WRECKING:
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_WRECKINGDERBY]++;
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLDERBY]++;
+					break;
+				case DERBY_FRAG:
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_FRAGDERBY]++;
+					gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLDERBY]++;
+					break;
+				default:
+					break;
+			}
+
+			if (bIsInMultiplayer) {
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_MULTIPLAYER]++;
+			}
+
+			if (bIsTimeTrial) {
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_TIMETRIAL]++;
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
+			}
+			else if (bIsStuntMode) {
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_STUNTSHOW]++;
+			}
+			else if (bIsDriftEvent) {
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_DRIFT]++;
+			}
+			else if (bIsLapKnockout) {
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_LAPKNOCKOUT]++;
+			}
+			else if (bIsSpeedtrap) {
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_SPEEDTRAP]++;
+			}
+			else if (pGameFlow->nDerbyType == DERBY_NONE) {
+				switch (pGameFlow->nGameRules) {
+					case GR_DEFAULT:
+					case GR_RACE:
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_RACE]++;
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
+						break;
+					case GR_PONGRACE:
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_PONGRACE]++;
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
+						break;
+					case GR_ARCADE_RACE:
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_ARCADERACE]++;
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
+						break;
+					case GR_BEAT_THE_BOMB:
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_BEATTHEBOMB]++;
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
+						break;
+					case GR_STUNT:
+						gCustomSave.playtimeNew[PLAYTIME_INGAME_STUNT]++;
+						break;
+				}
+			}
 		}
+		else if (pGameFlow->nGameState == GAME_STATE_MENU) {
+			gCustomSave.playtimeNew[PLAYTIME_MENU]++;
+		}
+
+		gTimer.fTotalTime -= 1;
 	}
-	else if (pGameFlow->nGameState == GAME_STATE_MENU) {
-		gCustomSave.playtime[PLAYTIME_MENU] += time;
-	}
+
 
 	static auto lastGameState = pGameFlow->nGameState;
 	if (lastGameState == GAME_STATE_RACE && pGameFlow->nGameState == GAME_STATE_MENU) {
