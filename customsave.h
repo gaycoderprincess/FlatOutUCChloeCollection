@@ -306,7 +306,6 @@ void ProcessPlayStats() {
 	}
 
 	if (gTimer.fTotalTime > 1) {
-		gCustomSave.playtimeNew[PLAYTIME_TOTAL]++;
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
 			gCustomSave.playtimeNew[PLAYTIME_INGAME]++;
 
@@ -370,9 +369,11 @@ void ProcessPlayStats() {
 			}
 			else if (bIsLapKnockout) {
 				gCustomSave.playtimeNew[PLAYTIME_INGAME_LAPKNOCKOUT]++;
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
 			}
 			else if (bIsSpeedtrap) {
 				gCustomSave.playtimeNew[PLAYTIME_INGAME_SPEEDTRAP]++;
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
 			}
 			else if (pGameFlow->nDerbyType == DERBY_NONE) {
 				switch (pGameFlow->nGameRules) {
@@ -402,6 +403,8 @@ void ProcessPlayStats() {
 		else if (pGameFlow->nGameState == GAME_STATE_MENU) {
 			gCustomSave.playtimeNew[PLAYTIME_MENU]++;
 		}
+
+		gCustomSave.playtimeNew[PLAYTIME_TOTAL] = gCustomSave.playtimeNew[PLAYTIME_MENU] + gCustomSave.playtimeNew[PLAYTIME_INGAME];
 
 		gTimer.fTotalTime -= 1;
 	}
