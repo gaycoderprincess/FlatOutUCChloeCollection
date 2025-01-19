@@ -366,6 +366,7 @@ void ProcessPlayStats() {
 			}
 			else if (bIsDriftEvent) {
 				gCustomSave.playtimeNew[PLAYTIME_INGAME_DRIFT]++;
+				gCustomSave.playtimeNew[PLAYTIME_INGAME_ALLRACE]++;
 			}
 			else if (bIsLapKnockout) {
 				gCustomSave.playtimeNew[PLAYTIME_INGAME_LAPKNOCKOUT]++;
@@ -403,7 +404,6 @@ void ProcessPlayStats() {
 		else if (pGameFlow->nGameState == GAME_STATE_MENU) {
 			gCustomSave.playtimeNew[PLAYTIME_MENU]++;
 		}
-
 		gCustomSave.playtimeNew[PLAYTIME_TOTAL] = gCustomSave.playtimeNew[PLAYTIME_MENU] + gCustomSave.playtimeNew[PLAYTIME_INGAME];
 
 		gTimer.fTotalTime -= 1;
