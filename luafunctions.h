@@ -185,7 +185,7 @@ int GetUnlockIDForCustomCar(int id, bool warn) {
 
 int IsCarAlwaysUnlocked(int id) {
 	static auto config = toml::parse_file("Config/CarUnlocks.toml");
-	return config["always_unlocked"]["car" + std::to_string(GetCarDataID(id))].value_or(false);
+	return config["always_unlocked"]["car_" + std::to_string(GetCarDataID(id))].value_or(false);
 }
 
 void GenerateUnlockList() {
@@ -283,6 +283,11 @@ int IsCarLocked(void* a1) {
 	auto pGarage = *ppData;
 
 	auto id = (int)luaL_checknumber(a1, 2);
+	if (IsCarAlwaysUnlocked(id)) {
+		lua_pushboolean(a1, false);
+		return 1;
+	}
+
 	if (id > 48) { // 46 and 47 are Bonecracker and Grinder
 		id = GetUnlockIDForCustomCar(id, true);
 	}

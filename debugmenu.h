@@ -457,6 +457,30 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
+	if (DrawMenuOption("Driver Location")) {
+		ChloeMenuLib::BeginMenu();
+
+		if (auto ply = GetPlayer(0)) {
+			if (DrawMenuOption(std::format("X - {}", ply->pCar->vDriverLoc[0]))) {
+				ValueEditorMenu(ply->pCar->vDriverLoc[0]);
+			}
+			if (DrawMenuOption(std::format("Y - {}", ply->pCar->vDriverLoc[1]))) {
+				ValueEditorMenu(ply->pCar->vDriverLoc[1]);
+			}
+			if (DrawMenuOption(std::format("Z - {}", ply->pCar->vDriverLoc[2]))) {
+				ValueEditorMenu(ply->pCar->vDriverLoc[2]);
+			}
+			for (int i = 0; i < 3; i++) {
+				ply->pCar->vDriverLocAbsolute[i] = ply->pCar->vDriverLoc[i] - ply->pCar->vCenterOfMassAbsolute[i];
+			}
+		}
+		else {
+			DrawDebugMenuViewerOption("Not in a race");
+		}
+
+		ChloeMenuLib::EndMenu();
+	}
+
 	DrawMenuOption("Game State:", "", true);
 
 	auto prerace = GetLiteDB()->GetTable("GameFlow.PreRace");
