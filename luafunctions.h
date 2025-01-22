@@ -38,7 +38,7 @@ int GetCarMatchup(int id) {
 		}
 	}
 
-	for (int i = 0; i < 512; i++) {
+	for (int i = 0; i < 1024; i++) {
 		if (config["main"]["car_" + std::to_string(i)].value_or(-1) == dataId) {
 			int dbId = GetCarDBID(i);
 			if (dbId >= 0) {
@@ -208,7 +208,7 @@ void GenerateUnlockList() {
 			}
 		}
 
-		for (int j = 0; j < 512; j++) {
+		for (int j = 0; j < 1024; j++) {
 			if (config["main"]["car_" + std::to_string(j)].value_or(-1) == unlockCarDataID) {
 				int dbId = GetCarDBID(j);
 				if (dbId < 0) continue;
@@ -1080,8 +1080,17 @@ int ChloeCollection_GetCareerTimeTrialBestTime(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_GetCarCustomMenuBG(void* a1) {
+	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", (int)luaL_checknumber(a1, 1)).c_str());
+	if (table->DoesPropertyExist("MenuBG")) {
+		lua_pushnumber(a1, table->GetPropertyAsInt("MenuBG", 0));
+		return 1;
+	}
+	return 0;
+}
+
 int ChloeCollection_ArePropCarsUnlocked(void* a1) {
-	lua_pushboolean(a1, bPropCarsUnlocked);
+	lua_pushboolean(a1, bPropCarsUnlocked || std::filesystem::exists("temp350"));
 	return 1;
 }
 
@@ -1421,6 +1430,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialResult, "ChloeCollection_SetCareerTimeTrialResult");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialResult, "ChloeCollection_GetCareerTimeTrialResult");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialBestTime, "ChloeCollection_GetCareerTimeTrialBestTime");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarCustomMenuBG, "ChloeCollection_GetCarCustomMenuBG");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ArePropCarsUnlocked, "ChloeCollection_ArePropCarsUnlocked");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AddCash, "ChloeRally_AddCash");
