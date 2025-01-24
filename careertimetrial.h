@@ -39,30 +39,6 @@ namespace CareerTimeTrial {
 		);
 	}
 
-	bool HasLocalPlayerFinished() {
-		return pGameFlow->nRaceState >= RACE_STATE_FINISHED;
-	}
-
-	void ApplyAutoresolvePatch(bool apply) {
-		// race autoresolve
-		NyaHookLib::Patch<uint8_t>(0x493411, apply ? 0xEB : 0x75);
-
-		uint32_t aFinishedCalls[] = {
-				0x4AD6C7,
-				0x4AD898,
-				0x4ADD99,
-				0x4AE51E,
-				0x4AF7D0,
-				0x4AF941,
-				0x4AFA08,
-				0x4AFBF3,
-				0x4B082D,
-		};
-		for (auto& addr : aFinishedCalls) {
-			NyaHookLib::PatchRelative(NyaHookLib::CALL, addr, apply ? (uintptr_t)&HasLocalPlayerFinished : 0x4ACB90);
-		}
-	}
-
 	void ApplyPatches(bool apply) {
 		bIsTimeTrial = apply;
 		bIsCareerTimeTrial = apply;
@@ -71,7 +47,6 @@ namespace CareerTimeTrial {
 		NyaHookLib::Patch<uint64_t>(0x469BFE, apply ? 0xF883909090909090 : 0xF8830000020A840F); // use UpgradeLevel
 		NyaHookLib::Patch<uint8_t>(0x469CE1, apply && bUpgrades ? 0xEB : 0x74); // use UpgradeLevel SingleRace
 		NyaHookLib::Patch(0x4DC0FF + 1, apply ? "Data.Overlay.HUD.ChloeTimeTrial" : "Data.Overlay.HUD.Race"); // use UpgradeLevel SingleRace
-		ApplyAutoresolvePatch(apply);
 
 		if (apply) {
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x48BBAE, &RaceStandingsASM);

@@ -1263,9 +1263,7 @@ int ChloeRally_GetCupNumPlayers(void* a1) {
 }
 
 int ChloeRally_SetIsCareerRally(void* a1) {
-	if (bIsCareerRally = luaL_checknumber(a1, 1)) {
-		CareerTimeTrial::ApplyAutoresolvePatch(true);
-	}
+	bIsCareerRally = luaL_checknumber(a1, 1);
 	return 0;
 }
 
