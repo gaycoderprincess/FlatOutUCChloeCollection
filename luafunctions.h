@@ -668,6 +668,11 @@ int ChloePacenotes_GetNumVisualTypes(void* a1) {
 }
 
 bool DoesCheatMatchAnyCar(const std::string& str) {
+	if (str == "temp350") {
+		bPropCarsUnlocked = true;
+		return true;
+	}
+
 	for (int i = 0; i < GetNumCars(); i++) {
 		auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", i).c_str());
 		if (table->DoesPropertyExist("CheatCode")) {
@@ -681,7 +686,6 @@ bool DoesCheatMatchAnyCar(const std::string& str) {
 	return false;
 }
 
-bool bPropCarsUnlocked = false;
 int ChloeCollection_CheckCheatCode(void* a1) {
 	auto str = GetStringNarrow(lua_tolstring(a1, 1, nullptr));
 	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
@@ -692,10 +696,6 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 	}
 	else if (str == "pressplay") {
 		bUnlockAllArcadeEvents = !bUnlockAllArcadeEvents;
-		lua_pushboolean(a1, true);
-	}
-	else if (str == "temp350") {
-		bPropCarsUnlocked = true;
 		lua_pushboolean(a1, true);
 	}
 	else lua_pushboolean(a1, false);
@@ -1110,7 +1110,7 @@ int ChloeCollection_GetCarCustomMenuBG(void* a1) {
 }
 
 int ChloeCollection_ArePropCarsUnlocked(void* a1) {
-	lua_pushboolean(a1, bPropCarsUnlocked || std::filesystem::exists("temp350"));
+	lua_pushboolean(a1, bPropCarsUnlocked);
 	return 1;
 }
 

@@ -20,6 +20,7 @@ std::string GetCheatSavePath(int id) {
 }
 
 int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
+bool bPropCarsUnlocked = false;
 bool bUnlockAllArcadeEvents = false;
 
 struct tCarTuning {
@@ -207,6 +208,11 @@ struct tCustomSaveStructure {
 		nSplitType = splitType;
 		nChatColor = playerChatColor;
 		aCarCheatsEntered = aCarCheatsEnteredInSavegame;
+		for (auto& cheat : aCarCheatsEntered) {
+			if (cheat == "temp350") {
+				bPropCarsUnlocked = true;
+			}
+		}
 	}
 	void ReadPlayerSettings() {
 		imperialUnits = bImperialUnits;
