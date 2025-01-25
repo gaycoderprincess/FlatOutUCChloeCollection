@@ -667,9 +667,12 @@ int ChloePacenotes_GetNumVisualTypes(void* a1) {
 	return 1;
 }
 
+std::vector<std::string> aCheatsEntered;
+
 bool bPropCarsUnlocked = false;
 int ChloeCollection_CheckCheatCode(void* a1) {
 	auto str = lua_tolstring(a1, 1, nullptr);
+	aCheatsEntered.push_back(GetStringNarrow(str));
 	if (!wcscmp(str, L"pressplay")) {
 		bUnlockAllArcadeEvents = !bUnlockAllArcadeEvents;
 		lua_pushboolean(a1, true);
@@ -1094,6 +1097,33 @@ int ChloeCollection_ArePropCarsUnlocked(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_IsCarLockedByCheatCode(void* a1) {
+	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", (int)luaL_checknumber(a1, 1)).c_str());
+	if (table->DoesPropertyExist("CheatCode")) {
+		auto str = table->GetPropertyAsString("CheatCode");
+		for (auto& cheat : aCheatsEntered) {
+			if (cheat == str) {
+				lua_pushboolean(a1, false);
+				return 1;
+			}
+		}
+		lua_pushboolean(a1, true);
+		return 1;
+	}
+	lua_pushboolean(a1, false);
+	return 1;
+}
+
+int ChloeCollection_DoesCarHaveCheatCode(void* a1) {
+	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", (int)luaL_checknumber(a1, 1)).c_str());
+	if (table->DoesPropertyExist("CheatCode")) {
+		lua_pushboolean(a1, true);
+		return 1;
+	}
+	lua_pushboolean(a1, false);
+	return 1;
+}
+
 int ChloeRally_AddCash(void* a1) {
 	gCustomSave.nRallyCash += luaL_checknumber(a1, 1);
 	return 0;
@@ -1430,6 +1460,8 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCareerTimeTrialBestTime, "ChloeCollection_GetCareerTimeTrialBestTime");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarCustomMenuBG, "ChloeCollection_GetCarCustomMenuBG");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ArePropCarsUnlocked, "ChloeCollection_ArePropCarsUnlocked");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_IsCarLockedByCheatCode, "ChloeCollection_IsCarLockedByCheatCode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesCarHaveCheatCode, "ChloeCollection_DoesCarHaveCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AddCash, "ChloeRally_AddCash");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCash, "ChloeRally_SetCash");
