@@ -13,6 +13,12 @@ std::string GetCustomSavePath(int id) {
 	return std::format("Savegame/customsave{:03}.sav", id);
 }
 
+std::vector<std::string> aCarCheatsEntered;
+std::vector<std::string> aCarCheatsEnteredInSavegame;
+std::string GetCheatSavePath(int id) {
+	return std::format("Savegame/customsave{:03}.cht", id);
+}
+
 int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
 bool bUnlockAllArcadeEvents = false;
 
@@ -200,6 +206,7 @@ struct tCustomSaveStructure {
 		nDisplaySplits = displaySplits;
 		nSplitType = splitType;
 		nChatColor = playerChatColor;
+		aCarCheatsEntered = aCarCheatsEnteredInSavegame;
 	}
 	void ReadPlayerSettings() {
 		imperialUnits = bImperialUnits;
@@ -215,6 +222,17 @@ struct tCustomSaveStructure {
 		splitType = nSplitType;
 		playerChatColor = nChatColor;
 	}
+	static std::string ReadCheatString(std::ifstream& file) {
+		std::string string;
+		char value = 0;
+		do {
+			if (file.eof()) return string;
+
+			file.read(&value, 1);
+			if (value) string.push_back(value);
+		} while (value);
+		return string;
+	}
 	void Load(int saveSlot, bool overrideArcadeScores) {
 		// override all scores on the first load since swapping profiles doesn't properly clear it
 		if (overrideArcadeScores) bOverrideAllArcadeScores = true;
@@ -222,6 +240,7 @@ struct tCustomSaveStructure {
 		memset(this,0,sizeof(*this));
 		memset(nArcadePlatinumTargets,0,sizeof(nArcadePlatinumTargets));
 		SetDefaultPlayerSettings();
+		aCarCheatsEnteredInSavegame.clear();
 
 		auto file = std::ifstream(GetCustomSavePath(saveSlot), std::ios::in | std::ios::binary);
 		if (!file.is_open()) return;
@@ -234,6 +253,15 @@ struct tCustomSaveStructure {
 			splitType = 1;
 			splitsInitialized = 1;
 		}
+
+		auto cht = std::ifstream(GetCheatSavePath(saveSlot), std::ios::in | std::ios::binary);
+		if (!cht.is_open()) return;
+
+		std::string cheatString = ReadCheatString(cht);
+		while (!cheatString.empty()) {
+			aCarCheatsEnteredInSavegame.push_back(cheatString);
+			cheatString = ReadCheatString(cht);
+		}
 	}
 	void Save() {
 		ReadPlayerSettings();
@@ -242,6 +270,14 @@ struct tCustomSaveStructure {
 		if (!file.is_open()) return;
 
 		file.write((char*)this, sizeof(*this));
+
+		if (aCarCheatsEntered.empty()) return;
+
+		auto cht = std::ofstream(GetCheatSavePath(nSaveSlot), std::ios::out | std::ios::binary);
+		if (!cht.is_open()) return;
+		for (auto& cheat : aCarCheatsEntered) {
+			cht.write(cheat.c_str(), cheat.length()+1);
+		}
 	}
 
 	void CalculateArcadePlacement(PlayerProfile* profile, int x, int y) {

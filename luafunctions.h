@@ -667,17 +667,34 @@ int ChloePacenotes_GetNumVisualTypes(void* a1) {
 	return 1;
 }
 
-std::vector<std::string> aCheatsEntered;
+bool DoesCheatMatchAnyCar(const std::string& str) {
+	for (int i = 0; i < GetNumCars(); i++) {
+		auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", i).c_str());
+		if (table->DoesPropertyExist("CheatCode")) {
+			auto cheat = (std::string)table->GetPropertyAsString("CheatCode");
+			std::transform(cheat.begin(), cheat.end(), cheat.begin(), [](unsigned char c){ return std::tolower(c); });
+			if (cheat == str) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 bool bPropCarsUnlocked = false;
 int ChloeCollection_CheckCheatCode(void* a1) {
-	auto str = lua_tolstring(a1, 1, nullptr);
-	aCheatsEntered.push_back(GetStringNarrow(str));
-	if (!wcscmp(str, L"pressplay")) {
+	auto str = GetStringNarrow(lua_tolstring(a1, 1, nullptr));
+	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
+	if (DoesCheatMatchAnyCar(str)) {
+		aCarCheatsEntered.push_back(str);
+		gCustomSave.Save();
+		lua_pushboolean(a1, true);
+	}
+	else if (str == "pressplay") {
 		bUnlockAllArcadeEvents = !bUnlockAllArcadeEvents;
 		lua_pushboolean(a1, true);
 	}
-	else if (!wcscmp(str, L"temp350")) {
+	else if (str == "temp350") {
 		bPropCarsUnlocked = true;
 		lua_pushboolean(a1, true);
 	}
@@ -1100,8 +1117,9 @@ int ChloeCollection_ArePropCarsUnlocked(void* a1) {
 int ChloeCollection_IsCarLockedByCheatCode(void* a1) {
 	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", (int)luaL_checknumber(a1, 1)).c_str());
 	if (table->DoesPropertyExist("CheatCode")) {
-		auto str = table->GetPropertyAsString("CheatCode");
-		for (auto& cheat : aCheatsEntered) {
+		auto str = (std::string)table->GetPropertyAsString("CheatCode");
+		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
+		for (auto& cheat : aCarCheatsEntered) {
 			if (cheat == str) {
 				lua_pushboolean(a1, false);
 				return 1;
