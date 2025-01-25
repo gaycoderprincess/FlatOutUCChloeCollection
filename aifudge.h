@@ -16,12 +16,22 @@ void SetAIFudgeFactor() {
 	}
 
 	// set the bump mass of all opponents to 1x if on competitive or above
-	if (currentAIFudge >= 1 && pGameFlow->nGameState == GAME_STATE_RACE) {
+	if (pGameFlow->nGameState == GAME_STATE_RACE) {
 		for (int i = 0; i < 32; i++) {
 			auto ply = (AIPlayer*)GetPlayer(i);
 			if (!ply) continue;
 			if (ply->nPlayerType != PLAYERTYPE_AI) continue;
-			ply->AIProfile.fBumpMassDriver = 1.0;
+
+			if (currentAIFudge >= 1) {
+				ply->AIProfile.fBumpMassDriver = 1.0;
+			}
+			// no catchup for easy diff
+			if (currentAIFudge == 0) {
+				//ply->AIProfile.fHandicapMul = 1.0;
+				//ply->AIProfile.fRLMagnetMul = 0.0;
+				ply->AIProfile.fCatchUpMul = 0.0;
+				if (ply->AIProfile.fDefaultTurbo > 0.0) ply->AIProfile.fDefaultTurbo = 0.0;
+			}
 		}
 	}
 }
