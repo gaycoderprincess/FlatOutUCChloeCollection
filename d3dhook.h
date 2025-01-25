@@ -10,6 +10,7 @@ void HookLoop() {
 	ProcessNewReset();
 	SpeedtrapMode::OnTick();
 	DriftMode::OnTick();
+	LapKnockoutMode::OnTick();
 	CommonMain();
 	*(float*)0x716034 = 480.0f;
 }

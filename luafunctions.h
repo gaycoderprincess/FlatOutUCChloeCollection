@@ -723,6 +723,13 @@ int ChloeCollection_SetDriftMode(void* a1) {
 }
 
 int ChloeCollection_SetLapKnockoutMode(void* a1) {
+	LapKnockoutMode::bTimedMode = false;
+	LapKnockoutMode::ApplyPatches(luaL_checknumber(a1, 1));
+	return 0;
+}
+
+int ChloeCollection_SetTimedKnockoutMode(void* a1) {
+	LapKnockoutMode::bTimedMode = true;
 	LapKnockoutMode::ApplyPatches(luaL_checknumber(a1, 1));
 	return 0;
 }
@@ -1445,6 +1452,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_CheckCheatCode, "ChloeCollection_CheckCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SaveSettings, "ChloeCollection_SaveSettings");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetLapKnockoutMode, "ChloeCollection_SetLapKnockoutMode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetTimedKnockoutMode, "ChloeCollection_SetTimedKnockoutMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftMode, "ChloeCollection_SetDriftMode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftSimpleUI, "ChloeCollection_SetDriftSimpleUI");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetDriftTime, "ChloeCollection_SetDriftTime");
@@ -1526,6 +1534,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, GR_SPEEDTRAP, "GR_SPEEDTRAP");
 	RegisterLUAEnum(a1, GR_DRIFT, "GR_DRIFT");
 	RegisterLUAEnum(a1, GR_LAPKNOCKOUT, "GR_LAPKNOCKOUT");
+	RegisterLUAEnum(a1, GR_KNOCKOUT, "GR_KNOCKOUT");
 
 	RegisterLUAEnum(a1, PLAYTIME_TOTAL, "PLAYTIME_TOTAL");
 	RegisterLUAEnum(a1, PLAYTIME_MENU, "PLAYTIME_MENU");
