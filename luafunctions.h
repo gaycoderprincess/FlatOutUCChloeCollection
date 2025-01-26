@@ -690,8 +690,17 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 	auto str = GetStringNarrow(lua_tolstring(a1, 1, nullptr));
 	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
 	if (DoesCheatMatchAnyCar(str)) {
-		aCarCheatsEntered.push_back(str);
-		gCustomSave.Save();
+		bool isEntered = false;
+		for (auto& cheat : aCarCheatsEntered) {
+			if (cheat == str) {
+				isEntered = true;
+				break;
+			}
+		}
+		if (!isEntered) {
+			aCarCheatsEntered.push_back(str);
+			gCustomSave.Save();
+		}
 		lua_pushboolean(a1, true);
 	}
 	else if (str == "pressplay") {
