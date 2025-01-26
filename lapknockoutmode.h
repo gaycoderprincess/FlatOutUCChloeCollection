@@ -196,7 +196,7 @@ namespace LapKnockoutMode {
 		if (!bTimedMode) return;
 		if (!pScoreManager) return;
 		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
-		if (pGameFlow->nRaceState != RACE_STATE_RACING) return;
+		if (pGameFlow->nRaceState != RACE_STATE_RACING && pGameFlow->nRaceState != RACE_STATE_FINISHED) return;
 
 		pScoreManager->nNumLaps = 10;
 		KnockOutLowestPlayers();
@@ -205,7 +205,7 @@ namespace LapKnockoutMode {
 
 	int GetTimeLeftString(wchar_t* str, size_t len, void* a3, void* a4) {
 		int32_t time = nKnockoutTimer - (pPlayerHost->nRaceTime % nKnockoutTimer);
-		std::string timestr = (time <= 5000) ? "#40#" : "#39#";
+		std::string timestr = (time <= 4500) ? "#40#" : "#39#";
 		timestr += GetTimeFromMilliseconds(time, true);
 		timestr.pop_back(); // remove trailing 0, the game has a tickrate of 100fps
 		return mbstowcs(str, timestr.c_str(), len);
