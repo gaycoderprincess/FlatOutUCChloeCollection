@@ -3,6 +3,7 @@ namespace DriftMode {
 
 	bool bSimpleUI = false;
 
+	const float fMinSpeedForDrift = 50;
 	const float fMinDotAngleForDrift = 0.97;
 	const float fMinDotAngleForMultiplier = 0.92;
 	const float fMinDotAngleForSpinOut = 0.05;
@@ -67,6 +68,35 @@ namespace DriftMode {
 		GameFlow::AddArcadeRaceScore(str, category, pGameFlow, amount, playerScore->nPosition);
 	}
 
+	float GetDriftDotFactor(Car* car) {
+		auto fwd = car->GetMatrix()->z;
+		fwd.y = 0;
+		auto vel = *car->GetVelocity();
+		vel.y = 0;
+		auto velNorm = vel;
+		velNorm.Normalize();
+		auto dot = fwd.Dot(velNorm);
+
+		if (dot <= fMinDotAngleForSpinOut) return 0;
+		if (dot > fMinDotAngleForDrift) return 0;
+
+		auto dotFactor = 1 - dot;
+		dotFactor = sqrt(dotFactor); // remove to make it more angle-based
+		return dotFactor;
+	}
+
+	float GetDriftSpeedFactor(Car* car) {
+		auto fwd = car->GetMatrix()->z;
+		fwd.y = 0;
+		auto vel = *car->GetVelocity();
+		vel.y = 0;
+		auto velNorm = vel;
+		velNorm.Normalize();
+		auto speedFactor = vel.length();
+		//speedFactor *= spdFactor; // add to make it more speed-based
+		return speedFactor;
+	}
+
 	bool bLastDriftDirection = false;
 	bool bDriftDirectionInited = false;
 	double fCurrentDriftChain = 0;
@@ -75,7 +105,8 @@ namespace DriftMode {
 	int nDriftChainMultiplier = 1;
 	std::string sDriftNotif;
 	double fLastCarHealth = 0;
-	bool bLastGhosting = 0;
+	bool bLastGhosting = false;
+
 	void DrawHUD() {
 		static CNyaTimer gTimer;
 		gTimer.Process();
@@ -99,6 +130,34 @@ namespace DriftMode {
 			DrawString(data, sDriftNotif, &DrawStringFO2);
 		}
 		fDriftNotifTimer -= gTimer.fDeltaTime;
+
+		// drift factors hud
+		/*
+		float fDriftUISizeX = 0.06;
+		float fDriftUISizeY = 0.01;
+		float fDriftUIY1 = 0.2;
+		float fDriftUIY2 = 0.23;
+		float fDriftUISpeedFactor = 70;
+
+		float l = 0.5 - (fDriftUISizeX * GetAspectRatioInv());
+		float r = 0.5 + (fDriftUISizeX * GetAspectRatioInv());
+
+		auto dotFactor = GetDriftDotFactor(GetPlayer(0)->pCar);
+		dotFactor -= sqrt(1.0 - fMinDotAngleForDrift);
+		dotFactor /= sqrt(1.0 - fMinDotAngleForSpinOut) - sqrt(1.0 - fMinDotAngleForDrift);
+		if (dotFactor < 0) dotFactor = 0;
+		auto spdFactor = GetDriftSpeedFactor(GetPlayer(0)->pCar);
+		if (spdFactor * 3.6 < fMinSpeedForDrift) spdFactor = 0;
+		spdFactor -= fMinSpeedForDrift / 3.6;
+		spdFactor /= fDriftUISpeedFactor;
+		if (spdFactor < 0) spdFactor = 0;
+		if (spdFactor > 1) spdFactor = 1;
+
+		DrawRectangle(l, r, fDriftUIY1 - fDriftUISizeY, fDriftUIY1 + fDriftUISizeY, {0,0,0,255});
+		DrawRectangle(l, std::lerp(l, r, dotFactor), fDriftUIY1 - fDriftUISizeY, fDriftUIY1 + fDriftUISizeY, {0,255,0,255});
+		DrawRectangle(l, r, fDriftUIY2 - fDriftUISizeY, fDriftUIY2 + fDriftUISizeY, {0,0,0,255});
+		DrawRectangle(l, std::lerp(l, r, spdFactor), fDriftUIY2 - fDriftUISizeY, fDriftUIY2 + fDriftUISizeY, {0,255,0,255});
+		*/
 	}
 
 	void AddNotif(const std::string& str) {
@@ -129,9 +188,14 @@ namespace DriftMode {
 
 	void EndDriftChain(bool cashOut) {
 		fDriftChainTimer = fMaxDriftTimeout + 1;
-		if (cashOut && fCurrentDriftChain > 0) {
+		if ((cashOut || bIsInMultiplayer) && fCurrentDriftChain > 0) {
+			if (cashOut) {
+				AddNotif(std::format("+{:.0f} pts", fCurrentDriftChain * nDriftChainMultiplier));
+			}
+			else {
+				fCurrentDriftChain *= 0.5;
+			}
 			AddScore(0, L"DRIFT", fCurrentDriftChain, 1);
-			AddNotif(std::format("+{:.0f} pts", fCurrentDriftChain * nDriftChainMultiplier));
 		}
 		fCurrentDriftChain = 0;
 		nDriftChainMultiplier = 1;
@@ -272,7 +336,7 @@ namespace DriftMode {
 			}
 		}
 		else {
-			if ((vel.length() * 3.6) > 50 && !pPlayer->nTimeInAir) {
+			if ((vel.length() * 3.6) >= fMinSpeedForDrift && !pPlayer->nTimeInAir) {
 				// 1 - moving forwards
 				// 0 - moving sideways
 				// -1 - moving backwards
@@ -289,12 +353,7 @@ namespace DriftMode {
 				else if (dot <= fMinDotAngleForDrift) {
 					fDriftChainTimer = 0;
 
-					auto dotFactor = 1 - dot;
-					dotFactor = sqrt(dotFactor); // remove to make it more angle-based
-					auto speedFactor = vel.length();
-					//speedFactor *= spdFactor; // add to make it more speed-based
-
-					auto pts = dotFactor * speedFactor * fDriftScoreSpeedFactor * 0.01;
+					auto pts = GetDriftDotFactor(car) * GetDriftSpeedFactor(car) * fDriftScoreSpeedFactor * 0.01;
 					fCurrentDriftChain += pts;
 
 					auto cross = fwd.Cross(vel);

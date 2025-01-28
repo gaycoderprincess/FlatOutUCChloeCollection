@@ -14,7 +14,6 @@ tGameSetting aNewGameSettings[] = {
 		//{ "Game", "ShowBonus", (void*)0x8494D4, 1, 0, 0 },
 		{ "Game", "ShowTutorials", (void*)0x8494D8, 1, 0, 0 },
 		{ "Game", "CareerHandlingDamage", &nCareerHandlingDamage, 1, 0, 0 },
-		{ "Game", "CareerRallyTrophyCars", &nCareerRallyTrophyCars, 1, 0, 0 },
 		{ "Game", "Soundtrack", &nIngameSoundtrack, 0, 0, 1 },
 		{ "Game", "DerbySoundtrack", &nIngameDerbySoundtrack, 0, 0, 1 },
 		{ "Game", "FragDerbySoundtrack", &nIngameFragDerbySoundtrack, 0, 0, 1 },

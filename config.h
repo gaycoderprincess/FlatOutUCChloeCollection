@@ -8,7 +8,6 @@ enum eHandlingMode {
 };
 
 uint32_t nCareerHandlingDamage = 0;
-uint32_t nCareerRallyTrophyCars = 0;
 uint32_t nMenuSoundtrack = 0;
 uint32_t nIngameSoundtrack = 0;
 uint32_t nIngameDerbySoundtrack = 0;
