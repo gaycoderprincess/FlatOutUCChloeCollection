@@ -667,7 +667,7 @@ int ChloePacenotes_GetNumVisualTypes(void* a1) {
 	return 1;
 }
 
-bool DoesCheatMatchAnyCar(const std::string& str) {
+bool DoesCheatMatchAnyCarOrTrack(const std::string& str) {
 	if (str == "temp350") {
 		bPropCarsUnlocked = true;
 		return true;
@@ -683,13 +683,22 @@ bool DoesCheatMatchAnyCar(const std::string& str) {
 			}
 		}
 	}
+	for (int i = 1; i < GetNumTracks() + 1; i++) {
+		if (!DoesTrackExist(i)) continue;
+		if (!DoesTrackValueExist(i, "CheatCode")) continue;
+		auto cheat = (std::string)GetTrackValueString(i, "CheatCode");
+		std::transform(cheat.begin(), cheat.end(), cheat.begin(), [](unsigned char c){ return std::tolower(c); });
+		if (cheat == str) {
+			return true;
+		}
+	}
 	return false;
 }
 
 int ChloeCollection_CheckCheatCode(void* a1) {
 	auto str = GetStringNarrow(lua_tolstring(a1, 1, nullptr));
 	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
-	if (DoesCheatMatchAnyCar(str)) {
+	if (DoesCheatMatchAnyCarOrTrack(str)) {
 		bool isEntered = false;
 		for (auto& cheat : aCarCheatsEntered) {
 			if (cheat == str) {
@@ -1148,6 +1157,33 @@ int ChloeCollection_IsCarLockedByCheatCode(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_IsTrackLockedByCheatCode(void* a1) {
+	int id = (int)luaL_checknumber(a1, 1);
+	if (DoesTrackValueExist(id, "CheatCode")) {
+		auto str = (std::string)GetTrackValueString(id, "CheatCode");
+		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+		for (auto &cheat: aCarCheatsEntered) {
+			if (cheat == str) {
+				lua_pushboolean(a1, false);
+				return 1;
+			}
+		}
+		lua_pushboolean(a1, true);
+		return 1;
+	}
+	lua_pushboolean(a1, false);
+	return 1;
+}
+
+int ChloeCollection_DoesTrackHaveCheatCode(void* a1) {
+	if (DoesTrackValueExist(luaL_checknumber(a1, 1), "CheatCode")) {
+		lua_pushboolean(a1, true);
+		return 1;
+	}
+	lua_pushboolean(a1, false);
+	return 1;
+}
+
 int ChloeCollection_DoesCarHaveCheatCode(void* a1) {
 	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", (int)luaL_checknumber(a1, 1)).c_str());
 	if (table->DoesPropertyExist("CheatCode")) {
@@ -1496,7 +1532,9 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarCustomMenuBG, "ChloeCollection_GetCarCustomMenuBG");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_ArePropCarsUnlocked, "ChloeCollection_ArePropCarsUnlocked");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_IsCarLockedByCheatCode, "ChloeCollection_IsCarLockedByCheatCode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_IsTrackLockedByCheatCode, "ChloeCollection_IsTrackLockedByCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesCarHaveCheatCode, "ChloeCollection_DoesCarHaveCheatCode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesTrackHaveCheatCode, "ChloeCollection_DoesTrackHaveCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AddCash, "ChloeRally_AddCash");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCash, "ChloeRally_SetCash");

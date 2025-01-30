@@ -147,6 +147,10 @@ void SetTrackCustomProperties() {
 		NyaHookLib::Patch<uint64_t>(0x4F1575, noMap ? 0x03EB9000000575E9 : 0x03EB000005748E0F);
 		// disable local player marker
 		NyaHookLib::Patch<uint64_t>(0x4F210A, noMap ? 0x909090000000BCE9 : 0x00014024848B168B);
+
+		if (!bIsStuntMode) {
+			NyaHookLib::Patch<uint64_t>(0x4DF94E, DoesTrackValueExist(pGameFlow->PreRace.nLevel, "NoWrongWay") ? 0x0E606800000E32E9 : 0x0E606809298FD8A1);
+		}
 	}
 
 	NyaHookLib::Patch<const char*>(0x56163D, textureFolder);
