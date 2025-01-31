@@ -242,7 +242,7 @@ void ProcessDebugMenu() {
 			SplineViewerMenu(aCustomSplinesL, "Left");
 			SplineViewerMenu(aCustomSplinesR, "Right");
 			if (!aCustomSplinesL.empty() && !aCustomSplinesR.empty()) {
-				if (DrawMenuOption("Save Splines Globally", "", false, false)) {
+				if (DrawMenuOption("Save Splines", "", false, false)) {
 					WriteSplines();
 				}
 				if (DrawMenuOption("Delete All Splines", "", false, false)) {
