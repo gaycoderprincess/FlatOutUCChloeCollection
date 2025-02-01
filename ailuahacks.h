@@ -1,8 +1,12 @@
-void __fastcall SetAICarToForcedCar(int* player) {
-	if (nForceAllAICarsNextRace >= 0) player[166] = nForceAllAICarsNextRace;
+void __fastcall SetAICarToForcedCar(Player* player) {
+	if (nForceAllAICarsNextRace >= 0) player->nCarId = nForceAllAICarsNextRace;
 	if (nForceAllAICarsNextRaceDuo[0] >= 0 && nForceAllAICarsNextRaceDuo[1] >= 0) {
+		static int skinId[2] = {0,0};
+
 		static bool tmp = false;
-		player[166] = nForceAllAICarsNextRaceDuo[tmp];
+		player->nCarId = nForceAllAICarsNextRaceDuo[tmp];
+		player->nCarSkinId = (skinId[tmp] % GetNumSkinsForCar(player->nCarId)) + 1;
+		skinId[tmp]++;
 		tmp = !tmp;
 	}
 }
