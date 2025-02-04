@@ -21,6 +21,27 @@ struct tPlaylist {
 std::vector<tPlaylist> aPlaylists;
 std::vector<tPlaylist> aMenuPlaylists;
 std::vector<tPlaylist> aStuntPlaylists;
+std::vector<tPlaylist> aTrackPlaylists;
+
+tPlaylist* GetPlaylistByFilename(const std::string& name) {
+	for (auto& playlist : aPlaylists) {
+		if (playlist.filename == name) return &playlist;
+	}
+	for (auto& playlist : aMenuPlaylists) {
+		if (playlist.filename == name) return &playlist;
+	}
+	for (auto& playlist : aStuntPlaylists) {
+		if (playlist.filename == name) return &playlist;
+	}
+	for (auto& playlist : aTrackPlaylists) {
+		if (playlist.filename == name) return &playlist;
+	}
+	return nullptr;
+}
+
+void ApplyIngamePlaylistNoRandomizePatch(bool apply) {
+	NyaHookLib::Patch<uint16_t>(0x41E4D4, apply ? 0x27EB : 0x1A75);
+}
 
 tPlaylist gRallyPlaylists[5];
 tPlaylist gCarnageModernPlaylist;
@@ -116,6 +137,10 @@ void LoadSoundtrackWithBackup(int id, tPlaylist* playlist) {
 	}
 
 	pCurrentPlaylist[id] = playlist;
+
+	if (id == 1) {
+		ApplyIngamePlaylistNoRandomizePatch(playlist->gamePlaylist.GetSize() <= 1);
+	}
 }
 
 void SetSoundtrack() {
@@ -130,6 +155,21 @@ void SetSoundtrack() {
 	// preload all soundtracks
 	static bool bOnce = true;
 	if (bOnce) {
+		// per track playlists
+		for (int i = 1; i < GetNumTracks() + 1; i++) {
+			if (!DoesTrackValueExist(i, "MusicPlaylist")) continue;
+
+			auto name = GetTrackValueString(i, "MusicPlaylist");
+			if (!GetPlaylistByFilename(name)) {
+				tPlaylist playlist;
+				playlist.name = L"DUMMY";
+				playlist.filename = name;
+				aTrackPlaylists.push_back(playlist);
+				LoadSoundtrackWithBackup(1, &aTrackPlaylists[aTrackPlaylists.size()-1]);
+				pCurrentPlaylist[1] = nullptr;
+			}
+		}
+		// regular playlists
 		for (auto& playlist : aPlaylists) {
 			LoadSoundtrackWithBackup(1, &playlist);
 			pCurrentPlaylist[1] = nullptr;
@@ -188,6 +228,12 @@ void SetSoundtrack() {
 		auto playlist = &aPlaylists[soundtrackId];
 		if (isCarnageRace && playlist->filename == "playlist_ingamemodern") playlist = &gCarnageModernPlaylist;
 		if (isRally && playlist->filename == "playlist_ingamerally") playlist = &gRallyPlaylists[rallyId];
+
+		if (pGameFlow->nGameState == GAME_STATE_RACE && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MusicPlaylist")) {
+			if (auto trackPlaylist = GetPlaylistByFilename(GetTrackValueString(pGameFlow->PreRace.nLevel, "MusicPlaylist"))) {
+				playlist = trackPlaylist;
+			}
+		}
 
 		if (playlist != pLastSoundtrack) {
 			LoadSoundtrackWithBackup(1, playlist);

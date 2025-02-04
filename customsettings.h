@@ -25,6 +25,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "StuntModeSoundtrack", &nIngameStuntShowSoundtrack, 0, 0, 1 },
 		{ "Game", "DriftSoundtrack", &nIngameDriftSoundtrack, 0, 0, 1 },
 		{ "Game", "MenuSoundtrack", &nMenuSoundtrack, 0, 0, 1 },
+		{ "Game", "PerTrackSoundtrack", &nPerTrackSoundtrack, 1, 0, 0 },
 		{ "Game", "OpponentCountCareer", &nOpponentCountTypeCareer, 0, 0, 1 },
 		{ "Game", "OpponentCountCarnage", &nOpponentCountTypeArcade, 0, 0, 1 },
 		{ "Game", "OpponentCountRally", &nOpponentCountTypeRally, 0, 0, 2 },
