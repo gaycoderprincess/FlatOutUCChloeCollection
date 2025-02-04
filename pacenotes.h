@@ -1,3 +1,16 @@
+bool IsRallyTrack() {
+	if (!DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceOneLapOnly")) return false;
+	if (strcmp(GetTrackValueString(pGameFlow->PreRace.nLevel, "GfxSetPath"), "data/Tracks/Rally/")) return false;
+	return true;
+}
+
+bool IsInRallyMode() {
+	if (pGameFlow->nGameState != GAME_STATE_RACE) return false;
+	if (pLoadingScreen || !GetPlayer(0)) return false;
+	if (!IsRallyTrack()) return false;
+	return true;
+}
+
 const float fPacenoteRange = 20.0;
 const int nMaxSpeechesPerPacenote = 8;
 
@@ -49,13 +62,16 @@ struct tPacenoteSpeech {
 	}
 
 	std::string GetName() const {
-		if (IsMissing()) return speechName + " (Missing)";
-		if (IsPlaceholder()) return speechName + " (Placeholder)";
+		bool isRevolt = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseReVoltPacenotes");
+
+		if (!isRevolt && IsMissing()) return speechName + " (Missing)";
+		if (!isRevolt && IsPlaceholder()) return speechName + " (Placeholder)";
 		return speechName;
 	}
 
 	static NyaAudio::NyaSound PlaySpeech(const std::string& file) {
 		if (file.empty()) return 0;
+		if (!IsRallyTrack()) return 0;
 
 		auto sound = NyaAudio::LoadFile(GetSpeechPath(file).c_str());
 		if (!sound) return 0;
@@ -83,7 +99,9 @@ struct tPacenoteSpeech {
 			pTexture = nullptr;
 		}
 
-		std::string pacenotePath = "data/textures/" + aPacenoteVisualTypes[nPacenoteVisualType].folder + "/";
+		bool isRevolt = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseReVoltPacenotes");
+
+		std::string pacenotePath = "data/textures/" + (isRevolt ? "pacenotes_revolt" : aPacenoteVisualTypes[nPacenoteVisualType].folder) + "/";
 		pTexture = ::LoadTexture((pacenotePath + speechFile + ".png").c_str());
 		if (!pTexture) pTexture = ::LoadTexture((pacenotePath + speechFileFallback + ".png").c_str());
 		if (!pTexture) pTexture = ::LoadTexture((pacenotePath + speechFileFallback2 + ".png").c_str());
@@ -91,7 +109,21 @@ struct tPacenoteSpeech {
 	}
 };
 
-tPacenoteSpeech aPacenoteSpeeches[] = {
+std::vector<tPacenoteSpeech> aPacenoteSpeechesSimple = {
+		{"Left", "Left"},
+		{"Right", "Right"},
+		{"Slight Left", "SlightLeft"},
+		{"Slight Right", "SlightRight"},
+		{"Left Entry Chicane", "LeftChicane"},
+		{"Right Entry Chicane", "RightChicane"},
+		{"Caution", "Caution"},
+		{"Fork", "Fork"},
+		{"Straight", "Straight"},
+		{"Hairpin Left", "HairpinLeft"},
+		{"Hairpin Right", "HairpinRight"},
+};
+
+std::vector<tPacenoteSpeech> aPacenoteSpeechesRally = {
 		{"Left 1", "Left1"},
 		{"Left 2", "Left2"},
 		{"Left 3", "Left3"},
@@ -201,6 +233,11 @@ tPacenoteSpeech aPacenoteSpeeches[] = {
 		{"Don't Cut - Fence", "DontcutFence", "Dontcut"},
 };
 
+std::vector<tPacenoteSpeech>* GetPacenoteDB() {
+	if (IsRallyTrack()) return &aPacenoteSpeechesRally;
+	return &aPacenoteSpeechesSimple;
+}
+
 CNyaTimer gPacenoteTimer;
 
 struct tPacenoteVisual {
@@ -218,6 +255,10 @@ void DrawVisualPacenotes() {
 	float sizeX = 0.05 * GetAspectRatioInv();
 	float spacingX = sizeX * 2  * 1.1;
 	float sizeY = 0.05;
+	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseReVoltPacenotes")) {
+		sizeX *= 1.4;
+		sizeY *= 1.4;
+	}
 	float posX = 0.5;
 	float posY = 0.2;
 	for (auto& note : aVisualPacenotes) {
@@ -316,23 +357,26 @@ struct tPacenote {
 		NyaVec3 pos;
 		int types[nMaxSpeechesPerPacenote];
 	} data;
-	bool played = false;
+	int playedLap = -1;
+	int atSplit = -1;
 
 	void Reset() {
 		data.pos = {0,0,0};
 		for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
 			data.types[i] = -1;
 		}
-		played = false;
+		playedLap = -1;
+		atSplit = -1;
 	}
 	tPacenote() {
 		Reset();
 	}
 
 	tPacenoteSpeech* GetSpeech(int id) {
+		auto& pacenotes = *GetPacenoteDB();
 		if (id < 0 || id >= nMaxSpeechesPerPacenote) return nullptr;
-		if (data.types[id] < 0 || data.types[id] >= sizeof(aPacenoteSpeeches)/sizeof(aPacenoteSpeeches[0])) return nullptr;
-		return &aPacenoteSpeeches[data.types[id]];
+		if (data.types[id] < 0 || data.types[id] >= pacenotes.size()) return nullptr;
+		return &pacenotes[data.types[id]];
 	}
 	std::string GetSpeechName(int id) {
 		auto speech = GetSpeech(id);
@@ -354,8 +398,10 @@ struct tPacenote {
 		return (ply - data.pos).length() < fPacenoteRange;
 	}
 	void Play() {
-		if (played) return;
-		played = true;
+		int lap = GetPlayer(0)->nCurrentLap;
+		if (playedLap == lap) return;
+		if (atSplit != -1 && (GetPlayer(0)->nCurrentSplit % pEnvironment->nNumSplitpoints) != atSplit) return;
+		playedLap = lap;
 
 		/*struct tPacenoteGroup {
 			int begin;
@@ -442,6 +488,9 @@ void SavePacenotes(const std::string& filename) {
 	fout.write((char*)&count, 4);
 	for (int i = 0; i < count; i++) {
 		fout.write((char*)&aPacenotes[i].data, sizeof(tPacenote::tData));
+		if (!IsRallyTrack()) {
+			fout.write((char*)&aPacenotes[i].atSplit, sizeof(aPacenotes[i].atSplit));
+		}
 	}
 }
 
@@ -460,6 +509,9 @@ bool LoadPacenotes(const std::string& filename) {
 
 		tPacenote note;
 		fin.read((char*)&note.data, sizeof(note.data));
+		if (!IsRallyTrack()) {
+			fin.read((char*)&note.atSplit, sizeof(note.atSplit));
+		}
 		AddPacenote(note);
 	}
 	return true;
@@ -740,19 +792,6 @@ void DrawRallyHUD() {
 	DrawPlayerOnRallyMap(GetPlayer(0));
 }
 
-bool IsRallyTrack() {
-	if (!DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceOneLapOnly")) return false;
-	if (strcmp(GetTrackValueString(pGameFlow->PreRace.nLevel, "GfxSetPath"), "data/Tracks/Rally/")) return false;
-	return true;
-}
-
-bool IsInRallyMode() {
-	if (pGameFlow->nGameState != GAME_STATE_RACE) return false;
-	if (pLoadingScreen || !GetPlayer(0)) return false;
-	if (!IsRallyTrack()) return false;
-	return true;
-}
-
 bool IsInTimeTrialWithSplits() {
 	if (pGameFlow->nGameState != GAME_STATE_RACE) return false;
 	if (pLoadingScreen || !GetPlayer(0)) return false;
@@ -877,7 +916,7 @@ void ProcessPacenotes() {
 	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
 
 	if (aPacenotes.empty()) return;
-	for (auto& note : aPacenoteSpeeches) {
+	for (auto& note : *GetPacenoteDB()) {
 		note.LoadTexture();
 	}
 
@@ -886,7 +925,7 @@ void ProcessPacenotes() {
 		ClearPacenoteQueue();
 		sLastPlayedPacenoteSpeech = "";
 		for (auto& note : aPacenotes) {
-			note.played = false;
+			note.playedLap = -1;
 		}
 	}
 	else {
@@ -898,7 +937,7 @@ void ProcessPacenotes() {
 		bLastEjected = bEjected;
 
 		for (auto& note : aPacenotes) {
-			if (!note.played && note.IsInRange()) {
+			if (note.playedLap != GetPlayer(0)->nCurrentLap && note.IsInRange()) {
 				note.Play();
 				nLastPacenote = &note - &aPacenotes[0];
 			}

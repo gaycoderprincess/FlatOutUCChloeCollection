@@ -160,7 +160,7 @@ void SetTrackCustomProperties() {
 	NyaHookLib::Patch<const char*>(0x58C3D3, textureFolder);
 	NyaHookLib::Patch<const char*>(0x58C40E, textureFolder);
 
-	bool muteMusic = pGameFlow->nGameState == GAME_STATE_RACE && !aPacenotes.empty();
+	bool muteMusic = pGameFlow->nGameState == GAME_STATE_RACE && IsRallyTrack();
 	NyaHookLib::Patch(0x41D348, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);
 	NyaHookLib::Patch(0x41DEAB, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);
 	NyaHookLib::Patch(0x4AF18C, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);

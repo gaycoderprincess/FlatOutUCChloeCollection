@@ -4,6 +4,38 @@ void DrawDebugMenuViewerOption(const std::string& name, const std::string& desc 
 	}
 }
 
+void ValueEditorMenu(float& value) {
+	ChloeMenuLib::BeginMenu();
+
+	static char inputString[1024] = {};
+	ChloeMenuLib::AddTextInputToString(inputString, 1024, true);
+	ChloeMenuLib::SetEnterHint("Apply");
+
+	if (DrawMenuOption(inputString + (std::string)"...", "", false, false) && inputString[0]) {
+		value = std::stof(inputString);
+		memset(inputString,0,sizeof(inputString));
+		ChloeMenuLib::BackOut();
+	}
+
+	ChloeMenuLib::EndMenu();
+}
+
+void ValueEditorMenu(int& value) {
+	ChloeMenuLib::BeginMenu();
+
+	static char inputString[1024] = {};
+	ChloeMenuLib::AddTextInputToString(inputString, 1024, true);
+	ChloeMenuLib::SetEnterHint("Apply");
+
+	if (DrawMenuOption(inputString + (std::string)"...", "", false, false) && inputString[0]) {
+		value = std::stoi(inputString);
+		memset(inputString,0,sizeof(inputString));
+		ChloeMenuLib::BackOut();
+	}
+
+	ChloeMenuLib::EndMenu();
+}
+
 // copied from lua
 std::string GetTimeString(double time_in_sec) {
 	int64_t h = std::floor(time_in_sec / 3600.0);
@@ -37,7 +69,7 @@ void PacenoteTypeEditor(int& out) {
 	std::vector<tPacenoteSpeech*> tmpSpeechesLR;
 	std::vector<tPacenoteSpeech*> tmpSpeechesYards;
 	std::vector<tPacenoteSpeech*> tmpSpeeches;
-	for (auto& speech : aPacenoteSpeeches) {
+	for (auto& speech : *GetPacenoteDB()) {
 		if (bHideMissing && speech.IsMissing()) continue;
 		if (bHidePlaceholders && speech.IsPlaceholder() && !speech.IsMissing()) continue;
 
@@ -55,19 +87,19 @@ void PacenoteTypeEditor(int& out) {
 	// sort left/right first for convenience, then everything else, then distance
 	for (auto& note : tmpSpeechesLR) {
 		if (DrawMenuOption(note->GetName(), "", false, false)) {
-			out = note - &aPacenoteSpeeches[0];
+			out = note - &(*GetPacenoteDB())[0];
 			ChloeMenuLib::BackOut();
 		}
 	}
 	for (auto& note : tmpSpeeches) {
 		if (DrawMenuOption(note->GetName(), "", false, false)) {
-			out = note - &aPacenoteSpeeches[0];
+			out = note - &(*GetPacenoteDB())[0];
 			ChloeMenuLib::BackOut();
 		}
 	}
 	for (auto& note : tmpSpeechesYards) {
 		if (DrawMenuOption(note->GetName(), "", false, false)) {
-			out = note - &aPacenoteSpeeches[0];
+			out = note - &(*GetPacenoteDB())[0];
 			ChloeMenuLib::BackOut();
 		}
 	}
@@ -89,6 +121,11 @@ void PacenoteEditor(tPacenote* note) {
 		ply->pCar->GetMatrix()->p = note->data.pos;
 		*ply->pCar->GetVelocity() = {0, 0, 0};
 		*ply->pCar->GetAngVelocity() = {0, 0, 0};
+	}
+	if (!IsRallyTrack()) {
+		if (DrawMenuOption(std::format("Note Split - {} (player split {})", note->atSplit, ply->nCurrentSplit % pEnvironment->nNumSplitpoints))) {
+			ValueEditorMenu(note->atSplit);
+		}
 	}
 }
 
@@ -179,38 +216,6 @@ void WriteSplines() {
 	fout << "\n}";
 }
 
-void ValueEditorMenu(float& value) {
-	ChloeMenuLib::BeginMenu();
-
-	static char inputString[1024] = {};
-	ChloeMenuLib::AddTextInputToString(inputString, 1024, true);
-	ChloeMenuLib::SetEnterHint("Apply");
-
-	if (DrawMenuOption(inputString + (std::string)"...", "", false, false) && inputString[0]) {
-		value = std::stof(inputString);
-		memset(inputString,0,sizeof(inputString));
-		ChloeMenuLib::BackOut();
-	}
-
-	ChloeMenuLib::EndMenu();
-}
-
-void ValueEditorMenu(int& value) {
-	ChloeMenuLib::BeginMenu();
-
-	static char inputString[1024] = {};
-	ChloeMenuLib::AddTextInputToString(inputString, 1024, true);
-	ChloeMenuLib::SetEnterHint("Apply");
-
-	if (DrawMenuOption(inputString + (std::string)"...", "", false, false) && inputString[0]) {
-		value = std::stoi(inputString);
-		memset(inputString,0,sizeof(inputString));
-		ChloeMenuLib::BackOut();
-	}
-
-	ChloeMenuLib::EndMenu();
-}
-
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -225,138 +230,6 @@ void ProcessDebugMenu() {
 			DrawDebugMenuViewerOption(std::format("{} - {}", aPlaytimeTypeNames[i], GetTimeString(gCustomSave.playtimeNew[i])));
 		}
 
-		ChloeMenuLib::EndMenu();
-	}
-
-	if (DrawMenuOption("Spline Creator")) {
-		ChloeMenuLib::BeginMenu();
-		if (pGameFlow->nGameState == GAME_STATE_RACE) {
-			if (DrawMenuOption("Add Left Node")) {
-				auto ply = GetPlayer(0);
-				aCustomSplinesL.push_back(ply->pCar->GetMatrix()->p);
-			}
-			if (DrawMenuOption("Add Right Node")) {
-				auto ply = GetPlayer(0);
-				aCustomSplinesR.push_back(ply->pCar->GetMatrix()->p);
-			}
-			SplineViewerMenu(aCustomSplinesL, "Left");
-			SplineViewerMenu(aCustomSplinesR, "Right");
-			if (!aCustomSplinesL.empty() && !aCustomSplinesR.empty()) {
-				if (DrawMenuOption("Save Splines", "", false, false)) {
-					WriteSplines();
-				}
-				if (DrawMenuOption("Delete All Splines", "", false, false)) {
-					aCustomSplinesL.clear();
-					aCustomSplinesR.clear();
-				}
-			}
-		}
-		else {
-			DrawDebugMenuViewerOption("Not in a race");
-		}
-		ChloeMenuLib::EndMenu();
-	}
-
-	if (DrawMenuOption("Resetpoint Editor")) {
-		ChloeMenuLib::BeginMenu();
-		if (pGameFlow->nGameState == GAME_STATE_RACE) {
-			if (DrawMenuOption("Add Reset")) {
-				auto ply = GetPlayer(0);
-				aNewResetPoints.push_back(*ply->pCar->GetMatrix());
-			}
-			if (!aNewResetPoints.empty()) {
-				if (DrawMenuOption(std::format("Edit Resetpoints ({})", aNewResetPoints.size()))) {
-					ChloeMenuLib::BeginMenu();
-					for (auto& reset: aNewResetPoints) {
-						if (DrawMenuOption(std::to_string((&reset - &aNewResetPoints[0]) + 1))) {
-							ChloeMenuLib::BeginMenu();
-							if (DrawMenuOption("Teleport to Node", "", false, false)) {
-								auto ply = GetPlayer(0);
-								ResetCarAt(ply->pCar, reset, *(float*)0x849430);
-								break;
-							}
-							if (DrawMenuOption("Delete Resetpoint", "", false, false)) {
-								aNewResetPoints.erase(aNewResetPoints.begin() + (&reset - &aNewResetPoints[0]));
-								ChloeMenuLib::BackOut();
-								break;
-							}
-							ChloeMenuLib::EndMenu();
-						}
-					}
-					ChloeMenuLib::EndMenu();
-				}
-				if (DrawMenuOption("Save Resetpoints", "", false, false)) {
-					SaveResetPoints(GetResetPointFilename());
-				}
-			}
-		}
-		else {
-			DrawDebugMenuViewerOption("Not in a race");
-		}
-		ChloeMenuLib::EndMenu();
-	}
-
-	if (DrawMenuOption("Pacenote Editor")) {
-		ChloeMenuLib::BeginMenu();
-		if (pGameFlow->nGameState == GAME_STATE_RACE) {
-			if (DrawMenuOption("Add Pacenotes")) {
-				ChloeMenuLib::BeginMenu();
-				static tPacenote temp;
-				for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
-					if (DrawMenuOption(std::format("Speech {} - {}", i + 1, temp.GetSpeechName(i)))) {
-						ChloeMenuLib::BeginMenu();
-						PacenoteTypeEditor(temp.data.types[i]);
-						ChloeMenuLib::EndMenu();
-					}
-				}
-				if (temp.data.types[0] >= 0 && DrawMenuOption("Place Here", "Places a pacenote at your car's position", false, false)) {
-					auto ply = GetPlayer(0);
-					temp.data.pos = ply->pCar->GetMatrix()->p;
-					AddPacenote(temp);
-
-					temp.Reset();
-				}
-				ChloeMenuLib::EndMenu();
-			}
-			if (!aPacenotes.empty()) {
-				if (DrawMenuOption(std::format("Edit Pacenotes ({})", aPacenotes.size()))) {
-					ChloeMenuLib::BeginMenu();
-					for (auto &note: aPacenotes) {
-						if (DrawMenuOption(
-								std::format("{} - {}", (&note - &aPacenotes[0]) + 1, note.GetDisplayName()))) {
-							ChloeMenuLib::BeginMenu();
-							PacenoteEditor(&note);
-							if (DrawMenuOption("Delete Pacenote")) {
-								ChloeMenuLib::BeginMenu();
-								if (DrawMenuOption("Confirm Deletion", "", false, false)) {
-									aPacenotes.erase(aPacenotes.begin() + (&note - &aPacenotes[0]));
-									ChloeMenuLib::BackOut();
-									ChloeMenuLib::BackOut();
-									return;
-								}
-								if (DrawMenuOption("Cancel", "", false, false)) {
-									ChloeMenuLib::BackOut();
-									return;
-								}
-								ChloeMenuLib::EndMenu();
-							}
-							ChloeMenuLib::EndMenu();
-						}
-					}
-					ChloeMenuLib::EndMenu();
-				}
-				if (DrawMenuOption("Save Pacenotes Globally", "", false, false)) {
-					SavePacenotes(GetPacenoteFilename());
-				}
-				if (DrawMenuOption("Save Pacenotes for this voice", "", false, false)) {
-					SavePacenotes(GetPacenoteFilenameWithVoice());
-				}
-			}
-			DrawDebugMenuViewerOption(std::format("Last Played Pacenote - {}", nLastPacenote+1));
-		}
-		else {
-			DrawDebugMenuViewerOption("Not in a race");
-		}
 		ChloeMenuLib::EndMenu();
 	}
 
@@ -457,27 +330,193 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
-	if (DrawMenuOption("Driver Location")) {
+	if (DrawMenuOption("Car Helpers")) {
 		ChloeMenuLib::BeginMenu();
+		if (DrawMenuOption("Driver Location")) {
+			ChloeMenuLib::BeginMenu();
 
-		if (auto ply = GetPlayer(0)) {
-			if (DrawMenuOption(std::format("X - {}", ply->pCar->vDriverLoc[0]))) {
-				ValueEditorMenu(ply->pCar->vDriverLoc[0]);
+			if (auto ply = GetPlayer(0)) {
+				if (DrawMenuOption(std::format("X - {}", ply->pCar->vDriverLoc[0]))) {
+					ValueEditorMenu(ply->pCar->vDriverLoc[0]);
+				}
+				if (DrawMenuOption(std::format("Y - {}", ply->pCar->vDriverLoc[1]))) {
+					ValueEditorMenu(ply->pCar->vDriverLoc[1]);
+				}
+				if (DrawMenuOption(std::format("Z - {}", ply->pCar->vDriverLoc[2]))) {
+					ValueEditorMenu(ply->pCar->vDriverLoc[2]);
+				}
+				for (int i = 0; i < 3; i++) {
+					ply->pCar->vDriverLocAbsolute[i] = ply->pCar->vDriverLoc[i] - ply->pCar->vCenterOfMassAbsolute[i];
+				}
 			}
-			if (DrawMenuOption(std::format("Y - {}", ply->pCar->vDriverLoc[1]))) {
-				ValueEditorMenu(ply->pCar->vDriverLoc[1]);
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
 			}
-			if (DrawMenuOption(std::format("Z - {}", ply->pCar->vDriverLoc[2]))) {
-				ValueEditorMenu(ply->pCar->vDriverLoc[2]);
-			}
-			for (int i = 0; i < 3; i++) {
-				ply->pCar->vDriverLocAbsolute[i] = ply->pCar->vDriverLoc[i] - ply->pCar->vCenterOfMassAbsolute[i];
-			}
-		}
-		else {
-			DrawDebugMenuViewerOption("Not in a race");
-		}
 
+			ChloeMenuLib::EndMenu();
+		}
+		ChloeMenuLib::EndMenu();
+	}
+
+	if (DrawMenuOption("Track Helpers")) {
+		ChloeMenuLib::BeginMenu();
+		if (DrawMenuOption("Spline Creator")) {
+			ChloeMenuLib::BeginMenu();
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				if (DrawMenuOption("Add Left Node")) {
+					auto ply = GetPlayer(0);
+					aCustomSplinesL.push_back(ply->pCar->GetMatrix()->p);
+				}
+				if (DrawMenuOption("Add Right Node")) {
+					auto ply = GetPlayer(0);
+					aCustomSplinesR.push_back(ply->pCar->GetMatrix()->p);
+				}
+				SplineViewerMenu(aCustomSplinesL, "Left");
+				SplineViewerMenu(aCustomSplinesR, "Right");
+				if (!aCustomSplinesL.empty() && !aCustomSplinesR.empty()) {
+					if (DrawMenuOption("Save Splines", "", false, false)) {
+						WriteSplines();
+					}
+					if (DrawMenuOption("Delete All Splines", "", false, false)) {
+						aCustomSplinesL.clear();
+						aCustomSplinesR.clear();
+					}
+				}
+			}
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
+			}
+			ChloeMenuLib::EndMenu();
+		}
+		if (DrawMenuOption("Resetpoint Editor")) {
+			ChloeMenuLib::BeginMenu();
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				if (DrawMenuOption("Add Reset")) {
+					auto ply = GetPlayer(0);
+					aNewResetPoints.push_back(*ply->pCar->GetMatrix());
+				}
+				if (!aNewResetPoints.empty()) {
+					if (DrawMenuOption(std::format("Edit Resetpoints ({})", aNewResetPoints.size()))) {
+						ChloeMenuLib::BeginMenu();
+						for (auto& reset: aNewResetPoints) {
+							if (DrawMenuOption(std::to_string((&reset - &aNewResetPoints[0]) + 1))) {
+								ChloeMenuLib::BeginMenu();
+								if (DrawMenuOption("Teleport to Node", "", false, false)) {
+									auto ply = GetPlayer(0);
+									ResetCarAt(ply->pCar, reset, *(float*)0x849430);
+									break;
+								}
+								if (DrawMenuOption("Delete Resetpoint", "", false, false)) {
+									aNewResetPoints.erase(aNewResetPoints.begin() + (&reset - &aNewResetPoints[0]));
+									ChloeMenuLib::BackOut();
+									break;
+								}
+								ChloeMenuLib::EndMenu();
+							}
+						}
+						ChloeMenuLib::EndMenu();
+					}
+					if (DrawMenuOption("Save Resetpoints", "", false, false)) {
+						SaveResetPoints(GetResetPointFilename());
+					}
+				}
+			}
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
+			}
+			ChloeMenuLib::EndMenu();
+		}
+		if (DrawMenuOption("Pacenote Editor")) {
+			ChloeMenuLib::BeginMenu();
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				if (DrawMenuOption("Add Pacenotes")) {
+					ChloeMenuLib::BeginMenu();
+					static tPacenote temp;
+					for (int i = 0; i < nMaxSpeechesPerPacenote; i++) {
+						if (DrawMenuOption(std::format("Speech {} - {}", i + 1, temp.GetSpeechName(i)))) {
+							ChloeMenuLib::BeginMenu();
+							PacenoteTypeEditor(temp.data.types[i]);
+							ChloeMenuLib::EndMenu();
+						}
+					}
+					if (temp.data.types[0] >= 0 && DrawMenuOption("Place Here", "Places a pacenote at your car's position", false, false)) {
+						auto ply = GetPlayer(0);
+						temp.data.pos = ply->pCar->GetMatrix()->p;
+						AddPacenote(temp);
+
+						temp.Reset();
+					}
+					ChloeMenuLib::EndMenu();
+				}
+				if (!aPacenotes.empty()) {
+					if (DrawMenuOption(std::format("Edit Pacenotes ({})", aPacenotes.size()))) {
+						ChloeMenuLib::BeginMenu();
+						for (auto &note: aPacenotes) {
+							if (DrawMenuOption(
+									std::format("{} - {}", (&note - &aPacenotes[0]) + 1, note.GetDisplayName()))) {
+								ChloeMenuLib::BeginMenu();
+								PacenoteEditor(&note);
+								if (DrawMenuOption("Delete Pacenote")) {
+									ChloeMenuLib::BeginMenu();
+									if (DrawMenuOption("Confirm Deletion", "", false, false)) {
+										aPacenotes.erase(aPacenotes.begin() + (&note - &aPacenotes[0]));
+										ChloeMenuLib::BackOut();
+										ChloeMenuLib::BackOut();
+										return;
+									}
+									if (DrawMenuOption("Cancel", "", false, false)) {
+										ChloeMenuLib::BackOut();
+										return;
+									}
+									ChloeMenuLib::EndMenu();
+								}
+								ChloeMenuLib::EndMenu();
+							}
+						}
+						ChloeMenuLib::EndMenu();
+					}
+					if (DrawMenuOption("Save Pacenotes Globally", "", false, false)) {
+						SavePacenotes(GetPacenoteFilename());
+					}
+					if (DrawMenuOption("Save Pacenotes for this voice", "", false, false)) {
+						SavePacenotes(GetPacenoteFilenameWithVoice());
+					}
+				}
+				DrawDebugMenuViewerOption(std::format("Last Played Pacenote - {}", nLastPacenote+1));
+			}
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
+			}
+			ChloeMenuLib::EndMenu();
+		}
+		if (DrawMenuOption("Map Position Editor")) {
+			ChloeMenuLib::BeginMenu();
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				auto map = pEnvironment->pMinimap;
+				if (DrawMenuOption(std::format("Top Left X - {}", map->fMapTopLeft[0]))) {
+					ValueEditorMenu(map->fMapTopLeft[0]);
+				}
+				if (DrawMenuOption(std::format("Top Left Y - {}", map->fMapTopLeft[1]))) {
+					ValueEditorMenu(map->fMapTopLeft[1]);
+				}
+				if (DrawMenuOption(std::format("Top Left Z - {}", map->fMapTopLeft[2]))) {
+					ValueEditorMenu(map->fMapTopLeft[2]);
+				}
+				if (DrawMenuOption(std::format("Bottom Right X - {}", map->fMapBottomRight[0]))) {
+					ValueEditorMenu(map->fMapBottomRight[0]);
+				}
+				if (DrawMenuOption(std::format("Bottom Right Y - {}", map->fMapBottomRight[1]))) {
+					ValueEditorMenu(map->fMapBottomRight[1]);
+				}
+				if (DrawMenuOption(std::format("Bottom Right Z - {}", map->fMapBottomRight[2]))) {
+					ValueEditorMenu(map->fMapBottomRight[2]);
+				}
+			}
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
+			}
+			ChloeMenuLib::EndMenu();
+		}
 		ChloeMenuLib::EndMenu();
 	}
 
