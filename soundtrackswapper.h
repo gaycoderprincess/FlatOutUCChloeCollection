@@ -229,7 +229,7 @@ void SetSoundtrack() {
 		if (isCarnageRace && playlist->filename == "playlist_ingamemodern") playlist = &gCarnageModernPlaylist;
 		if (isRally && playlist->filename == "playlist_ingamerally") playlist = &gRallyPlaylists[rallyId];
 
-		if (pGameFlow->nGameState == GAME_STATE_RACE && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MusicPlaylist")) {
+		if (nPerTrackSoundtrack && pGameFlow->nGameState == GAME_STATE_RACE && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MusicPlaylist")) {
 			if (auto trackPlaylist = GetPlaylistByFilename(GetTrackValueString(pGameFlow->PreRace.nLevel, "MusicPlaylist"))) {
 				playlist = trackPlaylist;
 			}
