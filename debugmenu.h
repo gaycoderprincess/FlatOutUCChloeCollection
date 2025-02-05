@@ -393,7 +393,10 @@ void ProcessDebugMenu() {
 			if (pGameFlow->nGameState == GAME_STATE_RACE) {
 				if (DrawMenuOption("Add Reset")) {
 					auto ply = GetPlayer(0);
-					aNewResetPoints.push_back(*ply->pCar->GetMatrix());
+					tResetpoint point;
+					point.matrix = *ply->pCar->GetMatrix();
+					point.split = ply->nCurrentSplit % pEnvironment->nNumSplitpoints;
+					aNewResetPoints.push_back(point);
 				}
 				if (!aNewResetPoints.empty()) {
 					if (DrawMenuOption(std::format("Edit Resetpoints ({})", aNewResetPoints.size()))) {
@@ -403,7 +406,7 @@ void ProcessDebugMenu() {
 								ChloeMenuLib::BeginMenu();
 								if (DrawMenuOption("Teleport to Node", "", false, false)) {
 									auto ply = GetPlayer(0);
-									ResetCarAt(ply->pCar, reset, *(float*)0x849430);
+									ResetCarAt(ply->pCar, reset.matrix, *(float*)0x849430);
 									break;
 								}
 								if (DrawMenuOption("Delete Resetpoint", "", false, false)) {
@@ -417,7 +420,14 @@ void ProcessDebugMenu() {
 						ChloeMenuLib::EndMenu();
 					}
 					if (DrawMenuOption("Save Resetpoints", "", false, false)) {
-						SaveResetPoints(GetResetPointFilename());
+						bool hasSplits = false;
+						for (auto& reset : aNewResetPoints) {
+							if (reset.split >= 0) {
+								hasSplits = true;
+								break;
+							}
+						}
+						SaveResetPoints(GetResetPointFilename(hasSplits), hasSplits);
 					}
 				}
 			}

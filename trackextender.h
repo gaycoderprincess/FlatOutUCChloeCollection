@@ -17,7 +17,11 @@ void SetAILookahead() {
 	}
 }
 
-std::vector<NyaMat4x4> aNewResetPoints;
+struct tResetpoint {
+	NyaMat4x4 matrix;
+	int split = -1;
+};
+std::vector<tResetpoint> aNewResetPoints;
 void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
 	*car->GetMatrix() = pos;
 	bool isReversed = pGameFlow->PreRace.nReversed;
@@ -38,11 +42,11 @@ void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
 	FO2MatrixToQuat(car->mMatrix, car->qQuaternion);
 }
 
-std::string GetResetPointFilename() {
-	return (std::string)"Config/Resets/" + GetTrackName(pGameFlow->PreRace.nLevel) + ".rst";
+std::string GetResetPointFilename(bool withSplits) {
+	return (std::string)"Config/Resets/" + GetTrackName(pGameFlow->PreRace.nLevel) + (withSplits ? ".rst2" : ".rst");
 }
 
-void SaveResetPoints(const std::string& filename) {
+void SaveResetPoints(const std::string& filename, bool withSplits) {
 	std::filesystem::create_directory("Config");
 	std::filesystem::create_directory("Config/Resets");
 
@@ -52,11 +56,11 @@ void SaveResetPoints(const std::string& filename) {
 	uint32_t count = aNewResetPoints.size();
 	fout.write((char*)&count, 4);
 	for (int i = 0; i < count; i++) {
-		fout.write((char*)&aNewResetPoints[i], sizeof(NyaMat4x4));
+		fout.write((char*)&aNewResetPoints[i], withSplits ? sizeof(tResetpoint) : sizeof(NyaMat4x4));
 	}
 }
 
-bool LoadResetPoints(const std::string& filename) {
+bool LoadResetPoints(const std::string& filename, bool withSplits) {
 	aNewResetPoints.clear();
 
 	std::ifstream fin(filename, std::ios::in | std::ios::binary );
@@ -68,9 +72,10 @@ bool LoadResetPoints(const std::string& filename) {
 	for (int i = 0; i < count; i++) {
 		if (fin.eof()) return true;
 
-		NyaMat4x4 v;
-		fin.read((char*)&v, sizeof(v));
-		aNewResetPoints.push_back(v);
+		tResetpoint reset;
+		fin.read((char*)&reset.matrix, sizeof(reset.matrix));
+		if (withSplits) fin.read((char*)&reset.split, sizeof(reset.split));
+		aNewResetPoints.push_back(reset);
 	}
 	return true;
 }
@@ -137,7 +142,10 @@ void SetTrackCustomProperties() {
 			LoadPacenotes(GetPacenoteFilename());
 		}
 
-		LoadResetPoints(GetResetPointFilename());
+		LoadResetPoints(GetResetPointFilename(true), true);
+		if (aNewResetPoints.empty()) {
+			LoadResetPoints(GetResetPointFilename(false), false);
+		}
 
 		bool noMap = IsRallyTrack() && !bIsInMultiplayer;
 
@@ -247,15 +255,17 @@ void __attribute__((naked)) __fastcall WaterPlaneSoundYASM() {
 static inline auto ResetCar = (void(__stdcall*)(Car*, int, float*, float))0x42EEF0;
 
 NyaMat4x4* pLastPlayerResetpoint = nullptr;
-NyaMat4x4* GetClosestResetpoint(NyaVec3 pos) {
+NyaMat4x4* GetClosestResetpoint(NyaVec3 pos, int split) {
 	if (aNewResetPoints.empty()) return nullptr;
 
 	float dist = 99999;
 	NyaMat4x4* out = nullptr;
 	for (auto& reset : aNewResetPoints) {
-		auto d = (reset.p - pos).length();
+		if (reset.split >= 0 && reset.split != split) continue;
+
+		auto d = (reset.matrix.p - pos).length();
 		if (d < dist) {
-			out = &reset;
+			out = &reset.matrix;
 			dist = d;
 		}
 	}
@@ -282,7 +292,7 @@ void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
 	if (pLastPlayerResetpoint && car->pPlayer->nPlayerId == 1) {
 		pNewResetpoint = pLastPlayerResetpoint;
 	}
-	else if (auto reset = GetClosestResetpoint(car->GetMatrix()->p)) {
+	else if (auto reset = GetClosestResetpoint(car->GetMatrix()->p, car->pPlayer->nCurrentSplit % pEnvironment->nNumSplitpoints)) {
 		pNewResetpoint = reset;
 	}
 	fNewResetpointSpeed = speed;
@@ -293,7 +303,7 @@ void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
 // race restart, use end pos
 void __stdcall ResetCarNewRestart(Car* car, int a2, float* a3, float speed) {
 	ResetCar(car, a2, a3, speed);
-	if (auto reset = GetClosestResetpoint(car->GetMatrix()->p)) {
+	if (auto reset = GetClosestResetpoint(car->GetMatrix()->p, car->pPlayer->nCurrentSplit % pEnvironment->nNumSplitpoints)) {
 		ResetCarAt(car, *reset, speed);
 	}
 }
@@ -348,7 +358,7 @@ void ProcessNewReset() {
 
 	if (ply->nTimeInAir > 100) return;
 
-	auto closest = GetClosestResetpoint(ply->pCar->GetMatrix()->p);
+	auto closest = GetClosestResetpoint(ply->pCar->GetMatrix()->p, ply->nCurrentSplit % pEnvironment->nNumSplitpoints);
 	if (!closest) return;
 
 	if ((closest->p - ply->pCar->GetMatrix()->p).length() <= 5) {

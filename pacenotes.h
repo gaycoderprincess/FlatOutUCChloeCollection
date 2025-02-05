@@ -11,6 +11,10 @@ bool IsInRallyMode() {
 	return true;
 }
 
+bool ShouldUseReVoltPacenotes() {
+	return DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseReVoltPacenotes");
+}
+
 const float fPacenoteRange = 20.0;
 const int nMaxSpeechesPerPacenote = 8;
 
@@ -62,7 +66,7 @@ struct tPacenoteSpeech {
 	}
 
 	std::string GetName() const {
-		bool isRevolt = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseReVoltPacenotes");
+		bool isRevolt = ShouldUseReVoltPacenotes();
 
 		if (!isRevolt && IsMissing()) return speechName + " (Missing)";
 		if (!isRevolt && IsPlaceholder()) return speechName + " (Placeholder)";
@@ -71,7 +75,7 @@ struct tPacenoteSpeech {
 
 	static NyaAudio::NyaSound PlaySpeech(const std::string& file) {
 		if (file.empty()) return 0;
-		if (!IsRallyTrack()) return 0;
+		if (ShouldUseReVoltPacenotes()) return 0;
 
 		auto sound = NyaAudio::LoadFile(GetSpeechPath(file).c_str());
 		if (!sound) return 0;
@@ -99,9 +103,7 @@ struct tPacenoteSpeech {
 			pTexture = nullptr;
 		}
 
-		bool isRevolt = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseReVoltPacenotes");
-
-		std::string pacenotePath = "data/textures/" + (isRevolt ? "pacenotes_revolt" : aPacenoteVisualTypes[nPacenoteVisualType].folder) + "/";
+		std::string pacenotePath = "data/textures/" + (ShouldUseReVoltPacenotes() ? "pacenotes_revolt" : aPacenoteVisualTypes[nPacenoteVisualType].folder) + "/";
 		pTexture = ::LoadTexture((pacenotePath + speechFile + ".png").c_str());
 		if (!pTexture) pTexture = ::LoadTexture((pacenotePath + speechFileFallback + ".png").c_str());
 		if (!pTexture) pTexture = ::LoadTexture((pacenotePath + speechFileFallback2 + ".png").c_str());
@@ -234,8 +236,8 @@ std::vector<tPacenoteSpeech> aPacenoteSpeechesRally = {
 };
 
 std::vector<tPacenoteSpeech>* GetPacenoteDB() {
-	if (IsRallyTrack()) return &aPacenoteSpeechesRally;
-	return &aPacenoteSpeechesSimple;
+	if (ShouldUseReVoltPacenotes()) return &aPacenoteSpeechesSimple;
+	return &aPacenoteSpeechesRally;
 }
 
 CNyaTimer gPacenoteTimer;
@@ -255,7 +257,7 @@ void DrawVisualPacenotes() {
 	float sizeX = 0.05 * GetAspectRatioInv();
 	float spacingX = sizeX * 2  * 1.1;
 	float sizeY = 0.05;
-	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseReVoltPacenotes")) {
+	if (ShouldUseReVoltPacenotes()) {
 		sizeX *= 1.4;
 		sizeY *= 1.4;
 	}
@@ -400,7 +402,7 @@ struct tPacenote {
 	void Play() {
 		int lap = GetPlayer(0)->nCurrentLap;
 		if (playedLap == lap) return;
-		if (atSplit != -1 && (GetPlayer(0)->nCurrentSplit % pEnvironment->nNumSplitpoints) != atSplit) return;
+		if (atSplit >= 0 && (GetPlayer(0)->nCurrentSplit % pEnvironment->nNumSplitpoints) != atSplit) return;
 		playedLap = lap;
 
 		/*struct tPacenoteGroup {
@@ -899,7 +901,7 @@ void ProcessPacenotes() {
 	gPacenoteTimer.Process();
 	bool isNextInQueue = true;
 	for (auto& note : aPacenoteQueue) {
-		note.Process(isNextInQueue, aPacenoteQueue.size() == 1);
+		note.Process(isNextInQueue, aPacenoteQueue.size() == 1 || &note != &aPacenoteQueue[0]);
 		if (!note.audioFinished) isNextInQueue = false;
 	}
 	if (!aPacenoteQueue.empty()) {
