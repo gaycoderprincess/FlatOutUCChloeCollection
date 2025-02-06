@@ -1,6 +1,7 @@
 namespace LapKnockoutMode {
 	bool bTimedMode = true;
 	const int nKnockoutTimer = 15000;
+	const int nKnockoutTimerGracePeriod = 10000;
 	int nTimedLastLap = 0;
 
 	int GetNumPlayersKnockedOutPerLap() {
@@ -57,12 +58,12 @@ namespace LapKnockoutMode {
 	}
 
 	int GetHighestPositionToLeaveAliveByTime() {
-		auto time = pPlayerHost->nRaceTime;
+		auto time = pPlayerHost->nRaceTime - nKnockoutTimerGracePeriod;
 
 		int count = 0;
-		while (time > 15000) {
+		while (time > nKnockoutTimer) {
 			count++;
-			time -= 15000;
+			time -= nKnockoutTimer;
 		}
 
 		return pGameFlow->pHost->GetNumPlayers() - count;
@@ -116,46 +117,13 @@ namespace LapKnockoutMode {
 		}
 	}
 
-	/*void __fastcall ProcessPlayerCarLapKnockout(Player* pPlayer) {
-		if (!bIsLapKnockout) return;
-		if (!bTimedMode) return;
-
-		static int32_t lastTimeLeft = 0;
-
-		int32_t timeLeft = nKnockoutTimer - (pPlayerHost->nRaceTime % nKnockoutTimer);
-		if (timeLeft == lastTimeLeft) return;
-		lastTimeLeft = timeLeft;
-
-		//if (timeLeft > 9000) return;
-		if (timeLeft > 5000) return;
-		int frequency = 1000;
-		if (timeLeft < 5000) {
-			frequency = 500;
+	int32_t GetTimeKnockoutTimeLeft() {
+		// initial grace period
+		if (pPlayerHost->nRaceTime <= nKnockoutTimerGracePeriod) {
+			return (nKnockoutTimer - pPlayerHost->nRaceTime) + nKnockoutTimerGracePeriod;
 		}
-		if (timeLeft < 3000) {
-			frequency = 250;
-		}
-		if (timeLeft < 1000) {
-			frequency = 100;
-		}
-		if (timeLeft % frequency == 0) {
-			auto eventData = tEventData(EVENT_SFX_TIME_TICK);
-			pEventManager->PostEvent(&eventData);
-		}
+		return nKnockoutTimer - ((pPlayerHost->nRaceTime - nKnockoutTimerGracePeriod) % nKnockoutTimer);
 	}
-
-	uintptr_t ProcessPlayerCarASM_call = 0x46C850;
-	void __attribute__((naked)) ProcessPlayerCarASM() {
-		__asm__ (
-			"pushad\n\t"
-			"mov ecx, esi\n\t"
-			"call %1\n\t"
-			"popad\n\t"
-			"jmp %0\n\t"
-				:
-				:  "m" (ProcessPlayerCarASM_call), "i" (ProcessPlayerCarLapKnockout)
-		);
-	}*/
 
 	void ProcessTimerTick() {
 		static CNyaTimer gTimer;
@@ -163,7 +131,7 @@ namespace LapKnockoutMode {
 
 		static int32_t lastTimeLeft = 0;
 
-		int32_t timeLeft = nKnockoutTimer - (pPlayerHost->nRaceTime % nKnockoutTimer);
+		int32_t timeLeft = GetTimeKnockoutTimeLeft();
 		if (timeLeft == lastTimeLeft) return;
 		lastTimeLeft = timeLeft;
 
@@ -204,7 +172,7 @@ namespace LapKnockoutMode {
 	}
 
 	int GetTimeLeftString(wchar_t* str, size_t len, void* a3, void* a4) {
-		int32_t time = nKnockoutTimer - (pPlayerHost->nRaceTime % nKnockoutTimer);
+		int32_t time = GetTimeKnockoutTimeLeft();
 		std::string timestr = (time <= 4500) ? "#40#" : "#39#";
 		timestr += GetTimeFromMilliseconds(time, true);
 		timestr.pop_back(); // remove trailing 0, the game has a tickrate of 100fps
@@ -220,7 +188,6 @@ namespace LapKnockoutMode {
 		if (!bRegistered) {
 			auto tmp = new int;
 			EventManager::AddHandler(1, pEventManager, OnEvent, 43, tmp);
-			//ProcessPlayerCarASM_call = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x47A010, &ProcessPlayerCarASM);
 			bRegistered = true;
 		}
 
