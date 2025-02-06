@@ -232,6 +232,11 @@ float fRTDriverLocOffset[3] = { (-0.28) - (-0.265), 0.27 - 0.415, 0.07 - (-0.03)
 // -0.35, 0.442, -0.13 in retro demo
 float fRetroDriverLocOffset[3] = { (-0.36) - (-0.35), 0.29 - 0.442, (-0.05) - (-0.13) };
 
+// TT car_1 driverloc:
+// -0.355, 0.21, -0.01 in fo2
+// -0.33, 0.345, -0.15 in TT
+float fTTDriverLocOffset[3] = { (-0.355) - (-0.33), 0.21 - 0.345, (-0.01) - (-0.15) };
+
 void __fastcall SetDriverLocOffset(Player* pPlayer, Car* pCar) {
 	int carFolderId = GetCarDataID(pPlayer->nCarId);
 	if (carFolderId >= 400 && carFolderId < 500) {
@@ -239,9 +244,14 @@ void __fastcall SetDriverLocOffset(Player* pPlayer, Car* pCar) {
 			pCar->vDriverLoc[i] += fRTDriverLocOffset[i];
 		}
 	}
-	if (carFolderId >= 150 && carFolderId < 200) {
+	if (carFolderId >= 150 && carFolderId < 160) {
 		for (int i = 0; i < 3; i++) {
 			pCar->vDriverLoc[i] += fRetroDriverLocOffset[i];
+		}
+	}
+	if (carFolderId >= 160 && carFolderId < 170) {
+		for (int i = 0; i < 3; i++) {
+			pCar->vDriverLoc[i] += fTTDriverLocOffset[i];
 		}
 	}
 
