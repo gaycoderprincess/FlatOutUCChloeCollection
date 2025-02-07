@@ -5,7 +5,31 @@ void SetAIFudgeFactor() {
 	int currentAIFudge = nAIFudgeDisabled;
 	if (pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) currentAIFudge = 0;
 
+	if (currentAIFudge < 0) currentAIFudge = 0;
+	if (currentAIFudge > 2) currentAIFudge = 2;
+
 	if (nLastAIFudgeDisabled != currentAIFudge) {
+		const char* aiUpgrades[] = {
+			"AIUpgradeLevelEasy",
+			"AIUpgradeLevelMedium",
+			"AIUpgradeLevelHard",
+		};
+		const char* cupWinnings[] = {
+			"CupWinningsEasy",
+			"CupWinningsMedium",
+			"CupWinningsHard",
+		};
+		const char* handicapFiles[] = {
+			"data/scripts/handicap_easy.bed",
+			"data/scripts/handicap_medium.bed",
+			"data/scripts/handicap_hard.bed",
+		};
+		auto handicap = handicapFiles[currentAIFudge];
+		int tmp[2];
+		NyaHookLib::Patch(0x47FD4C + 1, BFSManager_DoesFileExist(*(void**)0x846688, handicap, tmp) ? handicap : "data/scripts/handicap.bed");
+		NyaHookLib::Patch(0x45FA4B + 1, aiUpgrades[currentAIFudge]);
+		NyaHookLib::Patch(0x46AA81 + 1, cupWinnings[currentAIFudge]);
+
 		NyaHookLib::Patch<uint16_t>(0x480ABD, currentAIFudge ? 0x9090 : 0x1875);
 		NyaHookLib::Patch<uint8_t>(0x480AC5, currentAIFudge ? 0xEB : 0x75);
 		static float fFudgeMedium = 2.0;
