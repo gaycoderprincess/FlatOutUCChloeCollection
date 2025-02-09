@@ -95,16 +95,44 @@ void __attribute__((naked)) __fastcall NoDebugQuitASM() {
 	);
 }
 
-void SetArrowColor() {
-	static int nLastArrowColor = -1;
-	if (nLastArrowColor != nArrowColor) {
-		int colorId = nArrowColor;
-		if (colorId <= 0) colorId = -1; // player color is stored 1 space behind ai colors for some reason
-		NyaHookLib::Patch(0x469835, colorId + 65);
-		NyaHookLib::Patch(0x46983B, 0x9298C74 + (colorId * 4));
-		NyaHookLib::Patch(0x469875, colorId + 65);
-		NyaHookLib::Patch(0x46987B, 0x9298C74 + (colorId * 4));
-		nLastArrowColor = nArrowColor;
+NyaDrawing::CNyaRGBA32 aPlayerColors[] = {
+		{255,241,195}, // default off white
+		{236,221,16}, // jack yellow
+		{255,122,0}, // orange
+		{247,34,27}, // katie red
+		{131,24,28}, // lei red
+		{186,186,186}, // sofia gray
+		{100,100,100}, // jason gray
+		{245,135,135}, // sally pink
+		{219,100,193}, // chloe collection pink
+		{255,0,154}, // jill pink
+		{135,50,220}, // light purple
+		{89,232,247}, // ray cyan
+		{54,93,246}, // frank blue
+		{50,50,165}, // neville blue
+		{230,175,105}, // lewis cream
+		{0,190,0}, // light green
+		{0,115,0}, // dark green
+};
+
+void SetPlayerColor() {
+	for (auto& color : aPlayerColors) {
+		auto& dest = *(NyaDrawing::CNyaRGBA32*)&gPalette[(&color - &aPlayerColors[0]) + 100];
+		dest.r = color.b;
+		dest.g = color.g;
+		dest.b = color.r;
+		dest.a = 255;
+	}
+
+	static int nLastPlayerColor = -1;
+	if (nLastPlayerColor != nPlayerColor) {
+		int colorId = nPlayerColor;
+		if (colorId <= 0) colorId = 0;
+		NyaHookLib::Patch(0x469835, colorId + 100);
+		NyaHookLib::Patch(0x46983B, &gPalette[colorId + 100]);
+		NyaHookLib::Patch(0x469875, colorId + 100);
+		NyaHookLib::Patch(0x46987B, &gPalette[colorId + 100]);
+		nLastPlayerColor = nPlayerColor;
 	}
 }
 
@@ -227,7 +255,7 @@ void CustomSetterThread() {
 	SetPlayerModel();
 	SetHUDType();
 	SetAIFudgeFactor();
-	SetArrowColor();
+	SetPlayerColor();
 	SetSlideControl();
 	SetWindowedMode();
 	SetAILookahead();

@@ -112,7 +112,7 @@ struct tCustomSaveStructure {
 	uint8_t playerFlag2;
 	uint8_t playerModel;
 	uint8_t playerPortrait;
-	uint8_t playerColor;
+	uint8_t _tmp2; // old player color var
 	uint8_t hudType;
 	uint8_t highCarCam;
 	uint8_t displaySplits;
@@ -137,7 +137,7 @@ struct tCustomSaveStructure {
 		uint8_t bEventUnlocked;
 		uint8_t nEventPosition;
 	} aRallyCareerEvents[nNumRallyCareerEventsX][nNumRallyCareerEventsY];
-	uint8_t playerChatColor;
+	uint8_t playerColor;
 	uint64_t playtimeNew[NUM_PLAYTIME_TYPES_NEW];
 
 	static inline uint8_t aRallyPlayersByPosition[32];
@@ -177,12 +177,11 @@ struct tCustomSaveStructure {
 		playerFlag2 = 0;
 		playerModel = 0;
 		playerPortrait = 12; // none
-		playerColor = 0;
 		hudType = 0;
 		highCarCam = 0;
 		displaySplits = 1;
 		splitType = 1;
-		playerChatColor = 0;
+		playerColor = 0;
 
 		// default the rally cup to none
 		nRallyCup = -1;
@@ -201,12 +200,11 @@ struct tCustomSaveStructure {
 		nPlayerFlag2 = playerFlag2;
 		nPlayerModel = playerModel;
 		nAvatarID = playerPortrait;
-		nArrowColor = playerColor;
 		nHUDType = hudType;
 		nHighCarCam = highCarCam;
 		nDisplaySplits = displaySplits;
 		nSplitType = splitType;
-		nChatColor = playerChatColor;
+		nPlayerColor = playerColor;
 		aCarCheatsEntered = aCarCheatsEnteredInSavegame;
 		for (auto& cheat : aCarCheatsEntered) {
 			if (cheat == "temp350") {
@@ -221,12 +219,11 @@ struct tCustomSaveStructure {
 		playerFlag2 = nPlayerFlag2;
 		playerModel = nPlayerModel;
 		playerPortrait = nAvatarID;
-		playerColor = nArrowColor;
+		playerColor = nPlayerColor;
 		hudType = nHUDType;
 		highCarCam = nHighCarCam;
 		displaySplits = nDisplaySplits;
 		splitType = nSplitType;
-		playerChatColor = nChatColor;
 	}
 	static std::string ReadCheatString(std::ifstream& file) {
 		std::string string;
