@@ -14,11 +14,10 @@ auto GetStringNarrow(const std::wstring& string) {
 }
 
 int GetNumSkinsForCar(int id) {
-	int tmp[2];
 	auto path = "data/cars/car_" + std::to_string(GetCarDataID(id)) + "/skin";
 	for (int i = 0; i < 255; i++) {
 		auto file = (path + std::to_string(i+1) + ".dds");
-		if (!BFSManager_DoesFileExist(*(void**)0x846688, file.c_str(), tmp)) {
+		if (!DoesFileExist(file.c_str(), 0)) {
 			return i;
 		}
 	}

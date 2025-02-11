@@ -4,6 +4,7 @@
 #include <thread>
 #include <codecvt>
 #include <filesystem>
+#include <d3dx9.h>
 #include "toml++/toml.hpp"
 #include "nya_dx9_hookbase.h"
 #include "nya_commonhooklib.h"
@@ -301,6 +302,40 @@ float __fastcall MenuCameraRotation(void* a1) {
 	return value;
 }
 
+bool __fastcall NewDDSParser(DevTexture* pThis, void*, File* pFile, uint8_t* header) {
+	if (pThis->pD3DTexture) {
+		pThis->pD3DTexture->Release();
+		pThis->pD3DTexture = nullptr;
+	}
+
+	//WriteLog(std::format("loading texture {}", pThis->sPath.Get()));
+
+	size_t fileSize = pFile->pFileCodec->GetFileSize();
+
+	auto tmp = new uint8_t[fileSize];
+	*(uint32_t*)tmp = 0x20534444; // DDS32
+	memcpy(&tmp[4], header, 0x7C);
+	File::ReadBytes(pFile, &tmp[0x7C+4], fileSize-0x7C-0x4, 0);
+
+	// fix header
+	if (tmp[0x4C] == 0x18) {
+		tmp[0x4C] = 0x20;
+	}
+
+	auto hr = D3DXCreateTextureFromFileInMemory(pDeviceD3d->pD3DDevice, tmp, fileSize, &pThis->pD3DTexture);
+	delete[] tmp;
+	if (hr != S_OK) {
+		WriteLog(std::format("Failed to load {} - {:X}", pThis->sPath.Get(), (uint32_t)hr));
+		return false;
+	}
+
+	pThis->nLoadState = 5;
+	if ((header[0x20] & 1) != 0) {
+		pThis->nFlags |= 0x1000;
+	}
+	return true;
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -319,8 +354,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// Event is read from game+0x4C4
 			// CarSkin is read from game+0x4DC
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x467D5A, &ArcadeCareerCarSkinASM);
-
-			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4F0F0A, &LoadMapIconsTGA);
 
 			static const char* aiDamageMeter = "ai_damage_meter_2";
 			NyaHookLib::Patch(0x4DEC01 + 1, aiDamageMeter);
@@ -368,6 +401,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyRallyPatches();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
+			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4F0F0A, &LoadMapIconsTGA);
+
 			InitCustomSave();
 			LoadPacenoteConfigs();
 
@@ -413,6 +448,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			NyaHookLib::Patch<uint8_t>(0x631C88, 0xEB);
 
 			NyaHookLib::Patch(0x4D899F+1, "data/global/overlay/checkpoint2.tga");
+
+			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x626DF8, &NewDDSParser);
+			NyaHookLib::Patch(0x4C6B32 + 1, 16777344); // menucar skin alloc size
 
 			srand(time(0));
 		} break;

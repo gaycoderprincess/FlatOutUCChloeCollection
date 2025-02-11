@@ -25,8 +25,7 @@ void SetAIFudgeFactor() {
 			"data/scripts/handicap_hard.bed",
 		};
 		auto handicap = handicapFiles[currentAIFudge];
-		int tmp[2];
-		NyaHookLib::Patch(0x47FD4C + 1, BFSManager_DoesFileExist(*(void**)0x846688, handicap, tmp) ? handicap : "data/scripts/handicap.bed");
+		NyaHookLib::Patch(0x47FD4C + 1, DoesFileExist(handicap, 0) ? handicap : "data/scripts/handicap.bed");
 		NyaHookLib::Patch(0x45FA4B + 1, aiUpgrades[currentAIFudge]);
 		NyaHookLib::Patch(0x46AA81 + 1, cupWinnings[currentAIFudge]);
 
