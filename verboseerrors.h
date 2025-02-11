@@ -28,7 +28,22 @@ void __attribute__((naked)) __fastcall OutOfBoundsAccessErrorASM() {
 	);
 }
 
+void __fastcall TextureParseErrorHooked(DevTexture* pTexture) {
+	MessageBoxA(nullptr, std::format("Failed to parse texture {}", pTexture->sPath.Get()).c_str(), "Fatal error", 0x10);
+	exit(0);
+}
+
+void __attribute__((naked)) __fastcall TextureParseErrorHookedASM() {
+	__asm__ (
+		"mov ecx, esi\n"
+		"jmp %0\n\t"
+			:
+			: "i" (TextureParseErrorHooked)
+	);
+}
+
 void ApplyVerboseErrorsPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x5A71FD, &TextureErrorHooked);
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5B2635, &OutOfBoundsAccessErrorASM);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x626E19, &TextureParseErrorHookedASM);
 }
