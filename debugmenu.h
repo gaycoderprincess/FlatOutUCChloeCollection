@@ -162,6 +162,14 @@ void PaletteEditorMenu(uint8_t& value) {
 
 std::vector<NyaVec3> aCustomSplinesL;
 std::vector<NyaVec3> aCustomSplinesR;
+std::vector<NyaMat4x4> aCustomStartpoints;
+
+struct tSplitpoint {
+	NyaVec3 pos;
+	NyaVec3 left;
+	NyaVec3 right;
+};
+std::vector<tSplitpoint> aCustomSplitpoints;
 
 void SplineViewerMenu(std::vector<NyaVec3>& splines, const std::string& name) {
 	if (!splines.empty()) {
@@ -190,6 +198,91 @@ void SplineViewerMenu(std::vector<NyaVec3>& splines, const std::string& name) {
 	}
 }
 
+void StartpointViewerMenu(std::vector<NyaMat4x4>& startpoints, const std::string& name) {
+	if (!startpoints.empty()) {
+		if (DrawMenuOption(std::format("Edit {} ({})", name, startpoints.size()))) {
+			ChloeMenuLib::BeginMenu();
+			for (auto& node : startpoints) {
+				if (DrawMenuOption(std::to_string((&node - &startpoints[0]) + 1))) {
+					ChloeMenuLib::BeginMenu();
+					if (!bIsInMultiplayer && DrawMenuOption("Teleport to Node", "", false, false)) {
+						auto ply = GetPlayer(0);
+						*ply->pCar->GetMatrix() = node;
+						*ply->pCar->GetVelocity() = {0, 0, 0};
+						*ply->pCar->GetAngVelocity() = {0, 0, 0};
+						break;
+					}
+					if (DrawMenuOption("Delete Node", "", false, false)) {
+						startpoints.erase(startpoints.begin() + (&node - &startpoints[0]));
+						ChloeMenuLib::BackOut();
+						break;
+					}
+					ChloeMenuLib::EndMenu();
+				}
+			}
+			ChloeMenuLib::EndMenu();
+		}
+	}
+}
+
+void SplitpointViewerMenu(std::vector<tSplitpoint>& splitpoints, const std::string& name) {
+	if (!splitpoints.empty()) {
+		if (DrawMenuOption(std::format("Edit {} ({})", name, splitpoints.size()))) {
+			ChloeMenuLib::BeginMenu();
+			for (auto& node : splitpoints) {
+				if (DrawMenuOption(std::to_string((&node - &splitpoints[0]) + 1))) {
+					ChloeMenuLib::BeginMenu();
+					if (!bIsInMultiplayer && DrawMenuOption("Teleport to Node", "", false, false)) {
+						auto ply = GetPlayer(0);
+						ply->pCar->GetMatrix()->p = node.pos;
+						*ply->pCar->GetVelocity() = {0, 0, 0};
+						*ply->pCar->GetAngVelocity() = {0, 0, 0};
+						break;
+					}
+					if (!bIsInMultiplayer && DrawMenuOption("Teleport to Left", "", false, false)) {
+						auto ply = GetPlayer(0);
+						ply->pCar->GetMatrix()->p = node.left;
+						*ply->pCar->GetVelocity() = {0, 0, 0};
+						*ply->pCar->GetAngVelocity() = {0, 0, 0};
+						break;
+					}
+					if (!bIsInMultiplayer && DrawMenuOption("Teleport to Right", "", false, false)) {
+						auto ply = GetPlayer(0);
+						ply->pCar->GetMatrix()->p = node.right;
+						*ply->pCar->GetVelocity() = {0, 0, 0};
+						*ply->pCar->GetAngVelocity() = {0, 0, 0};
+						break;
+					}
+					if (DrawMenuOption("Delete Node", "", false, false)) {
+						splitpoints.erase(splitpoints.begin() + (&node - &splitpoints[0]));
+						ChloeMenuLib::BackOut();
+						break;
+					}
+					ChloeMenuLib::EndMenu();
+				}
+			}
+			ChloeMenuLib::EndMenu();
+		}
+	}
+}
+
+void WriteSplitpoints() {
+	std::ofstream fout((std::string)GetTrackName(pGameFlow->PreRace.nLevel) + "_splitpoints.bed", std::ios::out);
+	if (!fout.is_open()) return;
+
+	fout << "Count = ";
+	fout << aCustomSplitpoints.size();
+	fout << "\n\nSplitpoints = {";
+	for (auto& point : aCustomSplitpoints) {
+		fout << std::format("\n\t[{}] = {{", (&point - &aCustomSplitpoints[0]) + 1);
+		fout << std::format("\n\t\tPosition = {{ {}, {}, {} }},", point.pos.x, point.pos.y, point.pos.z);
+		fout << std::format("\n\t\tLeft = {{ {}, {}, {} }},", point.left.x, point.left.y, point.left.z);
+		fout << std::format("\n\t\tRight = {{ {}, {}, {} }},", point.right.x, point.right.y, point.right.z);
+		fout << "\n\n\t},";
+	}
+	fout << "\n}";
+}
+
 void WriteSpline(std::ofstream& fout, std::vector<NyaVec3>& vec, const std::string& name) {
 	if (vec.empty()) return;
 
@@ -213,6 +306,30 @@ void WriteSplines() {
 	WriteSpline(fout, aCustomSplinesL, "AIBorderLineLeft");
 	WriteSpline(fout, aCustomSplinesR, "AIBorderLineRight");
 
+	fout << "\n}";
+}
+
+void WriteStartpoints() {
+	std::ofstream fout((std::string)GetTrackName(pGameFlow->PreRace.nLevel) + "_startpoints.bed", std::ios::out);
+	if (!fout.is_open()) return;
+
+	fout << "Count = ";
+	fout << aCustomStartpoints.size();
+	fout << "\n\nStartpoints = {";
+	for (auto& point : aCustomStartpoints) {
+		for (int i = 0; i < 16; i++) {
+			if (std::abs(point[i]) < 0.001) point[i] = 0;
+		}
+
+		fout << std::format("\n\t[{}] = {{", (&point - &aCustomStartpoints[0]) + 1);
+		fout << std::format("\n\t\tPosition = {{ {}, {}, {} }},", point[12], point[13], point[14]);
+		fout << "\n\t\tOrientation = {";
+		fout << std::format("\n\t\t\t[\"x\"]={{{},{},{}}},", point[0], point[1], point[2]);
+		fout << std::format("\n\t\t\t[\"y\"]={{{},{},{}}},", point[4], point[5], point[6]);
+		fout << std::format("\n\t\t\t[\"z\"]={{{},{},{}}},", point[8], point[9], point[10]);
+		fout << "\n\t\t},";
+		fout << "\n\n\t},";
+	}
 	fout << "\n}";
 }
 
@@ -380,6 +497,65 @@ void ProcessDebugMenu() {
 					if (DrawMenuOption("Delete All Splines", "", false, false)) {
 						aCustomSplinesL.clear();
 						aCustomSplinesR.clear();
+					}
+				}
+			}
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
+			}
+			ChloeMenuLib::EndMenu();
+		}
+		if (DrawMenuOption("Startpoint Creator")) {
+			ChloeMenuLib::BeginMenu();
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				if (DrawMenuOption("Add Startpoint")) {
+					auto ply = GetPlayer(0);
+					aCustomStartpoints.push_back(*ply->pCar->GetMatrix());
+				}
+				StartpointViewerMenu(aCustomStartpoints, "Startpoints");
+				if (!aCustomStartpoints.empty()) {
+					if (DrawMenuOption("Save Startpoints", "", false, false)) {
+						WriteStartpoints();
+					}
+					if (DrawMenuOption("Delete All Startpoints", "", false, false)) {
+						aCustomStartpoints.clear();
+					}
+					if (DrawMenuOption("Apply Startpoints to Game", "", false, false)) {
+						pEnvironment->nNumStartpoints = aCustomStartpoints.size();
+						if (pEnvironment->nNumStartpoints > 32) pEnvironment->nNumStartpoints = 32;
+						for (int i = 0; i < pEnvironment->nNumStartpoints; i++) {
+							auto& start = aCustomStartpoints[i];
+							memcpy(pEnvironment->aStartpoints[i].fMatrix, &start, sizeof(start));
+							pEnvironment->aStartpoints[i].fPosition[0] = start.p[0];
+							pEnvironment->aStartpoints[i].fPosition[1] = start.p[1];
+							pEnvironment->aStartpoints[i].fPosition[2] = start.p[2];
+						}
+					}
+				}
+			}
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
+			}
+			ChloeMenuLib::EndMenu();
+		}
+		if (DrawMenuOption("Splitpoint Creator")) {
+			ChloeMenuLib::BeginMenu();
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				if (DrawMenuOption("Add Splitpoint")) {
+					auto ply = GetPlayer(0);
+					tSplitpoint point;
+					point.pos = point.left = point.right = ply->pCar->GetMatrix()->p;
+					point.left -= ply->pCar->GetMatrix()->x * 50;
+					point.right += ply->pCar->GetMatrix()->x * 50;
+					aCustomSplitpoints.push_back(point);
+				}
+				SplitpointViewerMenu(aCustomSplitpoints, "Splitpoints");
+				if (!aCustomSplitpoints.empty()) {
+					if (DrawMenuOption("Save Splitpoints", "", false, false)) {
+						WriteSplitpoints();
+					}
+					if (DrawMenuOption("Delete All Splitpoints", "", false, false)) {
+						aCustomSplitpoints.clear();
 					}
 				}
 			}

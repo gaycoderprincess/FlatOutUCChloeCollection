@@ -31,7 +31,7 @@ void SetAIFudgeFactor() {
 
 		NyaHookLib::Patch<uint16_t>(0x480ABD, currentAIFudge ? 0x9090 : 0x1875);
 		NyaHookLib::Patch<uint8_t>(0x480AC5, currentAIFudge ? 0xEB : 0x75);
-		static float fFudgeMedium = 2.0;
+		static float fFudgeMedium = 1.0 / 2.0;
 		static float fFudgeHard = 1.0;
 		NyaHookLib::Patch(0x480ACF + 2, currentAIFudge != 1 ? &fFudgeHard : &fFudgeMedium);
 		//NyaHookLib::Patch<uint64_t>(0x481D9A, nAIFudgeDisabled > 1 ? 0x44D990000000D4E9 : 0x44D9000000D38E0F); // disable velocity limits
@@ -45,7 +45,7 @@ void SetAIFudgeFactor() {
 			if (!ply) continue;
 			if (ply->nPlayerType != PLAYERTYPE_AI) continue;
 
-			if (currentAIFudge >= 1) {
+			if (currentAIFudge == 2) {
 				ply->AIProfile.fBumpMassDriver = 1.0;
 			}
 			// no catchup for easy diff
