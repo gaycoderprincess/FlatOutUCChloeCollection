@@ -716,7 +716,7 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 		lua_pushboolean(a1, true);
 	}
 	else if (str == "fuckmyphysicsupfam") {
-		bCareerTimeTrialNoDownforce = !bCareerTimeTrialNoDownforce;
+		bNoDownforceCheat = !bNoDownforceCheat;
 		lua_pushboolean(a1, true);
 	}
 	else lua_pushboolean(a1, false);
