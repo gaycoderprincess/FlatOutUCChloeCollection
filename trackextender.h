@@ -99,6 +99,7 @@ void SetTrackCustomProperties() {
 		increasedNegY2 = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IncreasedNegYVisibility2");
 		if (increasedNegY2) increasedNegY = true;
 
+		int derbyTimer = 45;
 		static double waterPlaneY;
 		static float camWaterPlaneY;
 		waterPlaneY = 0.0;
@@ -115,10 +116,16 @@ void SetTrackCustomProperties() {
 		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ResetInVoid")) {
 			bVoidResetEnabled = true;
 		}
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "DerbyTimeout")) {
+			derbyTimer = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "DerbyTimeout");
+		}
 		camWaterPlaneY = waterPlaneY + 1.0;
 		NyaHookLib::Patch(0x4405FE + 2, &waterPlaneY);
 		NyaHookLib::Patch(0x5076EB + 2, &camWaterPlaneY);
 		fWaterPlaneY = waterPlaneY;
+
+		auto db = GetLiteDB()->GetTable("Settings.Derbies");
+		*(int*)db->GetPropertyPointer("InactivityTimer") = derbyTimer;
 
 		bInvisWaterPlane = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceInvisibleWaterPlane");
 		NyaHookLib::Patch<uint64_t>(0x44056E, bInvisWaterPlane ? 0x8D8D909090909090 : 0x8D8D000000CA840F); // collision
