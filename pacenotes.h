@@ -1,6 +1,6 @@
 bool IsRallyTrack() {
 	if (!DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceOneLapOnly")) return false;
-	if (strcmp(GetTrackValueString(pGameFlow->PreRace.nLevel, "GfxSetPath"), "data/Tracks/Rally/")) return false;
+	if (!DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IsRallyTrack")) return false;
 	return true;
 }
 
