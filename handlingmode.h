@@ -49,9 +49,10 @@ int GetHandlingMode() {
 	return nHandlingMode;
 }
 
+bool bCareerTimeTrialNoDownforce = false;
 bool ShouldDoFO2Downforce(Car* pCar) {
 	int handlingMode = GetHandlingMode();
-	//if (CareerTimeTrial::bIsCareerTimeTrial) return false; // no downforce in career time trials
+	if (bCareerTimeTrialNoDownforce && CareerTimeTrial::bIsCareerTimeTrial) return false; // no downforce in career time trials
 	if (handlingMode == HANDLING_NORMAL && bIsStuntMode) return false; // no downforce in stunt show on normal
 	if (handlingMode == HANDLING_PROFESSIONAL || handlingMode == HANDLING_NORMAL_LEGACY) return false; // no downforce on professional or legacy
 	if (handlingMode == HANDLING_NORMAL && pCar->pPlayer->nTimeInAir <= 0) return false; // no downforce on ground on normal

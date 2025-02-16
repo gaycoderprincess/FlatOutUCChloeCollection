@@ -715,6 +715,10 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 		bUnlockAllArcadeEvents = !bUnlockAllArcadeEvents;
 		lua_pushboolean(a1, true);
 	}
+	else if (str == "fuckmyphysicsupfam") {
+		bCareerTimeTrialNoDownforce = !bCareerTimeTrialNoDownforce;
+		lua_pushboolean(a1, true);
+	}
 	else lua_pushboolean(a1, false);
 	return 1;
 }
