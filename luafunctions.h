@@ -668,7 +668,7 @@ int ChloePacenotes_GetNumVisualTypes(void* a1) {
 
 bool DoesCheatMatchAnyCarOrTrack(const std::string& str) {
 	if (str == "temp350") {
-		bPropCarsUnlocked = true;
+		bPropCarsUnlocked = !bPropCarsUnlocked;
 		return true;
 	}
 
@@ -720,6 +720,18 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 		lua_pushboolean(a1, true);
 	}
 	else lua_pushboolean(a1, false);
+
+	// if prop cars got locked by this entry, remove temp350 from the savefile
+	if (!bPropCarsUnlocked) {
+		for (auto& cheat : aCarCheatsEntered) {
+			if (cheat == "temp350") {
+				aCarCheatsEntered.erase(aCarCheatsEntered.begin()+ (&cheat - &aCarCheatsEntered[0]));
+				gCustomSave.Save();
+				break;
+			}
+		}
+	}
+
 	return 1;
 }
 

@@ -368,7 +368,7 @@ void ProcessNewReset() {
 	auto closest = GetClosestResetpoint(ply->pCar->GetMatrix()->p, ply->nCurrentSplit % pEnvironment->nNumSplitpoints);
 	if (!closest) return;
 
-	if ((closest->p - ply->pCar->GetMatrix()->p).length() <= 5) {
+	if ((closest->p - ply->pCar->GetMatrix()->p).length() <= 10) {
 		pLastPlayerResetpoint = closest;
 	}
 }

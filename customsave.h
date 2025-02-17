@@ -274,9 +274,15 @@ struct tCustomSaveStructure {
 
 		file.write((char*)this, sizeof(*this));
 
-		if (aCarCheatsEntered.empty()) return;
+		auto cheatSave = GetCheatSavePath(nSaveSlot);
+		if (aCarCheatsEntered.empty()) {
+			if (std::filesystem::exists(cheatSave)) {
+				std::filesystem::remove(cheatSave);
+			}
+			return;
+		}
 
-		auto cht = std::ofstream(GetCheatSavePath(nSaveSlot), std::ios::out | std::ios::binary);
+		auto cht = std::ofstream(cheatSave, std::ios::out | std::ios::binary);
 		if (!cht.is_open()) return;
 		for (auto& cheat : aCarCheatsEntered) {
 			cht.write(cheat.c_str(), cheat.length()+1);
