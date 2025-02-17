@@ -13,17 +13,6 @@ auto GetStringNarrow(const std::wstring& string) {
 	return converter.to_bytes(string);
 }
 
-int GetNumSkinsForCar(int id) {
-	auto path = "data/cars/car_" + std::to_string(GetCarDataID(id)) + "/skin";
-	for (int i = 0; i < 255; i++) {
-		auto file = (path + std::to_string(i+1) + ".dds");
-		if (!DoesFileExist(file.c_str(), 0)) {
-			return i;
-		}
-	}
-	return 1;
-}
-
 int GetCarMatchup(int id) {
 	int dataId = GetCarDataID(id);
 	static auto config = toml::parse_file("Config/CarMatchups.toml");
