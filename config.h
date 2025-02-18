@@ -7,6 +7,7 @@ enum eHandlingMode {
 	NUM_HANDLING_MODES
 };
 
+uint32_t nPlayerListDefaultState = 1;
 uint32_t nCareerHandlingDamage = 0;
 uint32_t nMenuSoundtrack = 0;
 uint32_t nIngameSoundtrack = 0;
@@ -47,6 +48,7 @@ uint32_t nWidescreenSafeZone = 1;
 uint32_t nExplosionEffects = 1;
 uint32_t nAirControlType = 0;
 uint32_t nAirControlFlipType = 0;
+uint32_t nMouseSensitivity = 20;
 uint32_t nLoadingSkip = 2;
 uint32_t nPacenoteVolume = 90;
 uint32_t nPacenoteType = 2;

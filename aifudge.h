@@ -1,4 +1,7 @@
 void SetAIFudgeFactor() {
+	// don't init until handicap.bed exists
+	if (!DoesFileExist("data/scripts/handicap.bed", 0) && !DoesFileExist("data/scripts/handicap_medium.bed", 0)) return;
+
 	static int nLastAIFudgeDisabled = -1;
 
 	// set to normal for carnage races

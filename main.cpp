@@ -158,6 +158,10 @@ void SetExplosionEffects() {
 	}
 }
 
+void SetPlayerList() {
+	NyaHookLib::Patch<uint8_t>(0x4E48F6 + 1, nPlayerListDefaultState ? 0x85 : 0x84);
+}
+
 /*NyaDrawing::CNyaRGBA32& GetPaletteColor(int id) {
 	return *(NyaDrawing::CNyaRGBA32*)&gPalette[id];
 }
@@ -263,6 +267,7 @@ void CustomSetterThread() {
 	SetAILookahead();
 	SetExplosionEffects();
 	SetAutoresolve();
+	SetPlayerList();
 }
 
 void OnD3DReset() {
