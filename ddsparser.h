@@ -44,6 +44,35 @@ bool __fastcall NewDDSParser(DevTexture* pThis, void*, File* pFile, uint8_t* hea
 	return true;
 }
 
+bool IsUITextureFolder(const std::string& str) {
+	if (str.starts_with("data/menu")) return true;
+	if (str.starts_with("data/global/fonts")) return true;
+	if (str.starts_with("data/global/map")) return true;
+	if (str.starts_with("data/global/overlay")) return true;
+	return false;
+}
+
+bool __cdecl PreferTGAForUI(const char* path, int flags) {
+	auto texFolder1 = (std::string)sTextureFolder;
+	auto texFolder2 = (std::string)sSharedTextureFolder;
+	std::transform(texFolder1.begin(), texFolder1.end(), texFolder1.begin(), [](unsigned char c){ return std::tolower(c); });
+	std::transform(texFolder2.begin(), texFolder2.end(), texFolder2.begin(), [](unsigned char c){ return std::tolower(c); });
+	if (IsUITextureFolder(texFolder1) || IsUITextureFolder(texFolder2)) {
+		std::string tga = path;
+		tga.pop_back();
+		tga.pop_back();
+		tga.pop_back();
+		tga += "tga";
+		// fall back to TGA if there is one, return the dds as missing
+		if (DoesFileExist(tga.c_str(), 0)) {
+			return false;
+		}
+	}
+
+	return DoesFileExist(path, 0);
+}
+
 void ApplyDDSParserPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x626DF8, &NewDDSParser);
+	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x6279E3, &PreferTGAForUI);
 }

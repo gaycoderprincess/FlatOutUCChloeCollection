@@ -327,10 +327,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// CarSkin is read from game+0x4DC
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x467D5A, &ArcadeCareerCarSkinASM);
 
-			static const char* aiDamageMeter = "ai_damage_meter_2";
-			NyaHookLib::Patch(0x4DEC01 + 1, aiDamageMeter);
-			NyaHookLib::Patch(0x4DEC2A + 1, aiDamageMeter);
-
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x465F46, 0x467312); // disable video recording
 
 			NyaFO2Hooks::PlaceD3DHooks();
