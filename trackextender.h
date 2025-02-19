@@ -296,6 +296,11 @@ void __stdcall ResetCarNew(Car* car, int a2, float* a3, float speed) {
 	if ((CareerTimeTrial::bIsCareerTimeTrial || bIsCareerRally) && car->pPlayer->nPlayerId != 1) {
 		return;
 	}
+	// don't use custom resets for ai on vanilla tracks
+	if (car->pPlayer->nPlayerId != 1 && pGameFlow->PreRace.nLevel <= TRACK_SOCCER) {
+		ResetCar(car, a2, a3, speed);
+		return;
+	}
 	if (pLastPlayerResetpoint && car->pPlayer->nPlayerId == 1) {
 		pNewResetpoint = pLastPlayerResetpoint;
 	}

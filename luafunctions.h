@@ -1061,6 +1061,26 @@ int ChloeCollection_GetCarMatchupInverse(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_GetCarTier(void* a1) {
+	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", (int)luaL_checknumber(a1, 1)).c_str());
+	char tier[MAX_PATH];
+	auto upgrades = table->GetPropertyAsNodePath(tier, "Upgrades", 0);
+	auto tierStr = (std::string)tier;
+	if (tierStr.find("Level1") != std::string::npos) {
+		lua_pushnumber(a1, 1);
+	}
+	else  if (tierStr.find("Level2") != std::string::npos) {
+		lua_pushnumber(a1, 2);
+	}
+	else if (tierStr.find("Level3") != std::string::npos) {
+		lua_pushnumber(a1, 3);
+	}
+	else {
+		lua_pushnumber(a1, 1);
+	}
+	return 1;
+}
+
 int ChloeSPStats_GetPlaytimeOfType(void* a1) {
 	int id = luaL_checknumber(a1, 1);
 	if (id < 0 || id >= NUM_PLAYTIME_TYPES_NEW) {
@@ -1523,6 +1543,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAIName, "ChloeCollection_GetAIName");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarMatchup, "ChloeCollection_GetCarMatchup");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarMatchupInverse, "ChloeCollection_GetCarMatchupInverse");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetCarTier, "ChloeCollection_GetCarTier");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrial, "ChloeCollection_SetCareerTimeTrial");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialCar, "ChloeCollection_SetCareerTimeTrialCar");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetCareerTimeTrialUpgrades, "ChloeCollection_SetCareerTimeTrialUpgrades");
