@@ -62,6 +62,10 @@ int GetProfilePortrait(int id) {
 	LoadProfileForStats(id);
 	return gTempCustomSave.playerPortrait;
 }
+int GetProfilePlayerType(int id) {
+	LoadProfileForStats(id);
+	return GetPlayerModelType(gTempCustomSave.playerModel);
+}
 int GetProfileFlag(int id) {
 	LoadProfileForStats(id);
 	return gTempCustomSave.playerFlag;

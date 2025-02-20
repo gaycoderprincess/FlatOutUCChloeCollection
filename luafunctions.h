@@ -485,6 +485,13 @@ int ChloeProfiles_GetProfilePortrait(void* a1) {
 	return 1;
 }
 
+int ChloeProfiles_GetProfilePlayerType(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfilePlayerType(id));
+	return 1;
+}
+
 int ChloeProfiles_GetProfileFlag(void* a1) {
 	int id = luaL_checknumber(a1, 1);
 	if (!IsProfileValid(id)) return 0;
@@ -1220,6 +1227,7 @@ int ChloeCollection_DoesCarHaveCheatCode(void* a1) {
 
 int ChloeRally_AddCash(void* a1) {
 	gCustomSave.nRallyCash += luaL_checknumber(a1, 1);
+	gCustomSave.Save();
 	return 0;
 }
 
@@ -1230,6 +1238,11 @@ int ChloeRally_SetCash(void* a1) {
 
 int ChloeRally_GetCash(void* a1) {
 	lua_pushnumber(a1, gCustomSave.nRallyCash);
+	return 1;
+}
+
+int ChloeRally_EnoughMoney(void* a1) {
+	lua_pushboolean(a1, gCustomSave.nRallyCash >= (int)luaL_checknumber(a1, 1));
 	return 1;
 }
 
@@ -1381,6 +1394,45 @@ int ChloeRally_SetCurrentCarSkin(void* a1) {
 	return 1;
 }
 
+int ChloeRally_IsCarPurchased(void* a1) {
+	int car = luaL_checknumber(a1, 1);
+	// auto-unlock the current car for backwards compat
+	if (car == gCustomSave.nRallyCarId) {
+		gCustomSave.aRallyCareerGarage[car].bPurchased = true;
+		gCustomSave.aRallyCareerGarage[car].nSkinId = gCustomSave.nRallyCarSkinId;
+	}
+	lua_pushboolean(a1, gCustomSave.aRallyCareerGarage[car].bPurchased);
+	return 1;
+}
+
+int ChloeRally_SetCarPurchased(void* a1) {
+	int car = luaL_checknumber(a1, 1);
+	gCustomSave.aRallyCareerGarage[car].bPurchased = lua_toboolean(a1, 2);
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeRally_SetCarSkin(void* a1) {
+	int car = luaL_checknumber(a1, 1);
+	gCustomSave.aRallyCareerGarage[car].nSkinId = luaL_checknumber(a1, 2);
+	return 0;
+}
+
+int ChloeRally_GetNumCarsPurchased(void* a1) {
+	int count = 0;
+	for (auto& car : gCustomSave.aRallyCareerGarage) {
+		if (car.bPurchased) count++;
+	}
+	lua_pushnumber(a1, count);
+	return 1;
+}
+
+int ChloeRally_GetCarSkin(void* a1) {
+	int car = luaL_checknumber(a1, 1);
+	lua_pushnumber(a1, gCustomSave.aRallyCareerGarage[car].nSkinId);
+	return 1;
+}
+
 int ChloeRally_GetCupNumPlayers(void* a1) {
 	lua_pushnumber(a1, nNumAIProfiles+1);
 	return 1;
@@ -1487,6 +1539,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCarsUnlocked, "ChloeProfiles_GetProfileCarsUnlocked");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileProgress, "ChloeProfiles_GetProfileProgress");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfilePortrait, "ChloeProfiles_GetProfilePortrait");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfilePlayerType, "ChloeProfiles_GetProfilePlayerType");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileFlag, "ChloeProfiles_GetProfileFlag");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileMoney, "ChloeProfiles_GetProfileMoney");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetProfileSlot, "ChloeProfiles_SetProfileSlot");
@@ -1564,6 +1617,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AddCash, "ChloeRally_AddCash");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCash, "ChloeRally_SetCash");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCash, "ChloeRally_GetCash");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_EnoughMoney, "ChloeRally_EnoughMoney");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCupPosition, "ChloeRally_GetCupPosition");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_IsCupLocked, "ChloeRally_IsCupLocked");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_IsEventLocked, "ChloeRally_IsEventLocked");
@@ -1585,6 +1639,11 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCurrentCarSkin, "ChloeRally_GetCurrentCarSkin");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentCar, "ChloeRally_SetCurrentCar");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCurrentCarSkin, "ChloeRally_SetCurrentCarSkin");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_IsCarPurchased, "ChloeRally_IsCarPurchased");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCarPurchased, "ChloeRally_SetCarPurchased");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCarSkin, "ChloeRally_SetCarSkin");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetNumCarsPurchased, "ChloeRally_GetNumCarsPurchased");
+	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCarSkin, "ChloeRally_GetCarSkin");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCupNumPlayers, "ChloeRally_GetCupNumPlayers");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetPlayerName, "ChloeRally_GetPlayerName");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_GetCupStagePosition, "ChloeRally_GetCupStagePosition");
@@ -1634,7 +1693,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_RALLYMODE, "PLAYTIME_INGAME_RALLYMODE");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES_NEW, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.67 - Uncompressed Edition";
+	static auto sVersionString = "Chloe's Collection v1.68 - Rally Economy Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);

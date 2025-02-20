@@ -23,24 +23,24 @@
 // 22 - fo1female 4 (aiprof2 - Sue O'Neill)
 // 23 - ctd_male 1
 // 24 - ctd_female 1
-int GetPlayerModelSkinID() {
-	if (nPlayerModel < 2) return 1;
-	if (nPlayerModel < 9) return nPlayerModel; // - 2 + 2 players
-	if (nPlayerModel < 14) return nPlayerModel - 7; // - 8 + 2 players
-	if (nPlayerModel < 19) return nPlayerModel - 13; // fo1 male
-	if (nPlayerModel < 23) return nPlayerModel - 18; // fo1 female
-	if (nPlayerModel == 23) return 1; // ctd male
-	if (nPlayerModel == 24) return 1; // ctd female
+int GetPlayerModelSkinID(int model = nPlayerModel) {
+	if (model < 2) return 1;
+	if (model < 9) return model; // - 2 + 2 players
+	if (model < 14) return model - 7; // - 8 + 2 players
+	if (model < 19) return model - 13; // fo1 male
+	if (model < 23) return model - 18; // fo1 female
+	if (model == 23) return 1; // ctd male
+	if (model == 24) return 1; // ctd female
 	return 1;
 }
-int GetPlayerModelType() {
-	if (nPlayerModel < 2) return nPlayerModel;
-	if (nPlayerModel < 9) return 0;
-	if (nPlayerModel < 14) return 1;
-	if (nPlayerModel < 19) return 2; // fo1 male
-	if (nPlayerModel < 23) return 3; // fo1 female
-	if (nPlayerModel == 23) return 4; // ctd male
-	if (nPlayerModel == 24) return 5; // ctd female
+int GetPlayerModelType(int model = nPlayerModel) {
+	if (model < 2) return model;
+	if (model < 9) return 0;
+	if (model < 14) return 1;
+	if (model < 19) return 2; // fo1 male
+	if (model < 23) return 3; // fo1 female
+	if (model == 23) return 4; // ctd male
+	if (model == 24) return 5; // ctd female
 	return 0;
 }
 void SetPlayerModel() {
@@ -237,6 +237,7 @@ float fRetroDriverLocOffset[3] = { (-0.36) - (-0.35), 0.29 - 0.442, (-0.05) - (-
 // -0.33, 0.345, -0.15 in TT
 float fTTDriverLocOffset[3] = { (-0.355) - (-0.33), 0.21 - 0.345, (-0.01) - (-0.15) };
 
+int GetCarDataID(int car);
 void __fastcall SetDriverLocOffset(Player* pPlayer, Car* pCar) {
 	int carFolderId = GetCarDataID(pPlayer->nCarId);
 	if (carFolderId >= 400 && carFolderId < 500) {
