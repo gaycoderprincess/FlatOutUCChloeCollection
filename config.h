@@ -7,6 +7,13 @@ enum eHandlingMode {
 	NUM_HANDLING_MODES
 };
 
+enum eFudgeMode {
+	FUDGE_EASY,
+	FUDGE_MEDIUM,
+	FUDGE_HARD,
+	NUM_FUDGE_MODES
+};
+
 uint32_t nPlayerListDefaultState = 1;
 uint32_t nCareerHandlingDamage = 0;
 uint32_t nMenuSoundtrack = 0;
@@ -30,7 +37,7 @@ uint32_t nPlayerModelSkinID = 0;
 uint32_t nAvatarID = 12;
 uint32_t nPlayerColor = 0;
 uint32_t nHUDType = 0;
-uint32_t nAIFudgeDisabled = 1;
+uint32_t nAIFudgeMode = FUDGE_MEDIUM;
 //uint32_t nFragDerbyCrashRewards = 1;
 uint32_t nMPInterpolation = 1;
 uint32_t nInterpMinRange = 50;

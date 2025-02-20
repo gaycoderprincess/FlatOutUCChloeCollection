@@ -35,3 +35,11 @@ void D3DHookMain() {
 	}
 	HookBaseLoop();
 }
+
+void OnD3DReset() {
+	if (g_pd3dDevice) {
+		UpdateD3DProperties();
+		ImGui_ImplDX9_InvalidateDeviceObjects();
+		bDeviceJustReset = true;
+	}
+}

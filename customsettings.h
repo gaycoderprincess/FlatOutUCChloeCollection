@@ -30,7 +30,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "OpponentCountCarnage", &nOpponentCountTypeArcade, 0, 0, 1 },
 		{ "Game", "OpponentCountRally", &nOpponentCountTypeRally, 0, 0, 2 },
 		{ "Game", "OpponentCountSingleEvent", &nOpponentCountTypeSingleEvent, 0, 0, 3 },
-		{ "Game", "OpponentStrength", &nAIFudgeDisabled, 0, 0, 2 },
+		{ "Game", "OpponentStrength", &nAIFudgeMode, 0, 0, NUM_FUDGE_MODES-1 },
 		{ "Game", "HUDType", &nHUDType, 0, 0, 1 },
 		//{ "Game", "FragDerbyCrashRewards", &nFragDerbyCrashRewards, 1, 0, 0 },
 		{ "Game", "HandlingMode", &nHandlingMode, 0, 0, NUM_HANDLING_MODES-1 },

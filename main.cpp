@@ -268,14 +268,7 @@ void CustomSetterThread() {
 	SetExplosionEffects();
 	SetAutoresolve();
 	SetPlayerList();
-}
-
-void OnD3DReset() {
-	if (g_pd3dDevice) {
-		UpdateD3DProperties();
-		ImGui_ImplDX9_InvalidateDeviceObjects();
-		bDeviceJustReset = true;
-	}
+	SetGlobalFudgeFactor();
 }
 
 auto LoadMapIconsTGA_call = (void*(__stdcall*)(void*, const char*, int, int))0x5A6F00;
