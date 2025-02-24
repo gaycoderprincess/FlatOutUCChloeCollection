@@ -396,6 +396,35 @@ void __attribute__((naked)) __fastcall OnCarResetASM() {
 	);
 }
 
+void SetCustomMapExtents() {
+	static bool bMapSet = false;
+
+	if (pGameFlow->nGameState != GAME_STATE_RACE) {
+		bMapSet = false;
+		return;
+	}
+	if (pLoadingScreen) return;
+	if (!pEnvironment) return;
+	auto map = pEnvironment->pMinimap;
+	if (!map) return;
+
+	if (bMapSet) return;
+	bMapSet = true;
+
+	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapTopLeftX")) {
+		map->fMapTopLeft[0] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapTopLeftX");
+	}
+	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapTopLeftY")) {
+		map->fMapTopLeft[2] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapTopLeftY");
+	}
+	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapBottomRightX")) {
+		map->fMapBottomRight[0] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapBottomRightX");
+	}
+	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapBottomRightY")) {
+		map->fMapBottomRight[2] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapBottomRightY");
+	}
+}
+
 void ApplyTrackExtenderPatches() {
 	InitTrackASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitTrackASM);
 	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55EF38, &ForceWaterPlaneASM);

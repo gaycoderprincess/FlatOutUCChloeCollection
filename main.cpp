@@ -269,6 +269,7 @@ void CustomSetterThread() {
 	SetAutoresolve();
 	SetPlayerList();
 	SetGlobalFudgeFactor();
+	SetCustomMapExtents();
 }
 
 auto LoadMapIconsTGA_call = (void*(__stdcall*)(void*, const char*, int, int))0x5A6F00;
