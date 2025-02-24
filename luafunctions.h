@@ -1215,6 +1215,14 @@ int ChloeCollection_DoesTrackHaveCheatCode(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_GetAICarID(void* a1) {
+	auto aiProfile = GetLiteDB()->GetTable("FlatOut2.Profiles")->GetPropertyAsNode("Profile", luaL_checknumber(a1, 1));
+	auto classProfile = aiProfile->GetTable(std::format("Class[{}]", (int)luaL_checknumber(a1, 2)).c_str());
+	auto car = classProfile->GetPropertyAsInt("CarNum", 0);
+	lua_pushnumber(a1, GetCarDBID(car));
+	return 1;
+}
+
 int ChloeCollection_DoesCarHaveCheatCode(void* a1) {
 	auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", (int)luaL_checknumber(a1, 1)).c_str());
 	if (table->DoesPropertyExist("CheatCode")) {
@@ -1613,6 +1621,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_IsTrackLockedByCheatCode, "ChloeCollection_IsTrackLockedByCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesCarHaveCheatCode, "ChloeCollection_DoesCarHaveCheatCode");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesTrackHaveCheatCode, "ChloeCollection_DoesTrackHaveCheatCode");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAICarID, "ChloeCollection_GetAICarID");
 	RegisterLUAFunction(a1, (void*)&ChloeSPStats_GetPlaytimeOfType, "ChloeSPStats_GetPlaytimeOfType");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AddCash, "ChloeRally_AddCash");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_SetCash, "ChloeRally_SetCash");
