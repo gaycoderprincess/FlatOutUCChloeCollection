@@ -411,17 +411,29 @@ void SetCustomMapExtents() {
 	if (bMapSet) return;
 	bMapSet = true;
 
-	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapTopLeftX")) {
-		map->fMapTopLeft[0] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapTopLeftX");
+	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapPosX") && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapPosY") && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapScaleX") && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapScaleY")) {
+		float posX = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapPosX");
+		float posY = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapPosY");
+		float scaleX = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapScaleX");
+		float scaleY = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapScaleY");
+		map->fMapTopLeft[0] = posX - scaleX;
+		map->fMapTopLeft[2] = posY + scaleY;
+		map->fMapBottomRight[0] = posX + scaleX;
+		map->fMapBottomRight[2] = posY - scaleY;
 	}
-	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapTopLeftY")) {
-		map->fMapTopLeft[2] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapTopLeftY");
-	}
-	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapBottomRightX")) {
-		map->fMapBottomRight[0] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapBottomRightX");
-	}
-	if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapBottomRightY")) {
-		map->fMapBottomRight[2] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapBottomRightY");
+	else {
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapTopLeftX")) {
+			map->fMapTopLeft[0] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapTopLeftX");
+		}
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapTopLeftY")) {
+			map->fMapTopLeft[2] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapTopLeftY");
+		}
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapBottomRightX")) {
+			map->fMapBottomRight[0] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapBottomRightX");
+		}
+		if (DoesTrackValueExist(pGameFlow->PreRace.nLevel, "MapBottomRightY")) {
+			map->fMapBottomRight[2] = GetTrackValueNumber(pGameFlow->PreRace.nLevel, "MapBottomRightY");
+		}
 	}
 }
 
