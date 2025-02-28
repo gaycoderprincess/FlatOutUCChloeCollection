@@ -147,3 +147,9 @@ bool bIsDriftEvent = false;
 bool bIsLapKnockout = false;
 bool bIsInMultiplayer = false;
 bool bIsCareerRally = false;
+
+bool IsArcadeRace() {
+	if (pGameFlow->nGameRules != GR_ARCADE_RACE) return false;
+	if (bIsSpeedtrap || bIsStuntMode || bIsDriftEvent) return false;
+	return true;
+}

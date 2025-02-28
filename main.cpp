@@ -256,6 +256,34 @@ void SetAutoresolve() {
 	ApplyAutoresolvePatch(shouldDisable);
 }
 
+bool IsDustEffect(int effect) {
+	if (effect == FX_DUST) return true;
+	if (effect == FX_DUST_AND_DEBRIS) return true;
+	return false;
+}
+
+void SetCarnageRaceSmoke() {
+	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+	if (pLoadingScreen) return;
+	if (!IsArcadeRace()) return;
+
+	for (int i = 0; i < 64; i++) {
+		auto surface = &pEnvironment->aSurfaces[i];
+		if (IsDustEffect(surface->nRoadEffect1[0])) {
+			surface->nRoadEffect1[0] = 0;
+			surface->nRoadEffect1[1] = 0;
+		}
+		if (IsDustEffect(surface->nRoadEffect2[0])) {
+			surface->nRoadEffect2[0] = 0;
+			surface->nRoadEffect2[1] = 0;
+		}
+		if (IsDustEffect(surface->nBodyEffect1[0])) {
+			surface->nBodyEffect1[0] = 0;
+			surface->nBodyEffect1[1] = 0;
+		}
+	}
+}
+
 void CustomSetterThread() {
 	SetSoundtrack();
 	SetPlayerModel();
@@ -270,6 +298,7 @@ void CustomSetterThread() {
 	SetPlayerList();
 	SetGlobalFudgeFactor();
 	SetCustomMapExtents();
+	SetCarnageRaceSmoke();
 }
 
 auto LoadMapIconsTGA_call = (void*(__stdcall*)(void*, const char*, int, int))0x5A6F00;
