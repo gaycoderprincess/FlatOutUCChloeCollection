@@ -69,4 +69,5 @@ void SetGlobalFudgeFactor() {
 	float fudge = 3.5;
 	if (nAIFudgeMode < FUDGE_HARD || bIsInMultiplayer/* && pGameFlow->PreRace.nMode == GM_CAREER*/) fudge = 5;
 	*(float*)0x849434 = fudge;
+	*(float*)0x849454 = fudge;
 }

@@ -220,6 +220,18 @@ int ChloeUnlocks_GetUnlockCustomCar(void* a1) {
 	return 1;
 }
 
+int ChloeUnlocks_GetUnlockCriteriaLabel(void* a1) {
+	static auto config = toml::parse_file("Config/CarUnlockText.toml");
+	auto dbId = luaL_checknumber(a1, 1);
+	auto id = GetCarDataID(dbId);
+	auto str = config["main"][std::format("car_{}",id)].value_or(L"");
+	if (str.empty()) {
+		str = config["main"][std::format("car_{}",GetCarDataID(GetUnlockIDForCustomCar(dbId, false)))].value_or(L"");
+	}
+	lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	return 1;
+}
+
 int ChloeArcade_SetCarSkin(void* a1) {
 	nArcadeCareerCarSkin = luaL_checknumber(a1, 1);
 	return 0;
@@ -1534,6 +1546,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeSkins_IsSkinCustom, "ChloeSkins_IsSkinCustom");
 	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetNumUnlockCustomCar, "ChloeUnlocks_GetNumUnlockCustomCar");
 	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetUnlockCustomCar, "ChloeUnlocks_GetUnlockCustomCar");
+	RegisterLUAFunction(a1, (void*)&ChloeUnlocks_GetUnlockCriteriaLabel, "ChloeUnlocks_GetUnlockCriteriaLabel");
 	RegisterLUAFunction(a1, (void*)&ChloeInput_OpenInputWindow, "ChloeInput_OpenInputWindow");
 	RegisterLUAFunction(a1, (void*)&ChloeInput_CloseInputWindow, "ChloeInput_CloseInputWindow");
 	RegisterLUAFunction(a1, (void*)&ChloeInput_GetInputText, "ChloeInput_GetInputText");
