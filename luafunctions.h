@@ -1715,7 +1715,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_RALLYMODE, "PLAYTIME_INGAME_RALLYMODE");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES_NEW, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.69 - Career Rebalance Edition";
+	static auto sVersionString = "Chloe's Collection v1.69 - Nice Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
