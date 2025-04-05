@@ -762,6 +762,27 @@ void ProcessDebugMenu() {
 		}
 		ChloeMenuLib::EndMenu();
 	}
+	if (DrawMenuOption("Arcade Mode Verification Data")) {
+		ChloeMenuLib::BeginMenu();
+		/*if (DrawMenuOption("Save")) {
+			auto file = std::ofstream("arcadedata.txt", std::ios::out);
+			if (file.is_open()) {
+				for (int x = 0; x < nNumArcadeRacesX; x++) {
+					for (int y = 0; y < nNumArcadeRacesY; y++) {
+						auto verify = gCustomSave.aArcadeRaceVerify[x][y];
+						file << std::format("verify[{}][{}] = {{ (uint16_t)GetCarByName(\"{}\"), {} }};\n", x, y, GetCarName(verify.car), verify.level);
+					}
+				}
+			}
+		}*/
+		for (int x = 0; x < nNumArcadeRacesX; x++) {
+			for (int y = 0; y < nNumArcadeRacesY; y++) {
+				auto data = gCustomSave.aArcadeRaceVerify[x][y];
+				DrawMenuOption(std::format("[{}][{}]: {}, {}", x, y, GetCarName(data.car), GetTrackName(data.level)));
+			}
+		}
+		ChloeMenuLib::EndMenu();
+	}
 	DrawDebugMenuViewerOption(std::format("Ray Carter State - {}", bRayAltProfileState ? "Alternate" : "Normal"), bRayAltProfileState ? "Ray is locked in" : "Ray is taking it easy");
 	DrawDebugMenuViewerOption(std::format("Career Class - {}", prerace->GetPropertyAsInt("Class", 0)));
 	DrawDebugMenuViewerOption(std::format("Career Cup - {}", prerace->GetPropertyAsInt("Cup", 0)));

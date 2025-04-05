@@ -92,7 +92,7 @@ const char* aPlaytimeTypeNames[] = {
 struct tCustomSaveStructure {
 	wchar_t playerName[32];
 	bool bWelcomeScreenDisplayed;
-	struct {
+	struct tSavedArcadeRace {
 		uint32_t score;
 		uint32_t placement;
 	} aArcadeRaces[nNumArcadeRacesX][nNumArcadeRacesY];
@@ -145,6 +145,10 @@ struct tCustomSaveStructure {
 		uint32_t nUpgrades[2];
 	} aRallyCareerGarage[256];
 	uint8_t playerList;
+	struct {
+		uint16_t car;
+		uint16_t level;
+	} aArcadeRaceVerify[nNumArcadeRacesX][nNumArcadeRacesY];
 
 	static inline uint8_t aRallyPlayersByPosition[32];
 	static inline uint8_t aRallyPlayerPosition[32];
@@ -234,6 +238,93 @@ struct tCustomSaveStructure {
 		splitType = nSplitType;
 		playerList = nPlayerListDefaultState;
 	}
+	void CreateArcadeVerify() {
+		for (int x = 0; x < nNumArcadeRacesX; x++) {
+			for (int y = 0; y < nNumArcadeRacesY; y++) {
+				auto verify = &aArcadeRaceVerify[x][y];
+				auto race = &pGameFlow->Profile.aArcadeClasses[x].races[y];
+				verify->car = race->nCar;
+				verify->level = race->nLevel;
+			}
+		}
+	}
+	void WriteArcadeScore(int car, int level, int score, int placement) {
+		for (int x = 0; x < nNumArcadeRacesX; x++) {
+			for (int y = 0; y < nNumArcadeRacesY; y++) {
+				auto race = &pGameFlow->Profile.aArcadeClasses[x].races[y];
+				if (race->nLevel != level) continue;
+				if (race->nRules != GR_STUNT && race->nCar != car) continue; // don't verify car if it's a stunt event
+				aArcadeRaces[x][y].score = score;
+				aArcadeRaces[x][y].placement = placement;
+			}
+		}
+	}
+	void CheckArcadeVerify() {
+		tSavedArcadeRace data[nNumArcadeRacesX][nNumArcadeRacesY];
+		memcpy(data, aArcadeRaces, sizeof(data));
+		memset(aArcadeRaces, 0, sizeof(aArcadeRaces)); // null all old data so random events don't get overridden
+
+		bool hasData = false;
+		for (int x = 0; x < nNumArcadeRacesX; x++) {
+			for (int y = 0; y < nNumArcadeRacesY; y++) {
+				if (aArcadeRaceVerify[x][y].car != 0) hasData = true;
+				if (aArcadeRaceVerify[x][y].level != 0) hasData = true;
+			}
+		}
+
+		// data from v1.69 as fallback
+		if (!hasData) {
+			auto verify = aArcadeRaceVerify;
+			verify[0][0] = { (uint16_t)GetCarByName("Grinder"), 13 };
+			verify[0][1] = { (uint16_t)GetCarByName("FO1 Pepper"), 74 };
+			verify[0][2] = { (uint16_t)GetCarByName("Blaster XL"), 35 };
+			verify[0][3] = { (uint16_t)GetCarByName("Trailblazer"), 48 };
+			verify[0][4] = { (uint16_t)GetCarByName("FO1 Trasher"), 61 };
+			verify[0][5] = { (uint16_t)GetCarByName("Canyon"), 19 };
+			verify[1][0] = { (uint16_t)GetCarByName("Lancea"), 1 };
+			verify[1][1] = { (uint16_t)GetCarByName("Crusader"), 36 };
+			verify[1][2] = { (uint16_t)GetCarByName("Bullet"), 15 };
+			verify[1][3] = { (uint16_t)GetCarByName("Flatmobile"), 66 };
+			verify[1][4] = { (uint16_t)GetCarByName("School Bus"), 8 };
+			verify[1][5] = { (uint16_t)GetCarByName("Road King"), 103 };
+			verify[2][0] = { (uint16_t)GetCarByName("Nevada"), 33 };
+			verify[2][1] = { (uint16_t)GetCarByName("Siboner 6 WT-F"), 7 };
+			verify[2][2] = { (uint16_t)GetCarByName("FO1 Slider"), 80 };
+			verify[2][3] = { (uint16_t)GetCarByName("Shaker"), 4 };
+			verify[2][4] = { (uint16_t)GetCarByName("Insetta"), 42 };
+			verify[2][5] = { (uint16_t)GetCarByName("Terrator"), 165 };
+			verify[3][0] = { (uint16_t)GetCarByName("FO1 Blade"), 73 };
+			verify[3][1] = { (uint16_t)GetCarByName("CTR Sport"), 25 };
+			verify[3][2] = { (uint16_t)GetCarByName("Terrator"), 20 };
+			verify[3][3] = { (uint16_t)GetCarByName("Lancea"), 159 };
+			verify[3][4] = { (uint16_t)GetCarByName("Afterburner"), 49 };
+			verify[3][5] = { (uint16_t)GetCarByName("Flatmobile"), 31 };
+			verify[4][0] = { (uint16_t)GetCarByName("Nucleon"), 57 };
+			verify[4][1] = { (uint16_t)GetCarByName("FO1 Blockhead"), 6 };
+			verify[4][2] = { (uint16_t)GetCarByName("CTR Sport"), 78 };
+			verify[4][3] = { (uint16_t)GetCarByName("Bullet GT"), 62 };
+			verify[4][4] = { (uint16_t)GetCarByName("Bonecracker"), 32 };
+			verify[4][5] = { (uint16_t)GetCarByName("Insetta"), 65 };
+			verify[5][0] = { (uint16_t)GetCarByName("Blaster XL"), 111 };
+			verify[5][1] = { (uint16_t)GetCarByName("FO1 Speedevil"), 69 };
+			verify[5][2] = { (uint16_t)GetCarByName("Rocket"), 51 };
+			verify[5][3] = { (uint16_t)GetCarByName("Chili Pepper"), 98 };
+			verify[5][4] = { (uint16_t)GetCarByName("Road King"), 29 };
+			verify[5][5] = { (uint16_t)GetCarByName("Flatmobile"), 10 };
+		}
+
+		// write all saved events into any found equivalent in the current version's event list
+		for (int x = 0; x < nNumArcadeRacesX; x++) {
+			for (int y = 0; y < nNumArcadeRacesY; y++) {
+				auto verify = &aArcadeRaceVerify[x][y];
+				auto race = &data[x][y];
+				WriteArcadeScore(verify->car, verify->level, race->score, race->placement);
+			}
+		}
+
+		// update verification data afterwards
+		CreateArcadeVerify();
+	}
 	static std::string ReadCheatString(std::ifstream& file) {
 		std::string string;
 		char value = 0;
@@ -266,6 +357,8 @@ struct tCustomSaveStructure {
 			splitsInitialized = 1;
 		}
 
+		CheckArcadeVerify();
+
 		auto cht = std::ifstream(GetCheatSavePath(saveSlot), std::ios::in | std::ios::binary);
 		if (!cht.is_open()) return;
 
@@ -277,6 +370,7 @@ struct tCustomSaveStructure {
 	}
 	void Save() {
 		ReadPlayerSettings();
+		CreateArcadeVerify();
 
 		auto file = std::ofstream(GetCustomSavePath(nSaveSlot), std::ios::out | std::ios::binary);
 		if (!file.is_open()) return;
@@ -300,12 +394,12 @@ struct tCustomSaveStructure {
 
 	void CalculateArcadePlacement(PlayerProfile* profile, int x, int y) {
 		auto pRace = &profile->aArcadeClasses[x].races[y];
-		auto score = pRace->score;
+		auto score = pRace->nScore;
 		int placement = 255;
-		if (score >= pRace->targetScores[2]) placement = 3;
-		if (score >= pRace->targetScores[1]) placement = 2;
-		if (score >= pRace->targetScores[0]) placement = 1;
-		pRace->placement = aArcadeRaces[x][y].placement = placement;
+		if (score >= pRace->nGoalScores[2]) placement = 3;
+		if (score >= pRace->nGoalScores[1]) placement = 2;
+		if (score >= pRace->nGoalScores[0]) placement = 1;
+		pRace->nPlacement = aArcadeRaces[x][y].placement = placement;
 	}
 
 	void UpdateArcadeRace(PlayerProfile* profile) {
@@ -318,11 +412,11 @@ struct tCustomSaveStructure {
 			for (int y = 0; y < numRaces; y++) {
 				auto vanillaSave = &profile->aArcadeClasses[x].races[y];
 				auto customSave = &aArcadeRaces[x][y];
-				if (customSave->score > vanillaSave->score || bOverrideAllArcadeScores) {
-					vanillaSave->score = customSave->score;
+				if (customSave->score > vanillaSave->nScore || bOverrideAllArcadeScores) {
+					vanillaSave->nScore = customSave->score;
 				}
-				else if (vanillaSave->score > customSave->score) {
-					customSave->score = vanillaSave->score;
+				else if (vanillaSave->nScore > customSave->score) {
+					customSave->score = vanillaSave->nScore;
 					customSaveModified = true;
 				}
 				CalculateArcadePlacement(profile, x, y);

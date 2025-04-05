@@ -311,7 +311,7 @@ uint32_t GetTotalArcadeScore(PlayerProfile* profile) {
 	int numRaces = nNumArcadeRacesY;
 	for (int x = 0; x < numClasses; x++) {
 		for (int y = 0; y < numRaces; y++) {
-			score += profile->aArcadeClasses[x].races[y].score;
+			score += profile->aArcadeClasses[x].races[y].nScore;
 		}
 	}
 	return score;
@@ -327,7 +327,7 @@ int IsArcadeLevelLocked(void* a1) {
 	gCustomSave.UpdateArcadeRace(pProfile);
 	auto cls = (int)luaL_checknumber(a1, 2);
 	auto race = (int)luaL_checknumber(a1, 3);
-	lua_pushboolean(a1, !bUnlockAllArcadeEvents && GetTotalArcadeScore(pProfile) < pProfile->aArcadeClasses[cls - 1].races[race - 1].unlockScore);
+	lua_pushboolean(a1, !bUnlockAllArcadeEvents && GetTotalArcadeScore(pProfile) < pProfile->aArcadeClasses[cls - 1].races[race - 1].nPointsToUnlock);
 	return 1;
 }
 
@@ -341,7 +341,7 @@ int GetArcadeLevelPosition(void* a1) {
 	gCustomSave.UpdateArcadeRace(pProfile);
 	auto cls = (int)luaL_checknumber(a1, 2);
 	auto race = (int)luaL_checknumber(a1, 3);
-	lua_pushnumber(a1, pProfile->aArcadeClasses[cls - 1].races[race - 1].placement);
+	lua_pushnumber(a1, pProfile->aArcadeClasses[cls - 1].races[race - 1].nPlacement);
 	return 1;
 }
 
@@ -355,7 +355,7 @@ int GetArcadeLevelScore(void* a1) {
 	gCustomSave.UpdateArcadeRace(pProfile);
 	auto cls = (int)luaL_checknumber(a1, 2);
 	auto race = (int)luaL_checknumber(a1, 3);
-	lua_pushnumber(a1, pProfile->aArcadeClasses[cls - 1].races[race - 1].score);
+	lua_pushnumber(a1, pProfile->aArcadeClasses[cls - 1].races[race - 1].nScore);
 	return 1;
 }
 
