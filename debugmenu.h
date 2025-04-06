@@ -477,6 +477,9 @@ void ProcessDebugMenu() {
 
 	if (DrawMenuOption("Track Helpers")) {
 		ChloeMenuLib::BeginMenu();
+		if (DrawMenuOption(std::format("Load FO2 Track - {}", bLoadFO2Track), "", false, false)) {
+			bLoadFO2Track = !bLoadFO2Track;
+		}
 		if (DrawMenuOption("Spline Creator")) {
 			ChloeMenuLib::BeginMenu();
 			if (pGameFlow->nGameState == GAME_STATE_RACE) {

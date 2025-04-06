@@ -307,10 +307,8 @@ int IsCarLocked(void* a1) {
 
 uint32_t GetTotalArcadeScore(PlayerProfile* profile) {
 	uint32_t score = 0;
-	int numClasses = nNumArcadeRacesX;
-	int numRaces = nNumArcadeRacesY;
-	for (int x = 0; x < numClasses; x++) {
-		for (int y = 0; y < numRaces; y++) {
+	for (int x = 0; x < nNumArcadeRacesX; x++) {
+		for (int y = 0; y < nNumArcadeRacesY; y++) {
 			score += profile->aArcadeClasses[x].races[y].nScore;
 		}
 	}
@@ -1494,6 +1492,19 @@ int ChloeRally_IsNewCupJustFinished(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_DoesTrackHaveFO2Variant(void* a1) {
+	int level = luaL_checknumber(a1, 1);
+	auto pathG = (std::string)GetTrackValueString(level, "StagePath") + "geometryfo2/track_geom.w32";
+	auto pathC = (std::string)GetTrackValueString(level, "StagePath") + "geometryfo2/track_cdb2.gen";
+	lua_pushboolean(a1, DoesFileExist(pathG.c_str(), 0) || DoesFileExist(pathC.c_str(), 0));
+	return 1;
+}
+
+int ChloeCollection_SetTrackFO2Variant(void* a1) {
+	bLoadFO2Track = luaL_checknumber(a1, 1);
+	return 0;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1676,6 +1687,8 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AdvanceCup, "ChloeRally_AdvanceCup");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_AdvanceEvent, "ChloeRally_AdvanceEvent");
 	RegisterLUAFunction(a1, (void*)&ChloeRally_IsNewCupJustFinished, "ChloeRally_IsNewCupJustFinished");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesTrackHaveFO2Variant, "ChloeCollection_DoesTrackHaveFO2Variant");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetTrackFO2Variant, "ChloeCollection_SetTrackFO2Variant");
 
 	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
 	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");

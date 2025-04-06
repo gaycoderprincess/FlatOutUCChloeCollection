@@ -133,6 +133,16 @@ void SetTrackCustomProperties() {
 		NyaHookLib::Patch<uint16_t>(0x5076E9, bInvisWaterPlane ? 0x9090 : 0x1974); // camera
 		NyaHookLib::Patch<uint16_t>(0x414DB9, bInvisWaterPlane ? 0x9090 : 0x7F74); // sound
 
+		if (bLoadFO2Track && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceNoWaterPlaneFO2")) {
+			NyaHookLib::Patch<uint64_t>(0x4F47DD, 0x44889090909000B0);
+		}
+		else if (bLoadFO2Track && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "ForceWaterPlaneFO2")) {
+			NyaHookLib::Patch<uint64_t>(0x4F47DD, 0x44889090909001B0);
+		}
+		else {
+			NyaHookLib::Patch<uint64_t>(0x4F47DD, 0x4488000022F4818A);
+		}
+
 		bool disableReplays = increased || increasedNegY;
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4AD957, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
 		NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4ADAA3, disableReplays ? 0x4AB1E2 : 0x4AB1B0);
@@ -167,6 +177,28 @@ void SetTrackCustomProperties() {
 			NyaHookLib::Patch<uint64_t>(0x4DF94E, DoesTrackValueExist(pGameFlow->PreRace.nLevel, "NoWrongWay") ? 0x0E606800000E32E9 : 0x0E606809298FD8A1);
 		}
 	}
+
+	bool loadFO2Geometry = bLoadFO2Track;
+	bool loadFO2Cols = bLoadFO2Track;
+	if (pGameFlow->nGameState == GAME_STATE_RACE) {
+		auto pathG = (std::string)GetTrackValueString(pGameFlow->PreRace.nLevel, "StagePath") + "geometryfo2/track_geom.w32";
+		auto pathC = (std::string)GetTrackValueString(pGameFlow->PreRace.nLevel, "StagePath") + "geometryfo2/track_cdb2.gen";
+		if (bLoadFO2Track && !DoesFileExist(pathG.c_str(), 0)) loadFO2Geometry = false;
+		if (bLoadFO2Track && !DoesFileExist(pathC.c_str(), 0)) loadFO2Cols = false;
+		if (loadFO2Geometry) {
+			textureFolder = "texturesfo2/";
+		}
+		bLoadFO2Track = false;
+	}
+	else {
+		loadFO2Geometry = false;
+		loadFO2Cols = false;
+	}
+	NyaHookLib::Patch(0x58C398 + 1, loadFO2Geometry ? "%sgeometryfo2/track_geom.w32" : "%sgeometry/track_geom_w%i.w32");
+	NyaHookLib::Patch(0x562046 + 1, loadFO2Geometry ? "%sgeometryfo2/track_bvh.gen" : "%sgeometry/track_bvh.gen");
+	NyaHookLib::Patch(0x562072 + 1, loadFO2Geometry ? "%sgeometryfo2/track_spvs.gen" : "%sgeometry/track_spvs.gen");
+	NyaHookLib::Patch(0x4D8919 + 1, loadFO2Cols ? "geometryfo2/track_cdb2.gen" : "geometry/track_cdb2.gen");
+	NyaHookLib::Patch(0x56201A + 1, loadFO2Geometry ? "%slightingfo2/shadowmapv2_w%i.dat" : "%slighting/shadowmapv2_w%i.dat");
 
 	NyaHookLib::Patch<const char*>(0x56163D, textureFolder);
 	NyaHookLib::Patch<const char*>(0x56165A, textureFolder);
