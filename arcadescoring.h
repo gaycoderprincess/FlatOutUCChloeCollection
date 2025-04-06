@@ -65,9 +65,9 @@ void ReadFragDerbyRewardConfig() {
 	nFragDerbyRewardBlastOut = config["main"]["BlastOut"].value_or(nFragDerbyRewardBlastOut);
 }
 
-const char* sPopupName = "PlatinumEarned";
+const char* sPopupNamePlat = "PlatinumEarned";
 uintptr_t CreatePopup_call = 0x4EA770;
-float __attribute__((naked)) __fastcall CreatePopup(void* a2, void* a3) {
+float __attribute__((naked)) __fastcall CreatePopupPlat(void* a2, void* a3) {
 	__asm__ (
 		"pushad\n\t"
 		"mov eax, %1\n\t" // popup name in eax
@@ -77,18 +77,39 @@ float __attribute__((naked)) __fastcall CreatePopup(void* a2, void* a3) {
 		"popad\n\t"
 		"ret\n\t"
 			:
-			:  "m" (CreatePopup_call), "m" (sPopupName)
+			:  "m" (CreatePopup_call), "m" (sPopupNamePlat)
+	);
+}
+
+const char* sPopupNameLifeGain = "LifeGained";
+float __attribute__((naked)) __fastcall CreatePopupLifeGain(void* a2, void* a3) {
+	__asm__ (
+		"pushad\n\t"
+		"mov eax, %1\n\t" // popup name in eax
+		"mov esi, ecx\n\t" // a2 in esi
+		"push edx\n\t" // a3 pushed
+		"call %0\n\t"
+		"popad\n\t"
+		"ret\n\t"
+			:
+			:  "m" (CreatePopup_call), "m" (sPopupNameLifeGain)
 	);
 }
 
 HUDElement* pArcadePlatinumImage = nullptr;
 HUDElement* pArcadeGoldImage = nullptr;
 
+void** pArcadePopupA1;
+void* pArcadePopupA3;
+
 bool bArcadePlatinumEnabled = false;
 int nArcadePlatinumCurrentLevelX = 0;
 int nArcadePlatinumCurrentLevelY = 0;
 bool bAchievedPlatinumThisRace = false;
 void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
+	pArcadePopupA1 = a1;
+	pArcadePopupA3 = a3;
+
 	if (!bArcadePlatinumEnabled || pGameFlow->PreRace.nMode != GM_ARCADE_CAREER) {
 		if (pArcadePlatinumImage) pArcadePlatinumImage->bVisible = false;
 		return;
@@ -114,7 +135,7 @@ void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 	if (numPoints <= 0) bAchievedPlatinumThisRace = false;
 	// otherwise check for platinum score
 	else if (numPoints >= platTarget && !bAchievedPlatinumThisRace) {
-		CreatePopup(a1[2686], a3);
+		CreatePopupPlat(a1[2686], a3);
 		auto data = tEventData(EVENT_SFX_ARCADE_AWARD);
 		pEventManager->SendEvent(&data);
 		bAchievedPlatinumThisRace = true;
@@ -174,6 +195,28 @@ float __attribute__((naked)) ArcadePlatinumKeywordASM() {
 	);
 }
 
+void OnLifeGain() {
+	if (bIsInMultiplayer) return;
+	if (pGameFlow->PreRace.nMode != GM_ARCADE_CAREER) return;
+
+	CreatePopupLifeGain(pArcadePopupA1[2686], pArcadePopupA3);
+}
+
+uintptr_t OnLifeGainASM_jmp = 0x48F488;
+float __attribute__((naked)) OnLifeGainASM() {
+	__asm__ (
+		"pushad\n\t"
+		"call %1\n\t"
+		"popad\n\t"
+		"add [ebx+0x6C], esi\n\t"
+		"push esi\n\t"
+		"mov [ebx+0x70], eax\n\t"
+		"jmp %0\n\t"
+			:
+			:  "m" (OnLifeGainASM_jmp), "i" (OnLifeGain)
+	);
+}
+
 auto GetArcadePlatinumTexture_call = (HUDElement*(__thiscall*)(HUDElement*, const char*))0x4ECA60;
 HUDElement* __fastcall GetArcadePlatinumTexture(HUDElement* pThis, void*, const char* name) {
 	pArcadePlatinumImage = GetArcadePlatinumTexture_call(pThis, "MedalPlatinum");
@@ -207,6 +250,8 @@ void ApplyArcadeScoringPatches() {
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4EA18A, &ArcadePlatinumsASM);
 	NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4EA07E, &GetArcadePlatinumTexture);
 	ArcadePlatinumKeywordASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4F24FF, &ArcadePlatinumKeywordASM);
+
+	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x48F481, &OnLifeGainASM);
 
 	// arcade targets are drawn in the hud at 004F2D14
 	// arcade hud elements are drawn at 4EC4A2
