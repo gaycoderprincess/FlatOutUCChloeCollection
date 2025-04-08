@@ -81,6 +81,21 @@ float __attribute__((naked)) __fastcall CreatePopupPlat(void* a2, void* a3) {
 	);
 }
 
+const char* sPopupNameLifeLast = "LifeLast";
+float __attribute__((naked)) __fastcall CreatePopupLifeLast(void* a2, void* a3) {
+	__asm__ (
+		"pushad\n\t"
+		"mov eax, %1\n\t" // popup name in eax
+		"mov esi, ecx\n\t" // a2 in esi
+		"push edx\n\t" // a3 pushed
+		"call %0\n\t"
+		"popad\n\t"
+		"ret\n\t"
+			:
+			:  "m" (CreatePopup_call), "m" (sPopupNameLifeLast)
+	);
+}
+
 const char* sPopupNameLifeGain = "LifeGained";
 float __attribute__((naked)) __fastcall CreatePopupLifeGain(void* a2, void* a3) {
 	__asm__ (
@@ -107,6 +122,14 @@ int nArcadePlatinumCurrentLevelX = 0;
 int nArcadePlatinumCurrentLevelY = 0;
 bool bAchievedPlatinumThisRace = false;
 void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
+	static bool bLastWrecked = false;
+	if (!bIsInMultiplayer && pGameFlow->nDerbyType == DERBY_FRAG) {
+		if (!GetPlayer(0)->pCar->nIsSkinCharred && bLastWrecked && GetPlayerScore<PlayerScoreDerby>(1)->nLives == 1) {
+			CreatePopupLifeLast(a1[2686], a3);
+		}
+		bLastWrecked = GetPlayer(0)->pCar->nIsSkinCharred;
+	}
+
 	pArcadePopupA1 = a1;
 	pArcadePopupA3 = a3;
 
@@ -252,6 +275,7 @@ void ApplyArcadeScoringPatches() {
 	ArcadePlatinumKeywordASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4F24FF, &ArcadePlatinumKeywordASM);
 
 	NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x48F481, &OnLifeGainASM);
+	// life lost is at 48F13C
 
 	// arcade targets are drawn in the hud at 004F2D14
 	// arcade hud elements are drawn at 4EC4A2
