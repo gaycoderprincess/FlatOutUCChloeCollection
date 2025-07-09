@@ -441,7 +441,10 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 
 			NyaHookLib::Patch(0x4D899F+1, "data/global/overlay/checkpoint2.tga");
 
+			NyaHookLib::Patch(0x4C6B1B + 1, 16777344); // menucar model alloc size
+			NyaHookLib::Patch(0x4C6B20 + 3, 16777344); // menucar model alloc size
 			NyaHookLib::Patch(0x4C6B32 + 1, 16777344); // menucar skin alloc size
+			NyaHookLib::Patch(0x4C6B37 + 3, 16777344); // menucar skin alloc size
 
 			static float fZero = 0.0;
 			NyaHookLib::Patch(0x44041F + 2, &fZero); // default engine smoke position
