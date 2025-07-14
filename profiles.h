@@ -54,6 +54,10 @@ int GetProfileCarsUnlocked(int id) {
 	LoadProfileForStats(id);
 	return gTempCustomSave.numCarsUnlocked;
 }
+int GetProfileCarsUnlockedNoBonus(int id) {
+	LoadProfileForStats(id);
+	return gTempCustomSave.numCarsUnlockedNoBonus;
+}
 int GetProfileProgress(int id) {
 	LoadProfileForStats(id);
 	return gTempCustomSave.gameProgress;

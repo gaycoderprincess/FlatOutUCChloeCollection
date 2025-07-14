@@ -481,6 +481,13 @@ int ChloeProfiles_GetProfileCarsUnlocked(void* a1) {
 	return 1;
 }
 
+int ChloeProfiles_GetProfileCarsUnlockedNoBonus(void* a1) {
+	int id = luaL_checknumber(a1, 1);
+	if (!IsProfileValid(id)) return 0;
+	lua_pushnumber(a1, GetProfileCarsUnlockedNoBonus(id));
+	return 1;
+}
+
 int ChloeProfiles_GetProfileProgress(void* a1) {
 	int id = luaL_checknumber(a1, 1);
 	if (!IsProfileValid(id)) return 0;
@@ -556,6 +563,12 @@ int ChloeProfiles_SetNumCupsPassed(void* a1) {
 
 int ChloeProfiles_SetNumCarsUnlocked(void* a1) {
 	gCustomSave.numCarsUnlocked = luaL_checknumber(a1, 1);
+	gCustomSave.Save();
+	return 0;
+}
+
+int ChloeProfiles_SetNumCarsUnlockedNoBonus(void* a1) {
+	gCustomSave.numCarsUnlockedNoBonus = luaL_checknumber(a1, 1);
 	gCustomSave.Save();
 	return 0;
 }
@@ -1569,6 +1582,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileClass, "ChloeProfiles_GetProfileClass");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCupsCompleted, "ChloeProfiles_GetProfileCupsCompleted");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCarsUnlocked, "ChloeProfiles_GetProfileCarsUnlocked");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileCarsUnlockedNoBonus, "ChloeProfiles_GetProfileCarsUnlockedNoBonus");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfileProgress, "ChloeProfiles_GetProfileProgress");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfilePortrait, "ChloeProfiles_GetProfilePortrait");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetProfilePlayerType, "ChloeProfiles_GetProfilePlayerType");
@@ -1581,6 +1595,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_LoadPlayerNameFromProfile, "ChloeProfiles_LoadPlayerNameFromProfile");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetNumCupsPassed, "ChloeProfiles_SetNumCupsPassed");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetNumCarsUnlocked, "ChloeProfiles_SetNumCarsUnlocked");
+	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetNumCarsUnlockedNoBonus, "ChloeProfiles_SetNumCarsUnlockedNoBonus");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_SetGameProgress, "ChloeProfiles_SetGameProgress");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetNumArcadeEventsPassed, "ChloeProfiles_GetNumArcadeEventsPassed");
 	RegisterLUAFunction(a1, (void*)&ChloeProfiles_GetNumArcadeEvents, "ChloeProfiles_GetNumArcadeEvents");

@@ -149,6 +149,7 @@ struct tCustomSaveStructure {
 		uint16_t car;
 		uint16_t level;
 	} aArcadeRaceVerify[nNumArcadeRacesX][nNumArcadeRacesY];
+	uint32_t numCarsUnlockedNoBonus;
 
 	static inline uint8_t aRallyPlayersByPosition[32];
 	static inline uint8_t aRallyPlayerPosition[32];
