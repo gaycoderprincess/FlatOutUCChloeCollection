@@ -44,7 +44,8 @@ namespace LapKnockoutMode {
 			auto score = GetPlayerScore<PlayerScoreRace>(ply->nPlayerId);
 			if (score->nPosition == 1) return ply;
 		}
-		return nullptr;
+		// default to player 0 if nobody's first
+		return GetPlayer(0);
 	}
 
 	int GetHighestPositionToLeaveAlive(int lap) {
