@@ -129,7 +129,7 @@ void SetPlayerColor() {
 	static int nLastPlayerColor = -1;
 	if (nLastPlayerColor != nPlayerColor) {
 		int colorId = nPlayerColor;
-		if (colorId <= 0) colorId = 0;
+		if (colorId < 0) colorId = 0;
 		NyaHookLib::Patch(0x469835, colorId + 100);
 		NyaHookLib::Patch(0x46983B, &gPalette[colorId + 100]);
 		NyaHookLib::Patch(0x469875, colorId + 100);

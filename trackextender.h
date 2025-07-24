@@ -92,7 +92,8 @@ void SetTrackCustomProperties() {
 	bool increased = false;
 	bool increasedNegY = false;
 	bool increasedNegY2 = false;
-	const char* textureFolder = "textures/";
+	static std::string textureFolder;
+	textureFolder = "textures/";
 	if (pGameFlow->nGameState == GAME_STATE_RACE) {
 		increased = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IncreasedVisibility");
 		increasedNegY = DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IncreasedNegYVisibility");
@@ -200,12 +201,12 @@ void SetTrackCustomProperties() {
 	NyaHookLib::Patch(0x4D8919 + 1, loadFO2Cols ? "geometryfo2/track_cdb2.gen" : "geometry/track_cdb2.gen");
 	NyaHookLib::Patch(0x56201A + 1, loadFO2Geometry ? "%slightingfo2/shadowmapv2_w%i.dat" : "%slighting/shadowmapv2_w%i.dat");
 
-	NyaHookLib::Patch<const char*>(0x56163D, textureFolder);
-	NyaHookLib::Patch<const char*>(0x56165A, textureFolder);
-	NyaHookLib::Patch<const char*>(0x562318, textureFolder);
-	NyaHookLib::Patch<const char*>(0x562331, textureFolder);
-	NyaHookLib::Patch<const char*>(0x58C3D3, textureFolder);
-	NyaHookLib::Patch<const char*>(0x58C40E, textureFolder);
+	NyaHookLib::Patch<const char*>(0x56163D, textureFolder.c_str());
+	NyaHookLib::Patch<const char*>(0x56165A, textureFolder.c_str());
+	NyaHookLib::Patch<const char*>(0x562318, textureFolder.c_str());
+	NyaHookLib::Patch<const char*>(0x562331, textureFolder.c_str());
+	NyaHookLib::Patch<const char*>(0x58C3D3, textureFolder.c_str());
+	NyaHookLib::Patch<const char*>(0x58C40E, textureFolder.c_str());
 
 	bool muteMusic = pGameFlow->nGameState == GAME_STATE_RACE && IsRallyTrack();
 	NyaHookLib::Patch(0x41D348, muteMusic ? (uintptr_t)&nRallyMusicVolume : 0x849548);

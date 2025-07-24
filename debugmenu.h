@@ -333,6 +333,62 @@ void WriteStartpoints() {
 	fout << "\n}";
 }
 
+void WriteTrackListDebug() {
+	std::ofstream fout("tracklist.txt", std::ios::out);
+	if (!fout.is_open()) return;
+
+	const char* trackTypes[] = {
+		"TRACKTYPE_FOREST",
+		"TRACKTYPE_FIELDS",
+		"TRACKTYPE_DESERT",
+		"TRACKTYPE_CANAL",
+		"TRACKTYPE_CITY",
+		"TRACKTYPE_RACING",
+		"TRACKTYPE_FO1_TOWN",
+		"TRACKTYPE_FO1_PIT",
+		"TRACKTYPE_FO1_WINTER",
+		"TRACKTYPE_TOUGHTRUCKS",
+		"TRACKTYPE_RALLYTROPHY",
+		"TRACKTYPE_RALLYTROPHYARCADE",
+		"TRACKTYPE_EVENT",
+		"TRACKTYPE_STUNT",
+		"TRACKTYPE_DERBY",
+		"TRACKTYPE_REVERSED",
+		"TRACKTYPE_ARCADERACE",
+		"TRACKTYPE_BEATTHEBOMB",
+		"TRACKTYPE_TONYHAWK",
+		"TRACKTYPE_SPEEDTRAP",
+		"TRACKTYPE_GARAGETEST",
+	};
+
+	bool firstLine = true;
+	for (auto& type : trackTypes) {
+		bool first = true;
+		for (int i = 1; i < GetNumTracks() + 1; i++) {
+			if (!DoesTrackExist(i)) continue;
+			if (GetTrackValueNumber(i, "TrackType") != (&type - trackTypes) + 1) continue;
+
+			if (first) {
+				if (!firstLine) {
+					fout << "\n";
+				}
+				firstLine = false;
+				fout << type;
+				fout << "\n";
+				first = false;
+			}
+
+			fout << GetTrackName(i);
+			auto desc = GetTrackDescription(i);
+			if (!desc.empty()) {
+				fout << " - ";
+				fout << desc;
+			}
+			fout << "\n";
+		}
+	}
+}
+
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -705,6 +761,9 @@ void ProcessDebugMenu() {
 				DrawDebugMenuViewerOption("Not in a race");
 			}
 			ChloeMenuLib::EndMenu();
+		}
+		if (DrawMenuOption("Create Track List", "", false, false)) {
+			WriteTrackListDebug();
 		}
 		ChloeMenuLib::EndMenu();
 	}
