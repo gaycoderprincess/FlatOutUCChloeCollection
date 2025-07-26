@@ -409,6 +409,9 @@ struct tCustomSaveStructure {
 	void UpdateArcadeRace(PlayerProfile* profile) {
 		bool customSaveModified = false;
 
+		auto achievement = GetAchievement("COMPLETE_CARNAGE");
+		achievement->fInternalProgress = 0;
+
 		int numClasses = nNumArcadeRacesX;
 		int numRaces = nNumArcadeRacesY;
 		for (int x = 0; x < numClasses; x++) {
@@ -424,6 +427,8 @@ struct tCustomSaveStructure {
 					customSaveModified = true;
 				}
 				CalculateArcadePlacement(profile, x, y);
+
+				if (customSave->placement == 1) achievement->fInternalProgress += 1;
 			}
 		}
 

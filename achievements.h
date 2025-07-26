@@ -28,12 +28,20 @@ namespace Achievements {
 		new CAchievement("WIN_RACE", "Starting Point", "Win a race"),
 		new CAchievement("WIN_MP_RACE", "Friendly Competition", "Win a multiplayer race"),
 		new CAchievement("WIN_RALLY_RACE", "Aspiring Rally Driver", "Win a rally cup"),
-		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking every player"),
+		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking everyone"),
 		new CAchievement("JACK_WRECKED", "Jack Benton is Wrecked", "You know what to do."),
 		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score"),
 		new CAchievement("FRANK_WIN_RACE", "True Frank Malcov Award", "Have Frank Malcov win a race"),
 		new CAchievement("ALL_AWARDS", "Clean Sweep", "Get all post-race awards at once"),
 		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events"),
+		new CAchievement("KNOCKOUT_RACES", "Volatile Racing", "Win 5 knockout events"),
+		new CAchievement("HIGH_SPEED", "Ludicrous Speed", "Reach a speed of 500KM/H"),
+		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant"),
+		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car"),
+		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 5 seconds"),
+		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 5% health"),
+		new CAchievement("COMPLETE_CAREER", "Completionist", "Complete the career mode"),
+		new CAchievement("COMPLETE_CARNAGE", "Arcade Veteran", "Get all golds in Carnage Mode"),
 		new CAchievement("COMPLETE_RALLY", "Rally Trophy", "Complete the rally mode"),
 	};
 
@@ -102,7 +110,7 @@ namespace Achievements {
 		if (!file.is_open()) return;
 
 		for (auto& achievement : gAchievements) {
-			if (!achievement->bUnlocked && achievement->nProgress == 0) continue;
+			if (!achievement->bUnlocked && achievement->fInternalProgress == 0.0) continue;
 
 			WriteStringToFile(file, achievement->sIdentifier);
 			file.write((char*)&achievement->fInternalProgress, sizeof(achievement->fInternalProgress));
@@ -292,15 +300,47 @@ namespace Achievements {
 				AwardAchievement(achievement);
 			}
 		}
+		if (auto achievement = GetAchievement("KNOCKOUT_RACES")) {
+			achievement->nProgress = (achievement->fInternalProgress / 5.0) * 100;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
+		}
+		if (auto achievement = GetAchievement("COMPLETE_CARNAGE")) {
+			achievement->nProgress = (achievement->fInternalProgress / 36.0) * 100;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
+		}
+
+		if (pLoadingScreen) return;
 
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
 			static bool bLastDriftEnded = false;
-			if (bIsDriftEvent && pGameFlow->nRaceState == RACE_STATE_FINISHED) {
+			if (bIsDriftEvent && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
 				if (!bLastDriftEnded && GetPlayerScore<PlayerScoreArcadeRace>(1)->fScore > 50000) {
 					GetAchievement("DRIFT_RACES")->fInternalProgress += 1;
+					Save(nCurrentSaveSlot);
 				}
 			}
-			bLastDriftEnded = bIsDriftEvent && pGameFlow->nRaceState == RACE_STATE_FINISHED;
+			bLastDriftEnded = bIsDriftEvent && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
+
+			static bool bLastKOEnded = false;
+			if (bIsLapKnockout && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
+				if (!bLastKOEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1) {
+					GetAchievement("KNOCKOUT_RACES")->fInternalProgress += 1;
+					Save(nCurrentSaveSlot);
+				}
+			}
+			bLastKOEnded = bIsLapKnockout && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
+
+			static bool bLastRaceEnded = false;
+			if (IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
+				if (!bLastRaceEnded && GetPlayer(0)->pCar->fDamage > 0.95 && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1) {
+					AwardAchievement(GetAchievement("LOW_HP"));
+				}
+			}
+			bLastRaceEnded = IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
 
 			if (IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState == RACE_STATE_FINISHED && pPlayerHost->GetNumPlayers() > 1) {
 				auto ply = GetPlayerScore<PlayerScoreRace>(1);
@@ -335,6 +375,21 @@ namespace Achievements {
 					if (auto ply = GetPlayerScore<PlayerScoreRace>(8)) {
 						if (ply->bHasFinished && ply->nPosition == 1) {
 							AwardAchievement(GetAchievement("FRANK_WIN_RACE"));
+						}
+					}
+				}
+			}
+
+			if (pGameFlow->nRaceState == RACE_STATE_RACING) {
+				if (auto ply = GetPlayer(0)) {
+					if (ply->pCar->GetVelocity()->length() >= 138.8) {
+						AwardAchievement(GetAchievement("HIGH_SPEED"));
+					}
+
+					if (!bIsInMultiplayer) {
+						auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", ply->nCarId).c_str());
+						if (table->DoesPropertyExist("CheatCode")) {
+							AwardAchievement(GetAchievement("CHEAT_CAR"));
 						}
 					}
 				}

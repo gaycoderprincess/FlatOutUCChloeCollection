@@ -138,8 +138,22 @@ void __fastcall CarBuoyancy(Car* pCar) {
 	// no car water physics for stone skipping or you'll auto-reset
 	if (pGameFlow->nStuntType == STUNT_STONESKIPPING && pCar->nIsRagdolled) return;
 
+	static CNyaTimer gTimer;
+	static double fFloatingTimer = 0;
+
 	if (ProcessBuoyancy(pCar->fMass, pCar->GetVelocity(), pCar->GetAngVelocity(), GetAverageAmountSubmerged(*pCar->GetMatrix(), pCar->vCollisionFullMin, pCar->vCollisionFullMax))) {
 		pCar->pPlayer->nTimeInAir = 0; // remove nitro gain for airtime when in water
+		if (pCar->pPlayer->nPlayerType == PLAYERTYPE_LOCAL) {
+			fFloatingTimer += gTimer.Process();
+			if (fFloatingTimer >= 5) {
+				AwardAchievement(GetAchievement("WATER_FLOAT"));
+			}
+		}
+	}
+	else {
+		if (pCar->pPlayer->nPlayerType == PLAYERTYPE_LOCAL) {
+			fFloatingTimer = 0;
+		}
 	}
 }
 
