@@ -162,6 +162,7 @@ void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 		auto data = tEventData(EVENT_SFX_ARCADE_AWARD);
 		pEventManager->SendEvent(&data);
 		bAchievedPlatinumThisRace = true;
+		AwardAchievement(GetAchievement("AUTHOR_MEDAL"));
 	}
 }
 

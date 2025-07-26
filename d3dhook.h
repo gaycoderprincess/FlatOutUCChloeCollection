@@ -11,6 +11,7 @@ void HookLoop() {
 	SpeedtrapMode::OnTick();
 	DriftMode::OnTick();
 	LapKnockoutMode::OnTick();
+	Achievements::OnTick();
 	CommonMain();
 	*(float*)0x716034 = 480.0f;
 }

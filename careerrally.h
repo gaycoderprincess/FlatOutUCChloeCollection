@@ -39,6 +39,9 @@ namespace CareerRally {
 		}
 		// unlock the next cup if finished 3rd or higher
 		if (cup->nEventPosition && cup->nEventPosition <= 3) {
+			if (cup->nEventPosition == 1) {
+				AwardAchievement(GetAchievement("WIN_RALLY_RACE"));
+			}
 			if (!nextCup->bEventUnlocked) bNewCupJustFinished = true;
 			nextCup->bEventUnlocked = 1;
 		}

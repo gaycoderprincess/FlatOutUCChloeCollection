@@ -154,3 +154,11 @@ bool IsArcadeRace() {
 	if (bIsSpeedtrap || bIsStuntMode || bIsDriftEvent) return false;
 	return true;
 }
+
+// modes based on race, e.g. race, pong race, time trial, etc.
+bool IsRaceMode() {
+	if (pGameFlow->nDerbyType != DERBY_NONE) return false;
+	if (pGameFlow->nGameRules != GR_DEFAULT && pGameFlow->nGameRules != GR_RACE && pGameFlow->nGameRules != GR_PONGRACE) return false;
+	if (bIsSpeedtrap || bIsStuntMode || bIsDriftEvent) return false;
+	return true;
+}

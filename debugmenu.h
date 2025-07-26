@@ -406,6 +406,33 @@ void ProcessDebugMenu() {
 		ChloeMenuLib::EndMenu();
 	}
 
+	if (DrawMenuOption("Achievements")) {
+		ChloeMenuLib::BeginMenu();
+
+		if (Achievements::GetNumUnlockedAchievements() > 0) {
+			DrawDebugMenuViewerOption("-- Unlocked --");
+			for (auto& achievement : Achievements::gAchievements) {
+				if (!achievement->bUnlocked) continue;
+				DrawDebugMenuViewerOption(achievement->sName);
+				DrawDebugMenuViewerOption(achievement->sDescription);
+				DrawDebugMenuViewerOption("");
+			}
+		}
+
+		if (Achievements::GetNumUnlockedAchievements() < Achievements::GetNumVisibleAchievements()) {
+			DrawDebugMenuViewerOption("-- Locked --");
+			for (auto& achievement : Achievements::gAchievements) {
+				if (achievement->bUnlocked) continue;
+				if (achievement->bHidden) continue;
+				DrawDebugMenuViewerOption(std::format("{} ({}%)", achievement->sName, achievement->nProgress));
+				DrawDebugMenuViewerOption(achievement->sDescription);
+				DrawDebugMenuViewerOption("");
+			}
+		}
+
+		ChloeMenuLib::EndMenu();
+	}
+
 	if (DrawMenuOption("Palette Editor")) {
 		ChloeMenuLib::BeginMenu();
 		for (int i = 0; i < 256; i++) {

@@ -24,6 +24,7 @@ void WriteLog(const std::string& str) {
 
 #include "config.h"
 #include "mallochook.h"
+#include "achievements.h"
 #include "customsave.h"
 #include "savegamemover.h"
 #include "arcadescoring.h"

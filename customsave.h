@@ -12,12 +12,12 @@ int nSaveSlot = 999;
 std::string GetCustomSavePath(int id) {
 	return std::format("Savegame/customsave{:03}.sav", id);
 }
-
-std::vector<std::string> aCarCheatsEntered;
-std::vector<std::string> aCarCheatsEnteredInSavegame;
 std::string GetCheatSavePath(int id) {
 	return std::format("Savegame/customsave{:03}.cht", id);
 }
+
+std::vector<std::string> aCarCheatsEntered;
+std::vector<std::string> aCarCheatsEnteredInSavegame;
 
 int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
 bool bPropCarsUnlocked = false;
@@ -224,6 +224,7 @@ struct tCustomSaveStructure {
 				bPropCarsUnlocked = true;
 			}
 		}
+		Achievements::Load(nSaveSlot);
 	}
 	void ReadPlayerSettings() {
 		imperialUnits = bImperialUnits;
@@ -377,6 +378,8 @@ struct tCustomSaveStructure {
 		if (!file.is_open()) return;
 
 		file.write((char*)this, sizeof(*this));
+
+		Achievements::Save(nSaveSlot);
 
 		auto cheatSave = GetCheatSavePath(nSaveSlot);
 		if (aCarCheatsEntered.empty()) {

@@ -1518,6 +1518,11 @@ int ChloeCollection_SetTrackFO2Variant(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_AwardAchievement(void* a1) {
+	AwardAchievement(GetAchievement((const char*)lua_tolstring(a1, 1, nullptr)));
+	return 0;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1704,6 +1709,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeRally_IsNewCupJustFinished, "ChloeRally_IsNewCupJustFinished");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesTrackHaveFO2Variant, "ChloeCollection_DoesTrackHaveFO2Variant");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetTrackFO2Variant, "ChloeCollection_SetTrackFO2Variant");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_AwardAchievement, "ChloeCollection_AwardAchievement");
 
 	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
 	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");
