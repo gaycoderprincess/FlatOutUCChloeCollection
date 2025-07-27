@@ -174,6 +174,10 @@ namespace Achievements {
 				file.read((char*)&achievement->fInternalProgress, sizeof(achievement->fInternalProgress));
 				file.read((char*)&achievement->bUnlocked, sizeof(achievement->bUnlocked));
 			}
+			else {
+				file.read((char*)&gFailAchievement.fInternalProgress, sizeof(gFailAchievement.fInternalProgress));
+				file.read((char*)&gFailAchievement.bUnlocked, sizeof(gFailAchievement.bUnlocked));
+			}
 			identifier = ReadStringFromFile(file);
 		}
 	}
