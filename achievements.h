@@ -46,6 +46,7 @@ namespace Achievements {
 		new CAchievement("WIN_RALLY_RACE", "Aspiring Rally Driver", "Win a rally cup", CAT_RALLY),
 		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking everyone", CAT_SINGLEPLAYER),
 		//new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug", CAT_GENERAL),
+		new CAchievement("WIN_RACE_NODAMAGE", "Not a Scratch", "Win a race without taking any damage", CAT_GENERAL),
 		new CAchievement("WIN_RALLY_SAAB", "Boat Award", "Win a rally stage with the Saab 96", CAT_RALLY),
 		new CAchievement("WIN_RALLY_SAAB_2", "Hardcore Boat Award", "Win a rally stage with the Saab 96 on Sadistic", CAT_RALLY, true),
 		new CAchievement("WIN_CUP_PEPPER", "Real Habanero", "Win the last Derby cup with the Pepper", CAT_CAREER),
@@ -70,6 +71,7 @@ namespace Achievements {
 		new CAchievement("CASH_AWARD", "Makin' it Big", "Reach a total balance of 100,000CR", CAT_CAREER),
 		new CAchievement("FRAGDERBY_NO_WRECKS", "Rasputin", "Win a Deathmatch Derby without dying", CAT_GAMEMODES),
 		new CAchievement("STUNT_4FLIP", "Tony Hawk Style", "Get a 4x Flip or Roll in Stunt Show", CAT_GAMEMODES),
+		new CAchievement("CRASHOUT_PEP", "Size Doesn't Matter", "Earn a Crash Out bonus with a Pepper", CAT_GENERAL),
 		new CAchievement("COMPLETE_CAREER", "Race Master", "Complete FlatOut mode", CAT_CAREER),
 		new CAchievement("COMPLETE_CAREER_GOLD", "Race Wizard", "Complete FlatOut mode with all gold", CAT_CAREER),
 		new CAchievement("COMPLETE_CARNAGE", "Carnage Veteran", "Complete Carnage Mode", CAT_CARNAGE),
@@ -81,7 +83,7 @@ namespace Achievements {
 		new CAchievement("FAST_SPEEDTRAP", "Demon Speeding", "Get over 300KM/H in a single speedtrap", CAT_GAMEMODES),
 		new CAchievement("BASEBALL_HOMERUN", "Home Run!", "Get a home run in Baseball", CAT_GAMEMODES),
 		new CAchievement("BOWLING_STRIKE", "Like an Angel", "Get a strike in Bowling", CAT_GAMEMODES),
-		new CAchievement("ROYALFLUSH_FLUSH", "Poker Master", "Get a flush in Royal Flush", CAT_GAMEMODES),
+		new CAchievement("ROYALFLUSH_FLUSH", "Hit it Big", "Get a flush in Royal Flush", CAT_GAMEMODES),
 		new CAchievement("TRACKMASTER_FOREST", "Forest Map Veteran", "Win an event on every Forest track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_FIELDS", "Field Map Veteran", "Win an event on every Field track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_DESERT", "Desert Map Veteran", "Win an event on every Desert track", CAT_TRACKS),
@@ -483,6 +485,9 @@ namespace Achievements {
 				auto ply = GetPlayerScore<PlayerScoreRace>(1);
 				if (ply->bHasFinished && ply->nPosition == 1) {
 					AwardAchievement(GetAchievement("WIN_RACE"));
+					if (GetPlayer(0)->pCar->fDamage <= 0.0) {
+						AwardAchievement(GetAchievement("WIN_RACE_NODAMAGE"));
+					}
 					//if ((bIsInMultiplayer && nMultiplayerHandlingMode == HANDLING_PROFESSIONAL) || (!bIsInMultiplayer && nHandlingMode == HANDLING_PROFESSIONAL)) {
 					//	AwardAchievement(GetAchievement("WIN_RACE_PROFESSIONAL"));
 					//}

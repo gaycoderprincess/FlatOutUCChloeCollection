@@ -479,7 +479,10 @@ struct tCustomSaveStructure {
 				}
 				CalculateArcadePlacement(profile, x, y);
 
-				if (customSave->placement == 1) achievementGold->fInternalProgress += 1;
+				if (customSave->placement == 1) {
+					achievementGold->fInternalProgress += 1;
+					tracksWon[vanillaSave->nLevel] = true;
+				}
 				if (customSave->placement >= 1 && customSave->placement <= 3) achievement->fInternalProgress += 1;
 				if (nArcadePlatinumTargets[x][y] > 0 && customSave->score >= nArcadePlatinumTargets[x][y]) achievementAuthor->fInternalProgress += 1;
 			}

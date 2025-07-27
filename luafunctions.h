@@ -1576,6 +1576,11 @@ int ChloeCollection_GetNumAchievementsInCategory(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_SetTrackWon(void* a1) {
+	gCustomSave.tracksWon[(int)luaL_checknumber(a1, 1)] = true;
+	return 1;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1769,6 +1774,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementCompleted, "ChloeCollection_GetAchievementCompleted");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementInCategory, "ChloeCollection_GetAchievementInCategory");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetNumAchievementsInCategory, "ChloeCollection_GetNumAchievementsInCategory");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetTrackWon, "ChloeCollection_SetTrackWon");
 
 	RegisterLUAEnum(a1, Achievements::CAT_GENERAL, "ACHIEVEMENTS_GENERAL");
 	RegisterLUAEnum(a1, Achievements::CAT_SINGLEPLAYER, "ACHIEVEMENTS_SINGLEPLAYER");
@@ -1817,7 +1823,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, PLAYTIME_INGAME_RALLYMODE, "PLAYTIME_INGAME_RALLYMODE");
 	RegisterLUAEnum(a1, NUM_PLAYTIME_TYPES_NEW, "NUM_PLAYTIME_TYPES");
 
-	static auto sVersionString = "Chloe's Collection v1.72 - Duroplast Edition";
+	static auto sVersionString = "Chloe's Collection v1.73 - Achievements Edition";
 	lua_setglobal(a1, "ChloeCollectionVersion");
 	lua_setglobal(a1, sVersionString);
 	lua_settable(a1, -10002);
