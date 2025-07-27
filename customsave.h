@@ -183,18 +183,40 @@ struct tCustomSaveStructure {
 		SetDefaultPlayerSettings();
 	}
 	static bool IsTrackValidForStat(int category, int track) {
-		if (!DoesTrackExist(track)) return false;
-		if (GetTrackValueNumber(track, "TrackType") != category) return false;
-		if (DoesTrackValueExist(track, "CheatCode")) return false;
-		if (category == TRACKTYPE_RACING && DoesTrackValueExist(track, "IsRallyTrack")) return false;
-		return true;
+		static int8_t trackCategory[256] = {};
+		if (trackCategory[track] == 0) {
+			if (!DoesTrackExist(track)) {
+				trackCategory[track] = -1;
+				return false;
+			}
+			if (GetTrackValueNumber(track, "TrackType") != category) return false;
+			if (DoesTrackValueExist(track, "CheatCode")) {
+				trackCategory[track] = -1;
+				return false;
+			}
+			if (DoesTrackValueExist(track, "IsMultiplayerOnly")) {
+				trackCategory[track] = -1;
+				return false;
+			}
+			if (category == TRACKTYPE_RACING && DoesTrackValueExist(track, "IsRallyTrack")) {
+				trackCategory[track] = -1;
+				return false;
+			}
+			trackCategory[track] = category;
+			return true;
+		}
+		return trackCategory[track] == category;
 	}
 	static int GetNumTracksInCategory(int category) {
+		static int numTracks[NUM_TRACKTYPES] = {};
+		if (numTracks[category] > 0) return numTracks[category];
+
 		int count = 0;
 		for (int i = 1; i < GetNumTracks() + 1; i++) {
 			if (!IsTrackValidForStat(category, i)) continue;
 			count++;
 		}
+		if (count > 0) numTracks[category] = count;
 		return count;
 	}
 	int GetNumTracksWonOfCategory(int category) {
