@@ -64,6 +64,7 @@ namespace Achievements {
 		new CAchievement("HIGH_SPEED", "Ludicrous Speed", "Reach a speed of 500KM/H", CAT_GENERAL),
 		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant", CAT_CAREER),
 		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery", CAT_CAREER),
+		new CAchievement("CHANGE_MUSIC", "Your Own Jukebox", "Change a music playlist", CAT_GENERAL),
 		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_GENERAL, true),
 		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 10 seconds total", CAT_GENERAL),
 		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 10% health", CAT_GENERAL),
@@ -72,11 +73,12 @@ namespace Achievements {
 		new CAchievement("FRAGDERBY_NO_WRECKS", "Rasputin", "Win a Deathmatch Derby without dying", CAT_GAMEMODES),
 		new CAchievement("STUNT_4FLIP", "Tony Hawk Style", "Get a 4x Flip or Roll in Stunt Show", CAT_GAMEMODES),
 		new CAchievement("CRASHOUT_PEP", "Size Doesn't Matter", "Earn a Crash Out bonus with a Pepper", CAT_GENERAL),
+		new CAchievement("ALL_CARS", "Car Collector", "Unlock all cars in the game", CAT_GENERAL),
 		new CAchievement("COMPLETE_CAREER", "Race Master", "Complete FlatOut mode", CAT_CAREER),
 		new CAchievement("COMPLETE_CAREER_GOLD", "Race Wizard", "Complete FlatOut mode with all gold", CAT_CAREER),
-		new CAchievement("COMPLETE_CARNAGE", "Carnage Veteran", "Complete Carnage Mode", CAT_CARNAGE),
+		new CAchievement("COMPLETE_CARNAGE", "Carnage Master", "Complete Carnage Mode", CAT_CARNAGE),
 		new CAchievement("COMPLETE_CARNAGE_GOLD", "Carnage Wizard", "Complete Carnage Mode with all gold", CAT_CARNAGE),
-		new CAchievement("COMPLETE_CARNAGE_AUTHOR", "Carnage Master", "Complete Carnage Mode with all author", CAT_CARNAGE, true),
+		new CAchievement("COMPLETE_CARNAGE_AUTHOR", "Carnage Legend", "Complete Carnage Mode with all author", CAT_CARNAGE, true),
 		new CAchievement("COMPLETE_RALLY", "Rally Trophy", "Complete Rally Mode", CAT_RALLY),
 		new CAchievement("COMPLETE_RALLY_GOLD", "Rally Gold Trophy", "Complete Rally Mode with all gold", CAT_RALLY),
 		new CAchievement("STONESKIPPING_FAR", "Pool to Pool", "Land in the last pool in Stone Skipping", CAT_GAMEMODES, true),
@@ -135,6 +137,7 @@ namespace Achievements {
 	double fSpriteHideTimer = 1;
 	std::string sTextTitle;
 	std::string sTextDesc;
+	bool bHiddenAchievementUnlocked = false;
 
 	bool DrawAchievementSprite(float left, float right, float top, float bottom, NyaDrawing::CNyaRGBA32 rgb, TEXTURE_TYPE* texture) {
 		left -= 960;
@@ -255,10 +258,28 @@ namespace Achievements {
 		return count;
 	}
 
+	int GetNumUnlockedHiddenAchievements() {
+		int count = 0;
+		for (auto& achievement : gAchievements) {
+			if (!achievement->bHidden) continue;
+			if (achievement->bUnlocked) count++;
+		}
+		return count;
+	}
+
 	int GetNumVisibleAchievements() {
 		int count = 0;
 		for (auto& achievement : gAchievements) {
 			if (achievement->bHidden) continue;
+			count++;
+		}
+		return count;
+	}
+
+	int GetNumHiddenAchievements() {
+		int count = 0;
+		for (auto& achievement : gAchievements) {
+			if (!achievement->bHidden) continue;
 			count++;
 		}
 		return count;
@@ -275,6 +296,7 @@ namespace Achievements {
 			fSpriteHideTimer = 0;
 			sTextTitle = achievement->sName;
 			sTextDesc = achievement->sDescription;
+			bHiddenAchievementUnlocked = achievement->bHidden;
 			aUnlockBuffer.erase(aUnlockBuffer.begin());
 
 			static auto sound = NyaAudio::LoadFile("data/sound/achievement/unlock.mp3");
@@ -337,8 +359,14 @@ namespace Achievements {
 
 			if (textAlpha > 0) {
 				if (fSpriteStayTimer > 2.0 / 3.0 && aUnlockBuffer.empty()) {
-					sTextTitle = "Achievement progress";
-					sTextDesc = std::format("{}/{}", GetNumUnlockedAchievements(), GetNumVisibleAchievements());
+					if (bHiddenAchievementUnlocked) {
+						sTextTitle = "Hidden achievement progress";
+						sTextDesc = std::format("{}/{}", GetNumUnlockedHiddenAchievements(), GetNumHiddenAchievements());
+					}
+					else {
+						sTextTitle = "Achievement progress";
+						sTextDesc = std::format("{}/{}", GetNumUnlockedAchievements(), GetNumVisibleAchievements());
+					}
 				}
 
 				tNyaStringData data;
