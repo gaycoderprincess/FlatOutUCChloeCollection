@@ -81,9 +81,10 @@ namespace Achievements {
 		new CAchievement("FAST_SPEEDTRAP", "Demon Speeding", "Get over 300KM/H in a single speedtrap", CAT_GAMEMODES),
 		new CAchievement("BASEBALL_HOMERUN", "Home Run!", "Get a home run in Baseball", CAT_GAMEMODES),
 		new CAchievement("BOWLING_STRIKE", "Like an Angel", "Get a strike in Bowling", CAT_GAMEMODES),
+		new CAchievement("ROYALFLUSH_FLUSH", "Poker Master", "Get a flush in Royal Flush", CAT_GAMEMODES),
 		new CAchievement("TRACKMASTER_FOREST", "Forest Map Veteran", "Win an event on every Forest track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_FIELDS", "Field Map Veteran", "Win an event on every Field track", CAT_TRACKS),
-		new CAchievement("TRACKMASTER_DESERT", "Desert Map Veteran", "Win an event on every Field track", CAT_TRACKS),
+		new CAchievement("TRACKMASTER_DESERT", "Desert Map Veteran", "Win an event on every Desert track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_CANAL", "Canal Map Veteran", "Win an event on every Canal track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_CITY", "City Map Veteran", "Win an event on every City track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_RACE", "Race Map Veteran", "Win an event on every Race track", CAT_TRACKS),
@@ -584,9 +585,27 @@ namespace Achievements {
 		);
 	}
 
+	void OnRoyalFlush() {
+		AwardAchievement(GetAchievement("ROYALFLUSH_FLUSH"));
+	}
+
+	uintptr_t OnRoyalFlushASM_jmp = 0x4E2F16;
+	void __attribute__((naked)) OnRoyalFlushASM() {
+		__asm__ (
+			"pushad\n\t"
+			"call %1\n\t"
+			"popad\n\t"
+			"mov ecx, 0x871\n\t"
+			"jmp %0\n\t"
+				:
+				:  "m" (OnRoyalFlushASM_jmp), "i" (OnRoyalFlush)
+		);
+	}
+
 	void Init() {
 		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4952DB, &OnHomeRunASM);
 		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x49A86E, &OnStrikeASM);
+		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4E2F5F, &OnRoyalFlushASM);
 	}
 }
 
