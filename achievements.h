@@ -29,20 +29,32 @@ namespace Achievements {
 		new CAchievement("WIN_MP_RACE", "Friendly Competition", "Win a multiplayer race"),
 		new CAchievement("WIN_RALLY_RACE", "Aspiring Rally Driver", "Win a rally cup"),
 		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking everyone"),
+		new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug"),
+		new CAchievement("WIN_RALLY_SAAB", "Boat Award", "Win a rally stage with the Saab 96"),
+		new CAchievement("WIN_RALLY_SAAB_2", "Hardcore Boat Award", "Win a rally stage with the Saab 96 on Sadistic", true),
 		new CAchievement("JACK_WRECKED", "Jack Benton is Wrecked", "You know what to do."),
 		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score"),
+		new CAchievement("SAUTHOR_MEDAL", "Super Trackmaster", "Achieve a super author score", true),
 		new CAchievement("FRANK_WIN_RACE", "True Frank Malcov Award", "Have Frank Malcov win a race"),
-		new CAchievement("ALL_AWARDS", "Clean Sweep", "Get all post-race awards at once"),
+		new CAchievement("ALL_AWARDS", "Total Domination", "Win a race with all Top Driver awards"),
 		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events"),
 		new CAchievement("KNOCKOUT_RACES", "Volatile Racing", "Win 5 knockout events"),
+		new CAchievement("DRIFT_SCORE", "Professional Drifter", "Get 100,000pts in a one drift chain"),
 		new CAchievement("HIGH_SPEED", "Ludicrous Speed", "Reach a speed of 500KM/H"),
 		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant"),
+		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery"),
 		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car"),
-		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 5 seconds"),
+		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 15 seconds total"),
 		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 5% health"),
-		new CAchievement("COMPLETE_CAREER", "Completionist", "Complete the career mode"),
-		new CAchievement("COMPLETE_CARNAGE", "Arcade Veteran", "Get all golds in Carnage Mode"),
-		new CAchievement("COMPLETE_RALLY", "Rally Trophy", "Complete the rally mode"),
+		new CAchievement("RALLY_RAGDOLL", "Samir Award", "Fly through the windshield in a rally"),
+		new CAchievement("CASH_AWARD", "Makin' it Big", "Reach a total balance of 100,000CR"),
+		new CAchievement("COMPLETE_CAREER", "Race Master", "Complete FlatOut mode"),
+		new CAchievement("COMPLETE_CAREER_GOLD", "Race Wizard", "Complete FlatOut mode with all gold"),
+		new CAchievement("COMPLETE_CARNAGE", "Carnage Veteran", "Complete Carnage Mode"),
+		new CAchievement("COMPLETE_CARNAGE_GOLD", "Carnage Wizard", "Complete Carnage Mode with all gold"),
+		new CAchievement("COMPLETE_CARNAGE_AUTHOR", "Carnage Master", "Complete Carnage Mode with all author", true),
+		new CAchievement("COMPLETE_RALLY", "Rally Trophy", "Complete Rally Mode"),
+		new CAchievement("COMPLETE_RALLY_GOLD", "Rally Gold Trophy", "Complete Rally Mode with all gold"),
 	};
 
 	const float fSpriteBGX = 960;
@@ -207,6 +219,11 @@ namespace Achievements {
 			sTextTitle = achievement->sName;
 			sTextDesc = achievement->sDescription;
 			aUnlockBuffer.erase(aUnlockBuffer.begin());
+
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				auto data = tEventData(EVENT_SFX_ARCADE_AWARD);
+				pEventManager->SendEvent(&data);
+			}
 		}
 
 		static CNyaTimer timer;
@@ -312,10 +329,38 @@ namespace Achievements {
 				AwardAchievement(achievement);
 			}
 		}
+		if (auto achievement = GetAchievement("COMPLETE_CARNAGE_GOLD")) {
+			achievement->nProgress = (achievement->fInternalProgress / 36.0) * 100;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
+		}
+		if (auto achievement = GetAchievement("COMPLETE_CARNAGE_AUTHOR")) {
+			achievement->nProgress = (achievement->fInternalProgress / 36.0) * 100;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
+		}
+		if (auto achievement = GetAchievement("WATER_FLOAT")) {
+			achievement->nProgress = (achievement->fInternalProgress / 15.0) * 100;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
+		}
+		if (auto achievement = GetAchievement("CASH_AWARD")) {
+			achievement->fInternalProgress = pGameFlow->Profile.nMoney;
+			achievement->nProgress = (achievement->fInternalProgress / 100000.0) * 100;
+		}
 
 		if (pLoadingScreen) return;
 
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			if (bIsCareerRally && pGameFlow->nRaceState == RACE_STATE_RACING) {
+				if (GetPlayer(0)->pCar->nIsRagdolled) {
+					AwardAchievement(GetAchievement("RALLY_RAGDOLL"));
+				}
+			}
+
 			static bool bLastDriftEnded = false;
 			if (bIsDriftEvent && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
 				if (!bLastDriftEnded && GetPlayerScore<PlayerScoreArcadeRace>(1)->fScore > 50000) {
@@ -346,6 +391,9 @@ namespace Achievements {
 				auto ply = GetPlayerScore<PlayerScoreRace>(1);
 				if (ply->bHasFinished && ply->nPosition == 1) {
 					AwardAchievement(GetAchievement("WIN_RACE"));
+					if (GetPlayer(0)->nCarId == GetCarDBID(153)) {
+						AwardAchievement(GetAchievement("WIN_RACE_BUG"));
+					}
 					if (bIsInMultiplayer) {
 						AwardAchievement(GetAchievement("WIN_MP_RACE"));
 					}

@@ -67,6 +67,12 @@ namespace CareerRally {
 			if (pos >= 32) continue;
 			gCustomSave.nRallyCupPoints[i] += pointsPerPosition[pos];
 			gCustomSave.nRallyCupStagePoints[gCustomSave.nRallyCupNextStage][i] = pointsPerPosition[pos];
+			if (i == 0 && pos == 0 && (gCustomSave.nRallyCarId == GetCarDBID(407) || gCustomSave.nRallyCarId == GetCarDBID(408))) {
+				AwardAchievement(GetAchievement("WIN_RALLY_SAAB"));
+				if (nAIFudgeMode == 2) {
+					AwardAchievement(GetAchievement("WIN_RALLY_SAAB_2"));
+				}
+			}
 		}
 		gCustomSave.nRallyCupStagePosition[gCustomSave.nRallyCupNextStage] = pGameFlow->PostRace.nPlayerPosition[0];
 		gCustomSave.nRallyCupNextStage++;

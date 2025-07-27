@@ -1268,6 +1268,9 @@ int ChloeRally_SetCash(void* a1) {
 }
 
 int ChloeRally_GetCash(void* a1) {
+	if (gCustomSave.nRallyCash >= 100000) {
+		AwardAchievement(GetAchievement("CASH_AWARD"));
+	}
 	lua_pushnumber(a1, gCustomSave.nRallyCash);
 	return 1;
 }

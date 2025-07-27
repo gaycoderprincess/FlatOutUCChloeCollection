@@ -191,6 +191,9 @@ namespace DriftMode {
 		if ((cashOut || bIsInMultiplayer) && fCurrentDriftChain > 0) {
 			if (cashOut) {
 				AddNotif(std::format("+{:.0f} pts", fCurrentDriftChain * nDriftChainMultiplier));
+				if (fCurrentDriftChain * nDriftChainMultiplier >= 100000) {
+					AwardAchievement(GetAchievement("DRIFT_SCORE"));
+				}
 			}
 			else {
 				fCurrentDriftChain *= 0.5;

@@ -410,7 +410,11 @@ struct tCustomSaveStructure {
 		bool customSaveModified = false;
 
 		auto achievement = GetAchievement("COMPLETE_CARNAGE");
+		auto achievementGold = GetAchievement("COMPLETE_CARNAGE_GOLD");
+		auto achievementAuthor = GetAchievement("COMPLETE_CARNAGE_AUTHOR");
 		achievement->fInternalProgress = 0;
+		achievementGold->fInternalProgress = 0;
+		achievementAuthor->fInternalProgress = 0;
 
 		int numClasses = nNumArcadeRacesX;
 		int numRaces = nNumArcadeRacesY;
@@ -428,7 +432,9 @@ struct tCustomSaveStructure {
 				}
 				CalculateArcadePlacement(profile, x, y);
 
-				if (customSave->placement == 1) achievement->fInternalProgress += 1;
+				if (customSave->placement == 1) achievementGold->fInternalProgress += 1;
+				if (customSave->placement >= 1 && customSave->placement <= 3) achievement->fInternalProgress += 1;
+				if (nArcadePlatinumTargets[x][y] > 0 && customSave->score >= nArcadePlatinumTargets[x][y]) achievementAuthor->fInternalProgress += 1;
 			}
 		}
 
