@@ -1526,6 +1526,40 @@ int ChloeCollection_AwardAchievement(void* a1) {
 	return 0;
 }
 
+int ChloeCollection_GetAchievementName(void* a1) {
+	auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr));
+	if (!achievement) return 0;
+	std::wstring str = GetStringWide(achievement->sName);
+	lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	return 1;
+}
+
+int ChloeCollection_GetAchievementDescription(void* a1) {
+	auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr));
+	if (!achievement) return 0;
+	std::wstring str = GetStringWide(achievement->sDescription);
+	lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
+	return 1;
+}
+
+int ChloeCollection_GetAchievementProgression(void* a1) {
+	auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr));
+	if (!achievement) return 0;
+	int progress = achievement->nProgress;
+	if (progress < 0) progress = 0;
+	if (progress < 100) progress = 100;
+	if (achievement->bUnlocked) progress = 100;
+	lua_pushnumber(a1, progress);
+	return 1;
+}
+
+int ChloeCollection_GetAchievementCompleted(void* a1) {
+	auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr));
+	if (!achievement) return 0;
+	lua_pushboolean(a1, achievement->bUnlocked);
+	return 1;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1713,6 +1747,10 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_DoesTrackHaveFO2Variant, "ChloeCollection_DoesTrackHaveFO2Variant");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetTrackFO2Variant, "ChloeCollection_SetTrackFO2Variant");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_AwardAchievement, "ChloeCollection_AwardAchievement");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementName, "ChloeCollection_GetAchievementName");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementDescription, "ChloeCollection_GetAchievementDescription");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementProgression, "ChloeCollection_GetAchievementProgression");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementCompleted, "ChloeCollection_GetAchievementCompleted");
 
 	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
 	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");

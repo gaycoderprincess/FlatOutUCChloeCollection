@@ -1,4 +1,5 @@
 namespace Achievements {
+	int nTotalProgression = 0;
 	int nCurrentSaveSlot = 0;
 
 	std::string GetAchievementSavePath(int id) {
@@ -39,7 +40,7 @@ namespace Achievements {
 		new CAchievement("ALL_AWARDS", "Total Domination", "Win a race with all Top Driver awards"),
 		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events"),
 		new CAchievement("KNOCKOUT_RACES", "Volatile Racing", "Win 5 knockout events"),
-		new CAchievement("DRIFT_SCORE", "Professional Drifter", "Get 100,000pts in a one drift chain"),
+		new CAchievement("DRIFT_SCORE", "Professional Drifter", "Get 100,000pts in one drift chain"),
 		new CAchievement("HIGH_SPEED", "Ludicrous Speed", "Reach a speed of 500KM/H"),
 		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant"),
 		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery"),
@@ -315,6 +316,8 @@ namespace Achievements {
 	}
 
 	void OnTick() {
+		nTotalProgression = ((double)GetNumUnlockedAchievements() / (double)GetNumVisibleAchievements()) * 100;
+
 		if (auto achievement = GetAchievement("DRIFT_RACES")) {
 			achievement->nProgress = (achievement->fInternalProgress / 3.0) * 100;
 			if (achievement->nProgress >= 100) {

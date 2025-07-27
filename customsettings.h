@@ -43,6 +43,7 @@ tGameSetting aNewGameSettings[] = {
 		{ "Game", "ShowSuperAuthors", &nShowSuperAuthors, 0, 0, 2 },
 		{ "Game", "DisplaySplits", &nDisplaySplits, 0, 0, 3 },
 		{ "Game", "SplitType", &nSplitType, 0, 0, 2 },
+		{ "Game", "AchievementProgression", &Achievements::nTotalProgression, 0, 0, 100 },
 		{ "Control", "ControllerGuid", (void*)0x845D98, 3, 0, 0 },
 		{ "Control", "Controller", (void*)0x845DBC, 0, 0, 2 },
 		{ "Control", "ForceFeedback", (void*)0x845DC0, 1, 0, 0 },
