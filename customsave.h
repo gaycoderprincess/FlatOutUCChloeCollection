@@ -150,6 +150,7 @@ struct tCustomSaveStructure {
 		uint16_t level;
 	} aArcadeRaceVerify[nNumArcadeRacesX][nNumArcadeRacesY];
 	uint32_t numCarsUnlockedNoBonus;
+	bool tracksWon[256];
 
 	static inline uint8_t aRallyPlayersByPosition[32];
 	static inline uint8_t aRallyPlayerPosition[32];
@@ -180,6 +181,30 @@ struct tCustomSaveStructure {
 	tCustomSaveStructure() {
 		memset(this,0,sizeof(*this));
 		SetDefaultPlayerSettings();
+	}
+	static bool IsTrackValidForStat(int category, int track) {
+		if (!DoesTrackExist(track)) return false;
+		if (GetTrackValueNumber(track, "TrackType") != category) return false;
+		if (DoesTrackValueExist(track, "CheatCode")) return false;
+		if (category == TRACKTYPE_RACING && DoesTrackValueExist(track, "IsRallyTrack")) return false;
+		return true;
+	}
+	static int GetNumTracksInCategory(int category) {
+		int count = 0;
+		for (int i = 1; i < GetNumTracks() + 1; i++) {
+			if (!IsTrackValidForStat(category, i)) continue;
+			count++;
+		}
+		return count;
+	}
+	int GetNumTracksWonOfCategory(int category) {
+		int count = 0;
+		for (int i = 1; i < GetNumTracks() + 1; i++) {
+			if (!IsTrackValidForStat(category, i)) continue;
+			if (!tracksWon[i]) continue;
+			count++;
+		}
+		return count;
 	}
 	void SetDefaultPlayerSettings() {
 		imperialUnits = gGameRegion == 1;
@@ -460,6 +485,42 @@ void ProcessPlayStats() {
 	if (!pGameFlow) return;
 	if (pLoadingScreen) return;
 
+	struct tTrackTypeAssoc {
+		int category;
+		const char* achievement;
+	};
+	tTrackTypeAssoc trackTypes[] = {
+			{ TRACKTYPE_FOREST, "TRACKMASTER_FOREST" },
+			{ TRACKTYPE_FIELDS, "TRACKMASTER_FIELDS" },
+			{ TRACKTYPE_DESERT, "TRACKMASTER_DESERT" },
+			{ TRACKTYPE_CANAL, "TRACKMASTER_CANAL" },
+			{ TRACKTYPE_CITY, "TRACKMASTER_CITY" },
+			{ TRACKTYPE_RACING, "TRACKMASTER_RACE" },
+			{ TRACKTYPE_FO1_TOWN, "TRACKMASTER_TOWN" },
+			{ TRACKTYPE_FO1_PIT, "TRACKMASTER_PIT" },
+			{ TRACKTYPE_FO1_WINTER, "TRACKMASTER_WINTER" },
+			{ TRACKTYPE_TOUGHTRUCKS, "TRACKMASTER_TT" },
+			{ TRACKTYPE_RALLYTROPHY, "TRACKMASTER_RT" },
+			{ TRACKTYPE_EVENT, "TRACKMASTER_EVENT" },
+			{ TRACKTYPE_DERBY, "TRACKMASTER_DERBY" },
+	};
+
+	static double fTrackCheckTimer = 3;
+	fTrackCheckTimer += gTimer.fDeltaTime;
+	if (fTrackCheckTimer > 3) {
+		for (auto& trackType : trackTypes) {
+			int numTracks = gCustomSave.GetNumTracksInCategory(trackType.category);
+			int numTracksWon = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
+			auto achievement = GetAchievement(trackType.achievement);
+			achievement->fInternalProgress = numTracksWon;
+			achievement->nProgress = (achievement->fInternalProgress / (double)numTracks) * 100;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
+		}
+		fTrackCheckTimer = 0;
+	}
+
 	// migrate playtime stats from doubles to the new int64s
 	for (int i = 0; i < NUM_PLAYTIME_TYPES_OLD; i++) {
 		if (gCustomSave.playtimeOld[i] > 0) {
@@ -572,6 +633,38 @@ void ProcessPlayStats() {
 		gTimer.fTotalTime -= 1;
 	}
 
+	if (pGameFlow->nGameState == GAME_STATE_RACE && pGameFlow->nRaceState == RACE_STATE_FINISHED && pPlayerHost->GetNumPlayers() > 1) {
+		bool changed = false;
+		int track = pGameFlow->PreRace.nLevel;
+
+		// time trials should count for this
+		if (IsRaceMode()) {
+			auto ply = GetPlayerScore<PlayerScoreRace>(1);
+			if (ply->bHasFinished) {
+				if (ply->nPosition == 1 && !gCustomSave.tracksWon[track]) {
+					gCustomSave.tracksWon[track] = true;
+					changed = true;
+				}
+			}
+		}
+		else if (pGameFlow->nDerbyType != DERBY_NONE) {
+			auto ply = GetPlayerScore<PlayerScoreDerby>(1);
+			if (ply->bHasFinished) {
+				if (ply->nPosition == 1 && !gCustomSave.tracksWon[track]) {
+					gCustomSave.tracksWon[track] = true;
+					changed = true;
+				}
+			}
+		}
+
+		if (changed) {
+			gCustomSave.Save();
+
+			for (auto& trackType : trackTypes) {
+				GetAchievement(trackType.achievement)->fInternalProgress = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
+			}
+		}
+	}
 
 	static auto lastGameState = pGameFlow->nGameState;
 	if (lastGameState == GAME_STATE_RACE && pGameFlow->nGameState == GAME_STATE_MENU) {

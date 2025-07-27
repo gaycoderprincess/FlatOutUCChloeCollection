@@ -166,8 +166,12 @@ void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 		}
 	}
 
-	if (pGameFlow->nGameRules != GR_STUNT && numPoints >= pGameFlow->Awards.nArcadeGoalScores[0] && pPlayerHost->nRaceTime < 90000) {
-		AwardAchievement(GetAchievement("SPEEDRUN_CARNAGE"));
+	if (numPoints >= pGameFlow->Awards.nArcadeGoalScores[0]) {
+		if (pGameFlow->nGameRules != GR_STUNT && pPlayerHost->nRaceTime < 90000) {
+			AwardAchievement(GetAchievement("SPEEDRUN_CARNAGE"));
+		}
+
+		gCustomSave.tracksWon[pGameFlow->PreRace.nLevel] = true;
 	}
 
 	// reset platinum status if we restarted
