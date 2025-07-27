@@ -6,6 +6,15 @@ namespace Achievements {
 		return std::format("Savegame/customsave{:03}.ach", id);
 	}
 
+	enum eAchievementCategory {
+		CAT_GENERAL = 1,
+		CAT_SINGLEPLAYER = 2,
+		CAT_MULTIPLAYER = 4,
+		CAT_CAREER = 8,
+		CAT_CARNAGE = 16,
+		CAT_RALLY = 32,
+	};
+
 	class CAchievement {
 	public:
 		const char* sIdentifier;
@@ -15,48 +24,60 @@ namespace Achievements {
 		float fInternalProgress = 0;
 		bool bUnlocked = false;
 		bool bHidden = false;
+		int nCategory = 0;
 
 		CAchievement() = delete;
-		CAchievement(const char* identifier, const char* name, const char* description, bool hidden = false) {
+		CAchievement(const char* identifier, const char* name, const char* description, int category, bool hidden = false) {
 			sIdentifier = identifier;
 			sName = name;
 			sDescription = description;
 			bHidden = hidden;
+			nCategory = category;
 		}
 	};
 
 	std::vector<CAchievement*> gAchievements = {
-		new CAchievement("WIN_RACE", "Starting Point", "Win a race"),
-		new CAchievement("WIN_MP_RACE", "Friendly Competition", "Win a multiplayer race"),
-		new CAchievement("WIN_RALLY_RACE", "Aspiring Rally Driver", "Win a rally cup"),
-		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking everyone"),
-		new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug"),
-		new CAchievement("WIN_RALLY_SAAB", "Boat Award", "Win a rally stage with the Saab 96"),
-		new CAchievement("WIN_RALLY_SAAB_2", "Hardcore Boat Award", "Win a rally stage with the Saab 96 on Sadistic", true),
-		new CAchievement("JACK_WRECKED", "Jack Benton is Wrecked", "You know what to do."),
-		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score"),
-		new CAchievement("SAUTHOR_MEDAL", "Super Trackmaster", "Achieve a super author score", true),
-		new CAchievement("FRANK_WIN_RACE", "True Frank Malcov Award", "Have Frank Malcov win a race"),
-		new CAchievement("ALL_AWARDS", "Total Domination", "Win a race with all Top Driver awards"),
-		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events"),
-		new CAchievement("KNOCKOUT_RACES", "Volatile Racing", "Win 5 knockout events"),
-		new CAchievement("DRIFT_SCORE", "Professional Drifter", "Get 100,000pts in one drift chain"),
-		new CAchievement("HIGH_SPEED", "Ludicrous Speed", "Reach a speed of 500KM/H"),
-		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant"),
-		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery"),
-		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car"),
-		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 15 seconds total"),
-		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 5% health"),
-		new CAchievement("RALLY_RAGDOLL", "Samir Award", "Fly through the windshield in a rally"),
-		new CAchievement("CASH_AWARD", "Makin' it Big", "Reach a total balance of 100,000CR"),
-		new CAchievement("COMPLETE_CAREER", "Race Master", "Complete FlatOut mode"),
-		new CAchievement("COMPLETE_CAREER_GOLD", "Race Wizard", "Complete FlatOut mode with all gold"),
-		new CAchievement("COMPLETE_CARNAGE", "Carnage Veteran", "Complete Carnage Mode"),
-		new CAchievement("COMPLETE_CARNAGE_GOLD", "Carnage Wizard", "Complete Carnage Mode with all gold"),
-		new CAchievement("COMPLETE_CARNAGE_AUTHOR", "Carnage Master", "Complete Carnage Mode with all author", true),
-		new CAchievement("COMPLETE_RALLY", "Rally Trophy", "Complete Rally Mode"),
-		new CAchievement("COMPLETE_RALLY_GOLD", "Rally Gold Trophy", "Complete Rally Mode with all gold"),
+		new CAchievement("WIN_RACE", "Starting Point", "Win a race", CAT_GENERAL),
+		new CAchievement("WIN_MP_RACE", "Friendly Competition", "Win a multiplayer race", CAT_MULTIPLAYER),
+		new CAchievement("WIN_RALLY_RACE", "Aspiring Rally Driver", "Win a rally cup", CAT_RALLY),
+		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking everyone", CAT_SINGLEPLAYER),
+		new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug", CAT_GENERAL),
+		new CAchievement("WIN_RALLY_SAAB", "Boat Award", "Win a rally stage with the Saab 96", CAT_RALLY),
+		new CAchievement("WIN_RALLY_SAAB_2", "Hardcore Boat Award", "Win a rally stage with the Saab 96 on Sadistic", CAT_RALLY, true),
+		new CAchievement("JACK_WRECKED", "Jack Benton is Wrecked", "You know what to do.", CAT_SINGLEPLAYER),
+		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score", CAT_SINGLEPLAYER | CAT_CAREER | CAT_CARNAGE),
+		new CAchievement("SAUTHOR_MEDAL", "Super Trackmaster", "Achieve a super author score", CAT_SINGLEPLAYER | CAT_CAREER, true),
+		new CAchievement("FRANK_WIN_RACE", "True Frank Malcov Award", "Have Frank Malcov win a race", CAT_SINGLEPLAYER),
+		new CAchievement("ALL_AWARDS", "Total Domination", "Win a race with all Top Driver awards", CAT_SINGLEPLAYER),
+		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events", CAT_GENERAL),
+		new CAchievement("KNOCKOUT_RACES", "Volatile Racing", "Win 5 knockout events", CAT_GENERAL),
+		new CAchievement("DRIFT_SCORE", "Professional Drifter", "Get 100,000pts in one drift chain", CAT_GENERAL),
+		new CAchievement("HIGH_SPEED", "Ludicrous Speed", "Reach a speed of 500KM/H", CAT_GENERAL),
+		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant", CAT_CAREER),
+		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery", CAT_CAREER),
+		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_GENERAL),
+		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 15 seconds total", CAT_GENERAL),
+		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 5% health", CAT_GENERAL),
+		new CAchievement("RALLY_RAGDOLL", "Samir Award", "Fly through the windshield in a rally", CAT_RALLY),
+		new CAchievement("CASH_AWARD", "Makin' it Big", "Reach a total balance of 100,000CR", CAT_CAREER),
+		new CAchievement("COMPLETE_CAREER", "Race Master", "Complete FlatOut mode", CAT_CAREER),
+		new CAchievement("COMPLETE_CAREER_GOLD", "Race Wizard", "Complete FlatOut mode with all gold", CAT_CAREER),
+		new CAchievement("COMPLETE_CARNAGE", "Carnage Veteran", "Complete Carnage Mode", CAT_CARNAGE),
+		new CAchievement("COMPLETE_CARNAGE_GOLD", "Carnage Wizard", "Complete Carnage Mode with all gold", CAT_CARNAGE),
+		new CAchievement("COMPLETE_CARNAGE_AUTHOR", "Carnage Master", "Complete Carnage Mode with all author", CAT_CARNAGE, true),
+		new CAchievement("COMPLETE_RALLY", "Rally Trophy", "Complete Rally Mode", CAT_RALLY),
+		new CAchievement("COMPLETE_RALLY_GOLD", "Rally Gold Trophy", "Complete Rally Mode with all gold", CAT_RALLY),
 	};
+
+	std::vector<CAchievement*> GetAchievementsInCategory(uint32_t category) {
+		std::vector<CAchievement*> achievements;
+		for (auto& achievement : gAchievements) {
+			if ((achievement->nCategory & category) != 0) {
+				achievements.push_back(achievement);
+			}
+		}
+		return achievements;
+	}
 
 	const float fSpriteBGX = 960;
 	const float fSpriteBGY = 960;
@@ -132,7 +153,7 @@ namespace Achievements {
 	}
 
 	std::vector<CAchievement*> aUnlockBuffer;
-	auto gFailAchievement = CAchievement("ERROR", "ERROR", "ERROR");
+	auto gFailAchievement = CAchievement("ERROR", "ERROR", "ERROR", 0);
 
 	CAchievement* GetAchievement(const std::string& identifier) {
 		for (auto& achievement : gAchievements) {

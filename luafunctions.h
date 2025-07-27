@@ -1560,6 +1560,21 @@ int ChloeCollection_GetAchievementCompleted(void* a1) {
 	return 1;
 }
 
+int ChloeCollection_GetAchievementInCategory(void* a1) {
+	auto achievements = Achievements::GetAchievementsInCategory(luaL_checknumber(a1, 1));
+	int id = luaL_checknumber(a1, 2)-1;
+	if (id < 0 || id >= achievements.size()) return 0;
+	std::string str = achievements[id]->sIdentifier;
+	lua_pushlstring(a1, (const wchar_t*)str.c_str(), (str.length() + 1));
+	return 1;
+}
+
+int ChloeCollection_GetNumAchievementsInCategory(void* a1) {
+	auto achievements = Achievements::GetAchievementsInCategory(luaL_checknumber(a1, 1));
+	lua_pushnumber(a1, achievements.size());
+	return 1;
+}
+
 void RegisterLUAFunction(void* a1, void* function, const char* name) {
 	lua_pushcfunction(a1, function, 0);
 	lua_setfield(a1, -10002, name);
@@ -1751,6 +1766,15 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementDescription, "ChloeCollection_GetAchievementDescription");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementProgression, "ChloeCollection_GetAchievementProgression");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementCompleted, "ChloeCollection_GetAchievementCompleted");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementInCategory, "ChloeCollection_GetAchievementInCategory");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetNumAchievementsInCategory, "ChloeCollection_GetNumAchievementsInCategory");
+
+	RegisterLUAEnum(a1, Achievements::CAT_GENERAL, "ACHIEVEMENTS_GENERAL");
+	RegisterLUAEnum(a1, Achievements::CAT_SINGLEPLAYER, "ACHIEVEMENTS_SINGLEPLAYER");
+	RegisterLUAEnum(a1, Achievements::CAT_MULTIPLAYER, "ACHIEVEMENTS_MULTIPLAYER");
+	RegisterLUAEnum(a1, Achievements::CAT_CAREER, "ACHIEVEMENTS_CAREER");
+	RegisterLUAEnum(a1, Achievements::CAT_CARNAGE, "ACHIEVEMENTS_CARNAGE");
+	RegisterLUAEnum(a1, Achievements::CAT_RALLY, "ACHIEVEMENTS_RALLY");
 
 	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
 	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");
