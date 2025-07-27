@@ -1547,7 +1547,7 @@ int ChloeCollection_GetAchievementProgression(void* a1) {
 	if (!achievement) return 0;
 	int progress = achievement->nProgress;
 	if (progress < 0) progress = 0;
-	if (progress < 100) progress = 100;
+	if (progress > 100) progress = 100;
 	if (achievement->bUnlocked) progress = 100;
 	lua_pushnumber(a1, progress);
 	return 1;
@@ -1562,6 +1562,7 @@ int ChloeCollection_GetAchievementCompleted(void* a1) {
 
 int ChloeCollection_GetAchievementInCategory(void* a1) {
 	auto achievements = Achievements::GetAchievementsInCategory(luaL_checknumber(a1, 1));
+	std::sort(achievements.begin(), achievements.end(), [] (Achievements::CAchievement* a, Achievements::CAchievement* b) { return (std::string)a->sName < (std::string)b->sName; });
 	int id = luaL_checknumber(a1, 2)-1;
 	if (id < 0 || id >= achievements.size()) return 0;
 	std::string str = achievements[id]->sIdentifier;

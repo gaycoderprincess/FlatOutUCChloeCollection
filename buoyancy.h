@@ -145,7 +145,7 @@ void __fastcall CarBuoyancy(Car* pCar) {
 		if (pCar->pPlayer->nPlayerType == PLAYERTYPE_LOCAL) {
 			auto achievement = GetAchievement("WATER_FLOAT");
 			achievement->fInternalProgress += gTimer.Process();
-			if (achievement->fInternalProgress >= 15) {
+			if (achievement->fInternalProgress >= 10) {
 				AwardAchievement(achievement);
 			}
 		}

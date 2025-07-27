@@ -44,9 +44,13 @@ namespace Achievements {
 		new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug", CAT_GENERAL),
 		new CAchievement("WIN_RALLY_SAAB", "Boat Award", "Win a rally stage with the Saab 96", CAT_RALLY),
 		new CAchievement("WIN_RALLY_SAAB_2", "Hardcore Boat Award", "Win a rally stage with the Saab 96 on Sadistic", CAT_RALLY, true),
+		new CAchievement("WIN_CUP_PEPPER", "Real Habanero", "Win the last Derby cup with the Pepper", CAT_CAREER),
+		new CAchievement("WRECK_MP", "First Blood", "Wreck a car in multiplayer", CAT_MULTIPLAYER),
+		new CAchievement("BLAST_MP", "Unfriendly Competition", "Get 100 crash bonuses in multiplayer", CAT_MULTIPLAYER),
+		new CAchievement("SPEEDRUN_CARNAGE", "Speedrunner", "Gold a Carnage Mode event in less than 1:30", CAT_CARNAGE),
 		new CAchievement("JACK_WRECKED", "Jack Benton is Wrecked", "You know what to do.", CAT_SINGLEPLAYER),
 		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score", CAT_SINGLEPLAYER | CAT_CAREER | CAT_CARNAGE),
-		new CAchievement("SAUTHOR_MEDAL", "Super Trackmaster", "Achieve a super author score", CAT_SINGLEPLAYER | CAT_CAREER, true),
+		new CAchievement("SAUTHOR_MEDAL", "Super Trackmaster", "Achieve a super author score", CAT_CAREER, true),
 		new CAchievement("FRANK_WIN_RACE", "True Frank Malcov Award", "Have Frank Malcov win a race", CAT_SINGLEPLAYER),
 		new CAchievement("ALL_AWARDS", "Total Domination", "Win a race with all Top Driver awards", CAT_SINGLEPLAYER),
 		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events", CAT_GENERAL),
@@ -56,8 +60,8 @@ namespace Achievements {
 		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant", CAT_CAREER),
 		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery", CAT_CAREER),
 		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_GENERAL),
-		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 15 seconds total", CAT_GENERAL),
-		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 5% health", CAT_GENERAL),
+		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 10 seconds total", CAT_GENERAL),
+		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 10% health", CAT_GENERAL),
 		new CAchievement("RALLY_RAGDOLL", "Samir Award", "Fly through the windshield in a rally", CAT_RALLY),
 		new CAchievement("CASH_AWARD", "Makin' it Big", "Reach a total balance of 100,000CR", CAT_CAREER),
 		new CAchievement("COMPLETE_CAREER", "Race Master", "Complete FlatOut mode", CAT_CAREER),
@@ -72,6 +76,7 @@ namespace Achievements {
 	std::vector<CAchievement*> GetAchievementsInCategory(uint32_t category) {
 		std::vector<CAchievement*> achievements;
 		for (auto& achievement : gAchievements) {
+			if (achievement->bHidden && !achievement->bUnlocked) continue;
 			if ((achievement->nCategory & category) != 0) {
 				achievements.push_back(achievement);
 			}
@@ -370,7 +375,7 @@ namespace Achievements {
 			}
 		}
 		if (auto achievement = GetAchievement("WATER_FLOAT")) {
-			achievement->nProgress = (achievement->fInternalProgress / 15.0) * 100;
+			achievement->nProgress = (achievement->fInternalProgress / 10.0) * 100;
 			if (achievement->nProgress >= 100) {
 				AwardAchievement(achievement);
 			}
@@ -378,6 +383,15 @@ namespace Achievements {
 		if (auto achievement = GetAchievement("CASH_AWARD")) {
 			achievement->fInternalProgress = pGameFlow->Profile.nMoney;
 			achievement->nProgress = (achievement->fInternalProgress / 100000.0) * 100;
+		}
+		if (auto achievement = GetAchievement("LOW_HP")) {
+			achievement->nProgress = (achievement->fInternalProgress / 0.9) * 100;
+		}
+		if (auto achievement = GetAchievement("BLAST_MP")) {
+			achievement->nProgress = achievement->fInternalProgress;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
 		}
 
 		if (pLoadingScreen) return;
@@ -400,7 +414,7 @@ namespace Achievements {
 
 			static bool bLastKOEnded = false;
 			if (bIsLapKnockout && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
-				if (!bLastKOEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1) {
+				if (!bLastKOEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && GetPlayerScore<PlayerScoreRace>(1)->bHasFinished) {
 					GetAchievement("KNOCKOUT_RACES")->fInternalProgress += 1;
 					Save(nCurrentSaveSlot);
 				}
@@ -409,8 +423,13 @@ namespace Achievements {
 
 			static bool bLastRaceEnded = false;
 			if (IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
-				if (!bLastRaceEnded && GetPlayer(0)->pCar->fDamage > 0.95 && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1) {
-					AwardAchievement(GetAchievement("LOW_HP"));
+				if (!bLastRaceEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && !GetPlayerScore<PlayerScoreRace>(1)->bIsDNF) {
+					auto achievement = GetAchievement("LOW_HP");
+					auto damage = GetPlayer(0)->pCar->fDamage;
+					if (damage > achievement->fInternalProgress) achievement->fInternalProgress = damage;
+					if (damage >= 0.9) {
+						AwardAchievement(GetAchievement("LOW_HP"));
+					}
 				}
 			}
 			bLastRaceEnded = IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED;

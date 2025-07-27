@@ -26,7 +26,19 @@ void AddFragDerbyScore(int amount) {
 	pEventManager->PostEvent(&eventData);
 }
 
+void OnCrashBonus(int type) {
+	if (bIsInMultiplayer) {
+		if (type == INGAME_CRASHBONUS_WRECKED) {
+			Achievements::AwardAchievement(GetAchievement("WRECK_MP"));
+		}
+		else if (type != INGAME_CRASHBONUS_SUPERFLIP) {
+			GetAchievement("BLAST_MP")->fInternalProgress += 1;
+		}
+	}
+}
+
 void __fastcall MoreFragDerbyRewards(uint32_t a1) {
+	OnCrashBonus(a1);
 	switch (a1) {
 		case INGAME_CRASHBONUS_SUPERFLIP:
 			AddFragDerbyScore(nFragDerbyRewardSuperFlip);
@@ -152,6 +164,10 @@ void __stdcall ArcadePlatinums(void* a3, void** a1, int numPoints) {
 				pArcadePlatinumImage->bVisible = true;
 			}
 		}
+	}
+
+	if (pGameFlow->nGameRules != GR_STUNT && numPoints >= pGameFlow->Awards.nArcadeGoalScores[0] && pPlayerHost->nRaceTime < 90000) {
+		AwardAchievement(GetAchievement("SPEEDRUN_CARNAGE"));
 	}
 
 	// reset platinum status if we restarted
