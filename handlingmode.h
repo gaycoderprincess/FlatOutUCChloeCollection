@@ -38,7 +38,6 @@ void SetBetaHandling(bool enabled) {
 	NyaHookLib::Patch(0x45D7B6 + 1, enabled ? "BetaTires" : "Tires");
 }
 
-int nMultiplayerHandlingMode = 0;
 int GetHandlingMode() {
 	// only allow normal and professional for career
 	if (CareerTimeTrial::bIsCareerTimeTrial) {

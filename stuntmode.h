@@ -325,6 +325,9 @@ namespace StuntMode {
 							wchar_t tmp[64];
 							_snwprintf(tmp, 64, L"%dx ROLL!", numRolls);
 							AddScore(tmp, nPerfectRollBonus * numRolls);
+							if (numRolls >= 4) {
+								AwardAchievement(GetAchievement("STUNT_4FLIP"));
+							}
 						}
 
 						int numFlips = 0;
@@ -339,6 +342,9 @@ namespace StuntMode {
 							wchar_t tmp[64];
 							_snwprintf(tmp, 64, L"%dx FLIP!", numFlips);
 							AddScore(tmp, nPerfectFlipBonus * numFlips);
+							if (numFlips >= 4) {
+								AwardAchievement(GetAchievement("STUNT_4FLIP"));
+							}
 						}
 
 						int numSpins = 0;

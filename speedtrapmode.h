@@ -140,6 +140,9 @@ namespace SpeedtrapMode {
 		uint32_t points = (uint32_t)(ply->pCar->GetVelocity()->length() * 100 * fSpeedMultiplier);
 		if (playerId == 0) {
 			auto spd = ply->pCar->GetVelocity()->length() * 100;
+			if (spd >= 83.3 * 100) {
+				AwardAchievement(GetAchievement("FAST_SPEEDTRAP"));
+			}
 			nLastSplitSpeed = spd;
 			fSplitTimer = 3;
 			AddScore(playerId, L"CHECKPOINT!", points, 2);

@@ -392,6 +392,7 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			ApplyNoNetworkPatches();
 			ApplyRallyPatches();
 			ApplyDDSParserPatches();
+			Achievements::Init();
 			*(uint32_t*)0x8494D4 = 1; // set ShowBonus to always true
 
 			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x4F0F0A, &LoadMapIconsTGA);

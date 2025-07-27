@@ -13,6 +13,7 @@ namespace Achievements {
 		CAT_CAREER = 8,
 		CAT_CARNAGE = 16,
 		CAT_RALLY = 32,
+		CAT_GAMEMODES = 64,
 	};
 
 	class CAchievement {
@@ -38,10 +39,12 @@ namespace Achievements {
 
 	std::vector<CAchievement*> gAchievements = {
 		new CAchievement("WIN_RACE", "Starting Point", "Win a race", CAT_GENERAL),
+		//new CAchievement("WIN_RACE_PROFESSIONAL", "Simcade Mode", "Win a race with professional handling", CAT_GENERAL),
 		new CAchievement("WIN_MP_RACE", "Friendly Competition", "Win a multiplayer race", CAT_MULTIPLAYER),
+		new CAchievement("WIN_MP_DERBY", "King of the Kill", "Win a multiplayer derby", CAT_MULTIPLAYER),
 		new CAchievement("WIN_RALLY_RACE", "Aspiring Rally Driver", "Win a rally cup", CAT_RALLY),
 		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking everyone", CAT_SINGLEPLAYER),
-		new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug", CAT_GENERAL),
+		//new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug", CAT_GENERAL),
 		new CAchievement("WIN_RALLY_SAAB", "Boat Award", "Win a rally stage with the Saab 96", CAT_RALLY),
 		new CAchievement("WIN_RALLY_SAAB_2", "Hardcore Boat Award", "Win a rally stage with the Saab 96 on Sadistic", CAT_RALLY, true),
 		new CAchievement("WIN_CUP_PEPPER", "Real Habanero", "Win the last Derby cup with the Pepper", CAT_CAREER),
@@ -49,21 +52,23 @@ namespace Achievements {
 		new CAchievement("BLAST_MP", "Unfriendly Competition", "Get 100 crash bonuses in multiplayer", CAT_MULTIPLAYER),
 		new CAchievement("SPEEDRUN_CARNAGE", "Speedrunner", "Gold a Carnage Mode event in less than 1:30", CAT_CARNAGE),
 		new CAchievement("JACK_WRECKED", "Jack Benton is Wrecked", "You know what to do.", CAT_SINGLEPLAYER),
-		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score", CAT_SINGLEPLAYER | CAT_CAREER | CAT_CARNAGE),
+		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score", CAT_CAREER | CAT_CARNAGE),
 		new CAchievement("SAUTHOR_MEDAL", "Super Trackmaster", "Achieve a super author score", CAT_CAREER, true),
 		new CAchievement("FRANK_WIN_RACE", "True Frank Malcov Award", "Have Frank Malcov win a race", CAT_SINGLEPLAYER),
 		new CAchievement("ALL_AWARDS", "Total Domination", "Win a race with all Top Driver awards", CAT_SINGLEPLAYER),
-		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events", CAT_GENERAL),
-		new CAchievement("KNOCKOUT_RACES", "Volatile Racing", "Win 5 knockout events", CAT_GENERAL),
-		new CAchievement("DRIFT_SCORE", "Professional Drifter", "Get 100,000pts in one drift chain", CAT_GENERAL),
+		new CAchievement("DRIFT_RACES", "Burning Rubber", "Play 3 drift events", CAT_GAMEMODES),
+		new CAchievement("KNOCKOUT_RACES", "Volatile Racing", "Win 5 knockout events", CAT_GAMEMODES),
+		new CAchievement("DRIFT_SCORE", "Professional Drifter", "Get 100,000pts in one drift chain", CAT_GAMEMODES),
 		new CAchievement("HIGH_SPEED", "Ludicrous Speed", "Reach a speed of 500KM/H", CAT_GENERAL),
 		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant", CAT_CAREER),
 		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery", CAT_CAREER),
-		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_GENERAL),
+		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_GENERAL, true),
 		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 10 seconds total", CAT_GENERAL),
 		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 10% health", CAT_GENERAL),
 		new CAchievement("RALLY_RAGDOLL", "Samir Award", "Fly through the windshield in a rally", CAT_RALLY),
 		new CAchievement("CASH_AWARD", "Makin' it Big", "Reach a total balance of 100,000CR", CAT_CAREER),
+		new CAchievement("FRAGDERBY_NO_WRECKS", "Rasputin", "Win a Deathmatch Derby without dying", CAT_GAMEMODES),
+		new CAchievement("STUNT_4FLIP", "Tony Hawk Style", "Get a 4x Flip or Roll in Stunt Show", CAT_GAMEMODES),
 		new CAchievement("COMPLETE_CAREER", "Race Master", "Complete FlatOut mode", CAT_CAREER),
 		new CAchievement("COMPLETE_CAREER_GOLD", "Race Wizard", "Complete FlatOut mode with all gold", CAT_CAREER),
 		new CAchievement("COMPLETE_CARNAGE", "Carnage Veteran", "Complete Carnage Mode", CAT_CARNAGE),
@@ -71,6 +76,10 @@ namespace Achievements {
 		new CAchievement("COMPLETE_CARNAGE_AUTHOR", "Carnage Master", "Complete Carnage Mode with all author", CAT_CARNAGE, true),
 		new CAchievement("COMPLETE_RALLY", "Rally Trophy", "Complete Rally Mode", CAT_RALLY),
 		new CAchievement("COMPLETE_RALLY_GOLD", "Rally Gold Trophy", "Complete Rally Mode with all gold", CAT_RALLY),
+		new CAchievement("STONESKIPPING_FAR", "Pool to Pool", "Land in the last pool in Stone Skipping", CAT_GAMEMODES, true),
+		new CAchievement("FAST_SPEEDTRAP", "Demon Speeding", "Get over 300KM/H in a single speedtrap", CAT_GAMEMODES),
+		new CAchievement("BASEBALL_HOMERUN", "Home Run!", "Get a home run in Baseball", CAT_GAMEMODES),
+		new CAchievement("BOWLING_STRIKE", "Like an Angel", "Get a strike in Bowling", CAT_GAMEMODES),
 	};
 
 	std::vector<CAchievement*> GetAchievementsInCategory(uint32_t category) {
@@ -398,6 +407,26 @@ namespace Achievements {
 		if (pLoadingScreen) return;
 
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			if (pGameFlow->nStuntType == STUNT_STONESKIPPING) {
+				// second pool is around 120
+				if (pCameraManager->pTarget->GetMatrix()->p.z >= 121) {
+					AwardAchievement(GetAchievement("STONESKIPPING_FAR"));
+				}
+			}
+
+			// reset nIsWrecked flag if a frag derby was restarted
+			if (pGameFlow->nDerbyType == DERBY_FRAG && pPlayerHost->nRaceTime < 0) {
+				GetPlayer(0)->pCar->nIsWrecked = 0;
+			}
+
+			if (pGameFlow->nDerbyType == DERBY_FRAG && pGameFlow->nRaceState == RACE_STATE_FINISHED && pPlayerHost->GetNumPlayers() >= 4) {
+				auto ply = GetPlayerScore<PlayerScoreDerby>(1);
+				// Car::nIsWrecked isn't reset after respawning
+				if (ply->nPosition == 1 && ply->bHasFinished && !GetPlayer(0)->pCar->nIsWrecked) {
+					AwardAchievement(GetAchievement("FRAGDERBY_NO_WRECKS"));
+				}
+			}
+
 			if (bIsCareerRally && pGameFlow->nRaceState == RACE_STATE_RACING) {
 				if (GetPlayer(0)->pCar->nIsRagdolled) {
 					AwardAchievement(GetAchievement("RALLY_RAGDOLL"));
@@ -439,9 +468,12 @@ namespace Achievements {
 				auto ply = GetPlayerScore<PlayerScoreRace>(1);
 				if (ply->bHasFinished && ply->nPosition == 1) {
 					AwardAchievement(GetAchievement("WIN_RACE"));
-					if (GetPlayer(0)->nCarId == GetCarDBID(153)) {
-						AwardAchievement(GetAchievement("WIN_RACE_BUG"));
-					}
+					//if ((bIsInMultiplayer && nMultiplayerHandlingMode == HANDLING_PROFESSIONAL) || (!bIsInMultiplayer && nHandlingMode == HANDLING_PROFESSIONAL)) {
+					//	AwardAchievement(GetAchievement("WIN_RACE_PROFESSIONAL"));
+					//}
+					//if (GetPlayer(0)->nCarId == GetCarDBID(153)) {
+					//	AwardAchievement(GetAchievement("WIN_RACE_BUG"));
+					//}
 					if (bIsInMultiplayer) {
 						AwardAchievement(GetAchievement("WIN_MP_RACE"));
 					}
@@ -454,6 +486,15 @@ namespace Achievements {
 							if (!ply->nIsWrecked) anyoneAlive = true;
 						}
 						if (!anyoneAlive) AwardAchievement(GetAchievement("WIN_RACE_WRECK"));
+					}
+				}
+			}
+
+			if (pGameFlow->nDerbyType != DERBY_NONE && pGameFlow->nRaceState == RACE_STATE_FINISHED && pPlayerHost->GetNumPlayers() > 1) {
+				auto ply = GetPlayerScore<PlayerScoreRace>(1);
+				if (ply->bHasFinished && ply->nPosition == 1) {
+					if (bIsInMultiplayer) {
+						AwardAchievement(GetAchievement("WIN_MP_DERBY"));
 					}
 				}
 			}
@@ -493,6 +534,45 @@ namespace Achievements {
 		}
 
 		DrawUnlockUI();
+	}
+
+	void OnHomeRun() {
+		AwardAchievement(GetAchievement("BASEBALL_HOMERUN"));
+	}
+
+	uintptr_t OnHomeRunASM_jmp = 0x4952E0;
+	void __attribute__((naked)) OnHomeRunASM() {
+		__asm__ (
+			"pushad\n\t"
+			"call %1\n\t"
+			"popad\n\t"
+			"mov ecx, 0x813\n\t"
+			"jmp %0\n\t"
+				:
+				:  "m" (OnHomeRunASM_jmp), "i" (OnHomeRun)
+		);
+	}
+
+	void OnStrike() {
+		AwardAchievement(GetAchievement("BOWLING_STRIKE"));
+	}
+
+	uintptr_t OnStrikeASM_jmp = 0x49A873;
+	void __attribute__((naked)) OnStrikeASM() {
+		__asm__ (
+			"pushad\n\t"
+			"call %1\n\t"
+			"popad\n\t"
+			"mov ecx, 0x852\n\t"
+			"jmp %0\n\t"
+				:
+				:  "m" (OnStrikeASM_jmp), "i" (OnStrike)
+		);
+	}
+
+	void Init() {
+		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4952DB, &OnHomeRunASM);
+		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x49A86E, &OnStrikeASM);
 	}
 }
 
