@@ -251,9 +251,10 @@ namespace Achievements {
 			sTextDesc = achievement->sDescription;
 			aUnlockBuffer.erase(aUnlockBuffer.begin());
 
-			if (pGameFlow->nGameState == GAME_STATE_RACE) {
-				auto data = tEventData(EVENT_SFX_ARCADE_AWARD);
-				pEventManager->SendEvent(&data);
+			static auto sound = NyaAudio::LoadFile("data/sound/achievement/unlock.mp3");
+			if (sound) {
+				NyaAudio::SetVolume(sound, *(int*)0x849550 / 100.0);
+				NyaAudio::Play(sound);
 			}
 		}
 
@@ -290,9 +291,9 @@ namespace Achievements {
 			delta = fSpritePopTimer;
 		}
 
-		static auto bgTex = LoadTexture("data/textures/bg.png");
-		static auto bg2Tex = LoadTexture("data/textures/flowersponk.png");
-		static auto fgTex = LoadTexture("data/textures/flowers.png");
+		static auto bgTex = LoadTexture("data/textures/achievement/bg.png");
+		static auto bg2Tex = LoadTexture("data/textures/achievement/flowersponk.png");
+		static auto fgTex = LoadTexture("data/textures/achievement/flowers.png");
 
 		if (delta <= 0) delta = 0;
 		if (delta >= 1) delta = 1;
