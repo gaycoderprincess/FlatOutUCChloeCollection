@@ -1784,6 +1784,7 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAEnum(a1, Achievements::CAT_RALLY, "ACHIEVEMENTS_RALLY");
 	RegisterLUAEnum(a1, Achievements::CAT_GAMEMODES, "ACHIEVEMENTS_GAMEMODES");
 	RegisterLUAEnum(a1, Achievements::CAT_TRACKS, "ACHIEVEMENTS_TRACKS");
+	RegisterLUAEnum(a1, Achievements::CAT_HIDDEN, "ACHIEVEMENTS_HIDDEN");
 
 	RegisterLUAEnum(a1, HANDLING_NORMAL, "HANDLING_NORMAL");
 	RegisterLUAEnum(a1, HANDLING_NORMAL_FO2DOWNFORCE, "HANDLING_NORMAL_FO2DOWNFORCE");

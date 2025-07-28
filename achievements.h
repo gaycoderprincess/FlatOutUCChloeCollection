@@ -15,6 +15,7 @@ namespace Achievements {
 		CAT_RALLY = 32,
 		CAT_GAMEMODES = 64,
 		CAT_TRACKS = 128,
+		CAT_HIDDEN = 256,
 	};
 
 	class CAchievement {
@@ -26,10 +27,10 @@ namespace Achievements {
 		float fInternalProgress = 0;
 		bool bUnlocked = false;
 		bool bHidden = false;
-		int nCategory = 0;
+		uint64_t nCategory = 0;
 
 		CAchievement() = delete;
-		CAchievement(const char* identifier, const char* name, const char* description, int category, bool hidden = false) {
+		CAchievement(const char* identifier, const char* name, const char* description, uint64_t category, bool hidden = false) {
 			sIdentifier = identifier;
 			sName = name;
 			sDescription = description;
@@ -65,7 +66,6 @@ namespace Achievements {
 		new CAchievement("BUY_MATCHUP", "Picky Buyer", "Purchase a car's alternate variant", CAT_CAREER),
 		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery", CAT_CAREER),
 		new CAchievement("CHANGE_MUSIC", "Your Own Jukebox", "Change a music playlist", CAT_GENERAL),
-		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_GENERAL, true),
 		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 10 seconds total", CAT_GENERAL),
 		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 10% health", CAT_GENERAL),
 		new CAchievement("RALLY_RAGDOLL", "Samir Award", "Fly through the windshield in a rally", CAT_RALLY),
@@ -99,6 +99,11 @@ namespace Achievements {
 		new CAchievement("TRACKMASTER_RT", "Rally Map Veteran", "Win an event on every Rally Trophy track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_EVENT", "Event Map Veteran", "Win an event on every Event track", CAT_TRACKS),
 		new CAchievement("TRACKMASTER_DERBY", "Derby Map Veteran", "Win an event on every Derby track", CAT_TRACKS),
+		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_HIDDEN, true),
+		new CAchievement("WIN_NFS3", "Hot Pursuit", "Win a race on Atlantica with the Diablo SV", CAT_HIDDEN, true),
+		new CAchievement("WIN_REVOLT", "Re-Volter", "Win a race on Toys in the Hood with the Toyeca", CAT_HIDDEN, true),
+		new CAchievement("WIN_NFSU2", "URL Racing", "Win a race on Bayview Speedway with the 350Z", CAT_HIDDEN, true),
+		new CAchievement("WIN_GT3", "Real Racing Simulator", "Win a race on Laguna Seca with the Evo V", CAT_HIDDEN, true),
 	};
 
 	std::vector<CAchievement*> GetAchievementsInCategory(uint32_t category) {
@@ -513,6 +518,20 @@ namespace Achievements {
 				auto ply = GetPlayerScore<PlayerScoreRace>(1);
 				if (ply->bHasFinished && ply->nPosition == 1) {
 					AwardAchievement(GetAchievement("WIN_RACE"));
+					int level = pGameFlow->PreRace.nLevel;
+					int car = GetPlayer(0)->nCarId;
+					if (level == TRACK_SECRET1 && car == GetCarDBID(342)) {
+						AwardAchievement(GetAchievement("WIN_REVOLT"));
+					}
+					if (level == TRACK_SECRET2 && car == GetCarDBID(348)) {
+						AwardAchievement(GetAchievement("WIN_GT3"));
+					}
+					if (level == TRACK_SECRET3 && car == GetCarDBID(347)) {
+						AwardAchievement(GetAchievement("WIN_NFS3"));
+					}
+					if ((level >= TRACK_URL1A && level <= TRACK_URL1F) && car == GetCarDBID(352)) {
+						AwardAchievement(GetAchievement("WIN_NFSU2"));
+					}
 					if (GetPlayer(0)->pCar->fDamage <= 0.0) {
 						AwardAchievement(GetAchievement("WIN_RACE_NODAMAGE"));
 					}
