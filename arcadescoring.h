@@ -36,6 +36,10 @@ void OnCrashBonus(int type) {
 		}
 	}
 
+	if (type != INGAME_CRASHBONUS_SUPERFLIP && type != INGAME_CRASHBONUS_WRECKED) {
+		GetAchievement("BLAST_ALL")->fInternalProgress += 1;
+	}
+
 	if (type == INGAME_CRASHBONUS_RAGDOLLED && GetPlayer(0)->nCarId == GetCarDBID(103)) {
 		Achievements::AwardAchievement(GetAchievement("CRASHOUT_PEP"));
 	}

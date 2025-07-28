@@ -47,12 +47,14 @@ namespace Achievements {
 		new CAchievement("WIN_RALLY_RACE", "Aspiring Rally Driver", "Win a rally cup", CAT_RALLY),
 		new CAchievement("WIN_RACE_WRECK", "Eliminator", "Win a race after wrecking everyone", CAT_SINGLEPLAYER),
 		//new CAchievement("WIN_RACE_BUG", "Retro Demo", "Win a race with the Retro Bug", CAT_GENERAL),
+		new CAchievement("WIN_DERBY_TRABANT", "Glass Cannon", "Win a derby with the Trabant 601", CAT_GENERAL),
 		new CAchievement("WIN_RACE_NODAMAGE", "Not a Scratch", "Win a race without taking any damage", CAT_GENERAL),
 		new CAchievement("WIN_RALLY_SAAB", "Boat Award", "Win a rally stage with the Saab 96", CAT_RALLY),
 		new CAchievement("WIN_RALLY_SAAB_2", "Hardcore Boat Award", "Win a rally stage with the Saab 96 on Sadistic", CAT_RALLY, true),
 		new CAchievement("WIN_CUP_PEPPER", "Real Habanero", "Win the last Derby cup with the Pepper", CAT_CAREER),
 		new CAchievement("WRECK_MP", "First Blood", "Wreck a car in multiplayer", CAT_MULTIPLAYER),
 		new CAchievement("BLAST_MP", "Unfriendly Competition", "Get 100 crash bonuses in multiplayer", CAT_MULTIPLAYER),
+		new CAchievement("BLAST_ALL", "Blast Master", "Get 1000 crash bonuses", CAT_GENERAL),
 		new CAchievement("SPEEDRUN_CARNAGE", "Speedrunner", "Gold a Carnage Mode event in less than 1:30", CAT_CARNAGE),
 		new CAchievement("JACK_WRECKED", "Jack Benton is Wrecked", "You know what to do.", CAT_SINGLEPLAYER),
 		new CAchievement("AUTHOR_MEDAL", "Trackmaster", "Achieve an author score", CAT_CAREER | CAT_CARNAGE),
@@ -67,7 +69,7 @@ namespace Achievements {
 		new CAchievement("BUY_CUSTOM_SKIN", "Community-Run", "Purchase a car with a custom livery", CAT_CAREER),
 		new CAchievement("CHANGE_MUSIC", "Your Own Jukebox", "Change a music playlist", CAT_GENERAL),
 		new CAchievement("WATER_FLOAT", "Sleep with the fishes!", "Float on water for 10 seconds total", CAT_GENERAL),
-		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 10% health", CAT_GENERAL),
+		new CAchievement("LOW_HP", "Dead Man Walking", "Win a race on less than 10%% health", CAT_GENERAL),
 		new CAchievement("RALLY_RAGDOLL", "Samir Award", "Fly through the windshield in a rally", CAT_RALLY),
 		new CAchievement("CASH_AWARD", "Makin' it Big", "Reach a total balance of 100,000CR", CAT_CAREER),
 		new CAchievement("FRAGDERBY_NO_WRECKS", "Rasputin", "Win a Deathmatch Derby without dying", CAT_GAMEMODES),
@@ -453,6 +455,12 @@ namespace Achievements {
 				AwardAchievement(achievement);
 			}
 		}
+		if (auto achievement = GetAchievement("BLAST_ALL")) {
+			achievement->nProgress = achievement->fInternalProgress * 0.1;
+			if (achievement->nProgress >= 100) {
+				AwardAchievement(achievement);
+			}
+		}
 
 		if (pLoadingScreen) return;
 
@@ -477,7 +485,7 @@ namespace Achievements {
 				}
 			}
 
-			if (bIsCareerRally && pGameFlow->nRaceState == RACE_STATE_RACING) {
+			if ((bIsCareerRally || (bIsTimeTrial && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IsRallyTrack"))) && pGameFlow->nRaceState == RACE_STATE_RACING) {
 				if (GetPlayer(0)->pCar->nIsRagdolled) {
 					AwardAchievement(GetAchievement("RALLY_RAGDOLL"));
 				}
@@ -562,6 +570,9 @@ namespace Achievements {
 				if (ply->bHasFinished && ply->nPosition == 1) {
 					if (bIsInMultiplayer) {
 						AwardAchievement(GetAchievement("WIN_MP_DERBY"));
+					}
+					if (GetPlayer(0)->nCarId == GetCarDBID(365)) {
+						AwardAchievement(GetAchievement("WIN_DERBY_TRABANT"));
 					}
 				}
 			}
