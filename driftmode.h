@@ -165,6 +165,14 @@ namespace DriftMode {
 		sDriftNotif = str;
 	}
 
+	std::string OnTrack_DriftScore(Achievements::CAchievement* pThis) {
+		if (!bIsDriftEvent || pLoadingScreen || pGameFlow->nGameState != GAME_STATE_RACE || pGameFlow->nGameRules != GR_ARCADE_RACE || fCurrentDriftChain <= 0) {
+			return "Current Chain: N/A";
+		}
+
+		return std::format("Current Chain: {:.0f}pts", fCurrentDriftChain * nDriftChainMultiplier);
+	}
+
 	void OnTick() {
 		static CNyaTimer gTimer;
 		gTimer.Process();
@@ -183,6 +191,9 @@ namespace DriftMode {
 		if (pLoadingScreen) return;
 		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
 		if (pGameFlow->nGameRules != GR_ARCADE_RACE) return;
+
+		GetAchievement("DRIFT_SCORE")->pTrackFunction = OnTrack_DriftScore;
+
 		DrawHUD();
 	}
 

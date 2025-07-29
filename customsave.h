@@ -534,13 +534,24 @@ void ProcessPlayStats() {
 	fTrackCheckTimer += gTimer.fDeltaTime;
 	if (fTrackCheckTimer > 3) {
 		for (auto& trackType : trackTypes) {
-			int numTracks = gCustomSave.GetNumTracksInCategory(trackType.category);
 			int numTracksWon = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
 			auto achievement = GetAchievement(trackType.achievement);
+			if (achievement->fMaxInternalProgress <= 0) {
+				achievement->fMaxInternalProgress = gCustomSave.GetNumTracksInCategory(trackType.category);
+			}
 			achievement->fInternalProgress = numTracksWon;
-			achievement->nProgress = (achievement->fInternalProgress / (double)numTracks) * 100;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
+
+			achievement->sTrackString = "";
+			if (!achievement->bUnlocked) {
+				for (int i = 1; i < GetNumTracks() + 1; i++) {
+					if (!gCustomSave.IsTrackValidForStat(trackType.category, i)) continue;
+					if (gCustomSave.tracksWon[i]) continue;
+
+					if (!achievement->sTrackString.empty()) achievement->sTrackString += ", ";
+					achievement->sTrackString += GetTrackName(i);
+				}
+				achievement->sTrackString = "Remaining: " + achievement->sTrackString;
+				achievement->pTrackFunction = Achievements::OnTrack_GenericString;
 			}
 		}
 		fTrackCheckTimer = 0;

@@ -30,6 +30,10 @@ namespace Achievements {
 		bool bHidden = false;
 		uint64_t nCategory = 0;
 		void(*pTickFunction)(CAchievement*, double) = nullptr;
+		std::string(*pTrackFunction)(CAchievement*) = nullptr;
+		std::string sTrackString;
+
+		bool bTracked = false;
 
 		CAchievement() = delete;
 		CAchievement(const char* identifier, const char* name, const char* description, uint64_t category, bool hidden = false) {
@@ -406,11 +410,6 @@ namespace Achievements {
 	}
 
 	void OnTick_DriftRaces(CAchievement* pThis, double delta) {
-		pThis->nProgress = (pThis->fInternalProgress / 3.0) * 100;
-		if (pThis->nProgress >= 100) {
-			AwardAchievement(pThis);
-		}
-
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
 			static bool bLast = false;
 			bool bCurrent = bIsDriftEvent && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
@@ -424,11 +423,6 @@ namespace Achievements {
 		}
 	}
 	void OnTick_KnockoutRaces(CAchievement* pThis, double delta) {
-		pThis->nProgress = (pThis->fInternalProgress / 5.0) * 100;
-		if (pThis->nProgress >= 100) {
-			AwardAchievement(pThis);
-		}
-
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
 			static bool bLast = false;
 			bool bCurrent = bIsLapKnockout && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
@@ -445,9 +439,10 @@ namespace Achievements {
 		pThis->nProgress = (pThis->fInternalProgress / 0.9) * 100;
 
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
-			static bool bLastRaceEnded = false;
-			if (IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
-				if (!bLastRaceEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && !GetPlayerScore<PlayerScoreRace>(1)->bIsDNF) {
+			static bool bLast = false;
+			bool bCurrent = IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
+			if (bCurrent) {
+				if (!bLast && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && !GetPlayerScore<PlayerScoreRace>(1)->bIsDNF) {
 					auto damage = GetPlayer(0)->pCar->fDamage;
 					if (damage > pThis->fInternalProgress) pThis->fInternalProgress = damage;
 					if (damage >= 0.9) {
@@ -455,7 +450,7 @@ namespace Achievements {
 					}
 				}
 			}
-			bLastRaceEnded = IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
+			bLast = bCurrent;
 		}
 	}
 	void OnTick_CashAward(CAchievement* pThis, double delta) {
@@ -542,6 +537,57 @@ namespace Achievements {
 			}
 		}
 	}
+	std::string OnTrack_GenericProgress(CAchievement* pThis) {
+		return std::format("Progress: {:.0f}/{}", pThis->fInternalProgress, pThis->fMaxInternalProgress);
+	}
+	std::string OnTrack_GenericString(CAchievement* pThis) {
+		return pThis->sTrackString;
+	}
+	std::string OnTrack_LowHP(CAchievement* pThis) {
+		if (pGameFlow->nGameState == GAME_STATE_RACE && IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
+			return std::format("Health: {:.0f}%%", 1.0 - GetPlayer(0)->pCar->fDamage);
+		}
+		return "Health: N/A";
+	}
+	std::string OnTrack_SpeedrunCarnage(CAchievement* pThis) {
+		if (pGameFlow->nGameState == GAME_STATE_RACE && pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) {
+			if (pGameFlow->nGameRules == GR_ARCADE_RACE || pGameFlow->nGameRules == GR_BEAT_THE_BOMB) {
+				std::string timestr = GetTimeFromMilliseconds(90000 - pPlayerHost->nRaceTime, true);
+				timestr.pop_back(); // remove trailing 0, the game has a tickrate of 100fps
+				return std::format("Time Left: {}", timestr);
+			}
+		}
+		return "Time Left: N/A";
+	}
+	std::string OnTrack_DriftScore(CAchievement* pThis) {
+		return "Current Chain: N/A";
+	}
+
+	const float fTrackPosX = 0.04;
+	const float fTrackPosY = 0.04;
+	const float fTrackSize = 0.02;
+	const float fTrackSpacing = 0.03;
+
+	void DrawTrackUI() {
+		tNyaStringData data;
+		data.x = fTrackPosX * GetAspectRatioInv();
+		data.y = fTrackPosY;
+		data.size = fTrackSize;
+
+		for (auto achievement: gAchievements) {
+			if (!achievement->bTracked) continue;
+			if (!achievement->pTrackFunction) continue;
+			if (achievement->bUnlocked) continue;
+			auto string = achievement->pTrackFunction(achievement);
+			if (string.empty()) continue;
+			DrawString(data, achievement->sName, &DrawStringFO2);
+			data.y += fTrackSpacing;
+			DrawString(data, achievement->sDescription, &DrawStringFO2);
+			data.y += fTrackSpacing;
+			DrawString(data, string, &DrawStringFO2);
+			data.y += fTrackSpacing * 2;
+		}
+	}
 
 	void OnTick() {
 		nTotalProgression = ((double)GetNumUnlockedAchievements() / (double)GetNumVisibleAchievements()) * 100;
@@ -556,7 +602,7 @@ namespace Achievements {
 
 			if (achievement->fMaxInternalProgress > 0) {
 				achievement->nProgress = (achievement->fInternalProgress / achievement->fMaxInternalProgress) * 100;
-				if (achievement->nProgress >= 100) {
+				if (achievement->fInternalProgress >= (achievement->fMaxInternalProgress - 0.001)) {
 					AwardAchievement(achievement);
 				}
 			}
@@ -621,6 +667,7 @@ namespace Achievements {
 			}
 		}
 
+		DrawTrackUI();
 		DrawUnlockUI();
 	}
 
@@ -692,6 +739,20 @@ namespace Achievements {
 		GetAchievement("JACK_WRECKED")->pTickFunction = OnTick_JackWrecked;
 		GetAchievement("FRANK_WIN_RACE")->pTickFunction = OnTick_FrankWinRace;
 
+		GetAchievement("LOW_HP")->pTrackFunction = OnTrack_LowHP;
+		GetAchievement("SPEEDRUN_CARNAGE")->pTrackFunction = OnTrack_SpeedrunCarnage;
+		GetAchievement("DRIFT_SCORE")->pTrackFunction = OnTrack_DriftScore;
+		GetAchievement("DRIFT_RACES")->pTrackFunction = OnTrack_GenericProgress;
+		GetAchievement("KNOCKOUT_RACES")->pTrackFunction = OnTrack_GenericProgress;
+		GetAchievement("COMPLETE_CARNAGE")->pTrackFunction = OnTrack_GenericProgress;
+		GetAchievement("COMPLETE_CARNAGE_GOLD")->pTrackFunction = OnTrack_GenericProgress;
+		GetAchievement("COMPLETE_CARNAGE_AUTHOR")->pTrackFunction = OnTrack_GenericProgress;
+		GetAchievement("WATER_FLOAT")->pTrackFunction = OnTrack_GenericProgress;
+		GetAchievement("BLAST_MP")->pTrackFunction = OnTrack_GenericProgress;
+		GetAchievement("BLAST_ALL")->pTrackFunction = OnTrack_GenericProgress;
+
+		GetAchievement("DRIFT_RACES")->fMaxInternalProgress = 3;
+		GetAchievement("KNOCKOUT_RACES")->fMaxInternalProgress = 5;
 		GetAchievement("COMPLETE_CARNAGE")->fMaxInternalProgress = 36;
 		GetAchievement("COMPLETE_CARNAGE_GOLD")->fMaxInternalProgress = 36;
 		GetAchievement("COMPLETE_CARNAGE_AUTHOR")->fMaxInternalProgress = 36;

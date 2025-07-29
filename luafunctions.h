@@ -1537,7 +1537,11 @@ int ChloeCollection_GetAchievementName(void* a1) {
 int ChloeCollection_GetAchievementDescription(void* a1) {
 	auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr));
 	if (!achievement) return 0;
-	std::wstring str = GetStringWide(achievement->sDescription);
+	auto desc = (std::string)achievement->sDescription;
+	if (!achievement->bUnlocked && achievement->fMaxInternalProgress > 0) {
+		desc += std::format(" ({:.0f}/{})", achievement->fInternalProgress, achievement->fMaxInternalProgress);
+	}
+	std::wstring str = GetStringWide(desc);
 	lua_pushlstring(a1, str.c_str(), (str.length() + 1) * 2);
 	return 1;
 }
@@ -1545,10 +1549,14 @@ int ChloeCollection_GetAchievementDescription(void* a1) {
 int ChloeCollection_GetAchievementProgression(void* a1) {
 	auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr));
 	if (!achievement) return 0;
+
 	int progress = achievement->nProgress;
 	if (progress < 0) progress = 0;
 	if (progress > 100) progress = 100;
+
 	if (achievement->bUnlocked) progress = 100;
+	else if (progress == 100) progress = 99;
+
 	lua_pushnumber(a1, progress);
 	return 1;
 }
@@ -1574,6 +1582,21 @@ int ChloeCollection_GetNumAchievementsInCategory(void* a1) {
 	auto achievements = Achievements::GetAchievementsInCategory(luaL_checknumber(a1, 1));
 	lua_pushnumber(a1, achievements.size());
 	return 1;
+}
+
+int ChloeCollection_SetAchievementTracked(void* a1) {
+	if (auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr))) {
+		achievement->bTracked = !achievement->bTracked;
+	}
+	return 0;
+}
+
+int ChloeCollection_GetAchievementTrackable(void* a1) {
+	if (auto achievement = GetAchievement((const char*)lua_tolstring(a1, 1, nullptr))) {
+		lua_pushboolean(a1, !achievement->bUnlocked && achievement->pTrackFunction != nullptr);
+		return 1;
+	}
+	return 0;
 }
 
 int ChloeCollection_SetTrackWon(void* a1) {
@@ -1774,6 +1797,8 @@ void CustomLUAFunctions(void* a1) {
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementCompleted, "ChloeCollection_GetAchievementCompleted");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementInCategory, "ChloeCollection_GetAchievementInCategory");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetNumAchievementsInCategory, "ChloeCollection_GetNumAchievementsInCategory");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetAchievementTracked, "ChloeCollection_SetAchievementTracked");
+	RegisterLUAFunction(a1, (void*)&ChloeCollection_GetAchievementTrackable, "ChloeCollection_GetAchievementTrackable");
 	RegisterLUAFunction(a1, (void*)&ChloeCollection_SetTrackWon, "ChloeCollection_SetTrackWon");
 
 	RegisterLUAEnum(a1, Achievements::CAT_GENERAL, "ACHIEVEMENTS_GENERAL");

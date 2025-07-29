@@ -143,11 +143,7 @@ void __fastcall CarBuoyancy(Car* pCar) {
 	if (ProcessBuoyancy(pCar->fMass, pCar->GetVelocity(), pCar->GetAngVelocity(), GetAverageAmountSubmerged(*pCar->GetMatrix(), pCar->vCollisionFullMin, pCar->vCollisionFullMax))) {
 		pCar->pPlayer->nTimeInAir = 0; // remove nitro gain for airtime when in water
 		if (pCar->pPlayer->nPlayerType == PLAYERTYPE_LOCAL) {
-			auto achievement = GetAchievement("WATER_FLOAT");
-			achievement->fInternalProgress += gTimer.Process();
-			if (achievement->fInternalProgress >= 10) {
-				AwardAchievement(achievement);
-			}
+			GetAchievement("WATER_FLOAT")->fInternalProgress += gTimer.Process();
 		}
 	}
 }
