@@ -25,9 +25,11 @@ namespace Achievements {
 		const char* sDescription;
 		int nProgress = 0;
 		float fInternalProgress = 0;
+		float fMaxInternalProgress = 0;
 		bool bUnlocked = false;
 		bool bHidden = false;
 		uint64_t nCategory = 0;
+		void(*pTickFunction)(CAchievement*, double) = nullptr;
 
 		CAchievement() = delete;
 		CAchievement(const char* identifier, const char* name, const char* description, uint64_t category, bool hidden = false) {
@@ -403,125 +405,166 @@ namespace Achievements {
 		DrawAchievementSprite(fSpriteFGX - (fSpriteFGSX * fgSize), fSpriteFGX + (fSpriteFGSX * fgSize), fSpriteFGY - (fSpriteFGSY * fgSize), fSpriteFGY + (fSpriteFGSY * fgSize), {255,255,255,255}, fgTex);
 	}
 
+	void OnTick_DriftRaces(CAchievement* pThis, double delta) {
+		pThis->nProgress = (pThis->fInternalProgress / 3.0) * 100;
+		if (pThis->nProgress >= 100) {
+			AwardAchievement(pThis);
+		}
+
+		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			static bool bLast = false;
+			bool bCurrent = bIsDriftEvent && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
+			if (bCurrent) {
+				if (!bLast && GetPlayerScore<PlayerScoreArcadeRace>(1)->fScore > 50000) {
+					pThis->fInternalProgress += 1;
+					Save(nCurrentSaveSlot);
+				}
+			}
+			bLast = bCurrent;
+		}
+	}
+	void OnTick_KnockoutRaces(CAchievement* pThis, double delta) {
+		pThis->nProgress = (pThis->fInternalProgress / 5.0) * 100;
+		if (pThis->nProgress >= 100) {
+			AwardAchievement(pThis);
+		}
+
+		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			static bool bLast = false;
+			bool bCurrent = bIsLapKnockout && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
+			if (bCurrent) {
+				if (!bLast && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && GetPlayerScore<PlayerScoreRace>(1)->bHasFinished) {
+					pThis->fInternalProgress += 1;
+					Save(nCurrentSaveSlot);
+				}
+			}
+			bLast = bCurrent;
+		}
+	}
+	void OnTick_LowHP(CAchievement* pThis, double delta) {
+		pThis->nProgress = (pThis->fInternalProgress / 0.9) * 100;
+
+		if (pGameFlow->nGameState == GAME_STATE_RACE) {
+			static bool bLastRaceEnded = false;
+			if (IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
+				if (!bLastRaceEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && !GetPlayerScore<PlayerScoreRace>(1)->bIsDNF) {
+					auto damage = GetPlayer(0)->pCar->fDamage;
+					if (damage > pThis->fInternalProgress) pThis->fInternalProgress = damage;
+					if (damage >= 0.9) {
+						AwardAchievement(pThis);
+					}
+				}
+			}
+			bLastRaceEnded = IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
+		}
+	}
+	void OnTick_CashAward(CAchievement* pThis, double delta) {
+		pThis->fInternalProgress = pGameFlow->Profile.nMoney;
+		pThis->nProgress = (pThis->fInternalProgress / 100000.0) * 100;
+	}
+	void OnTick_StoneSkippingFar(CAchievement* pThis, double delta) {
+		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+		if (pGameFlow->nStuntType != STUNT_STONESKIPPING) return;
+
+		// second pool is around 120
+		if (pCameraManager->pTarget->GetMatrix()->p.z >= 121) {
+			AwardAchievement(pThis);
+		}
+	}
+	void OnTick_RallyRagdoll(CAchievement* pThis, double delta) {
+		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+
+		if ((bIsCareerRally || (bIsTimeTrial && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IsRallyTrack"))) && pGameFlow->nRaceState == RACE_STATE_RACING) {
+			if (GetPlayer(0)->pCar->nIsRagdolled) {
+				AwardAchievement(pThis);
+			}
+		}
+	}
+	void OnTick_FragDerbyNoWrecks(CAchievement* pThis, double delta) {
+		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+		if (pGameFlow->nDerbyType != DERBY_FRAG) return;
+
+		// reset nIsWrecked flag if a frag derby was restarted
+		if (pPlayerHost->nRaceTime < 0) {
+			GetPlayer(0)->pCar->nIsWrecked = 0;
+		}
+
+		if (pGameFlow->nRaceState == RACE_STATE_FINISHED && pPlayerHost->GetNumPlayers() >= 4) {
+			auto ply = GetPlayerScore<PlayerScoreDerby>(1);
+			// Car::nIsWrecked isn't reset after respawning
+			if (ply->nPosition == 1 && ply->bHasFinished && !GetPlayer(0)->pCar->nIsWrecked) {
+				AwardAchievement(pThis);
+			}
+		}
+	}
+	void OnTick_HighSpeed(CAchievement* pThis, double delta) {
+		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+		if (pGameFlow->nRaceState != RACE_STATE_RACING) return;
+
+		if (auto ply = GetPlayer(0)) {
+			if (ply->pCar->GetVelocity()->length() >= 138.8) {
+				AwardAchievement(pThis);
+			}
+		}
+	}
+	void OnTick_CheatCar(CAchievement* pThis, double delta) {
+		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+		if (pGameFlow->nRaceState != RACE_STATE_RACING) return;
+		if (bIsInMultiplayer) return;
+
+		auto ply = GetPlayer(0);
+		auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", ply->nCarId).c_str());
+		if (table->DoesPropertyExist("CheatCode")) {
+			AwardAchievement(pThis);
+		}
+	}
+	void OnTick_JackWrecked(CAchievement* pThis, double delta) {
+		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+		if (!IsRaceMode()) return;
+		if (bIsInMultiplayer || bIsLapKnockout || bIsTimeTrial) return;
+		if (pGameFlow->nRaceState < RACE_STATE_RACING) return;
+
+		if (auto ply = GetPlayerScore<PlayerScoreRace>(2)) {
+			if (ply->bIsDNF) {
+				AwardAchievement(pThis);
+			}
+		}
+	}
+	void OnTick_FrankWinRace(CAchievement* pThis, double delta) {
+		if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+		if (!IsRaceMode()) return;
+		if (bIsInMultiplayer || bIsLapKnockout || bIsTimeTrial) return;
+		if (pGameFlow->nRaceState < RACE_STATE_RACING) return;
+
+		if (auto ply = GetPlayerScore<PlayerScoreRace>(8)) {
+			if (ply->bHasFinished && ply->nPosition == 1) {
+				AwardAchievement(pThis);
+			}
+		}
+	}
+
 	void OnTick() {
 		nTotalProgression = ((double)GetNumUnlockedAchievements() / (double)GetNumVisibleAchievements()) * 100;
 
-		if (auto achievement = GetAchievement("DRIFT_RACES")) {
-			achievement->nProgress = (achievement->fInternalProgress / 3.0) * 100;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
+		static CNyaTimer gTimer;
+		gTimer.Process();
+
+		for (auto achievement: gAchievements) {
+			if (!pLoadingScreen && achievement->pTickFunction) {
+				achievement->pTickFunction(achievement, gTimer.fDeltaTime);
 			}
-		}
-		if (auto achievement = GetAchievement("KNOCKOUT_RACES")) {
-			achievement->nProgress = (achievement->fInternalProgress / 5.0) * 100;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
-			}
-		}
-		if (auto achievement = GetAchievement("COMPLETE_CARNAGE")) {
-			achievement->nProgress = (achievement->fInternalProgress / 36.0) * 100;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
-			}
-		}
-		if (auto achievement = GetAchievement("COMPLETE_CARNAGE_GOLD")) {
-			achievement->nProgress = (achievement->fInternalProgress / 36.0) * 100;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
-			}
-		}
-		if (auto achievement = GetAchievement("COMPLETE_CARNAGE_AUTHOR")) {
-			achievement->nProgress = (achievement->fInternalProgress / 36.0) * 100;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
-			}
-		}
-		if (auto achievement = GetAchievement("WATER_FLOAT")) {
-			achievement->nProgress = (achievement->fInternalProgress / 10.0) * 100;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
-			}
-		}
-		if (auto achievement = GetAchievement("CASH_AWARD")) {
-			achievement->fInternalProgress = pGameFlow->Profile.nMoney;
-			achievement->nProgress = (achievement->fInternalProgress / 100000.0) * 100;
-		}
-		if (auto achievement = GetAchievement("LOW_HP")) {
-			achievement->nProgress = (achievement->fInternalProgress / 0.9) * 100;
-		}
-		if (auto achievement = GetAchievement("BLAST_MP")) {
-			achievement->nProgress = achievement->fInternalProgress;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
-			}
-		}
-		if (auto achievement = GetAchievement("BLAST_ALL")) {
-			achievement->nProgress = achievement->fInternalProgress * 0.1;
-			if (achievement->nProgress >= 100) {
-				AwardAchievement(achievement);
+
+			if (achievement->fMaxInternalProgress > 0) {
+				achievement->nProgress = (achievement->fInternalProgress / achievement->fMaxInternalProgress) * 100;
+				if (achievement->nProgress >= 100) {
+					AwardAchievement(achievement);
+				}
 			}
 		}
 
 		if (pLoadingScreen) return;
 
 		if (pGameFlow->nGameState == GAME_STATE_RACE) {
-			if (pGameFlow->nStuntType == STUNT_STONESKIPPING) {
-				// second pool is around 120
-				if (pCameraManager->pTarget->GetMatrix()->p.z >= 121) {
-					AwardAchievement(GetAchievement("STONESKIPPING_FAR"));
-				}
-			}
-
-			// reset nIsWrecked flag if a frag derby was restarted
-			if (pGameFlow->nDerbyType == DERBY_FRAG && pPlayerHost->nRaceTime < 0) {
-				GetPlayer(0)->pCar->nIsWrecked = 0;
-			}
-
-			if (pGameFlow->nDerbyType == DERBY_FRAG && pGameFlow->nRaceState == RACE_STATE_FINISHED && pPlayerHost->GetNumPlayers() >= 4) {
-				auto ply = GetPlayerScore<PlayerScoreDerby>(1);
-				// Car::nIsWrecked isn't reset after respawning
-				if (ply->nPosition == 1 && ply->bHasFinished && !GetPlayer(0)->pCar->nIsWrecked) {
-					AwardAchievement(GetAchievement("FRAGDERBY_NO_WRECKS"));
-				}
-			}
-
-			if ((bIsCareerRally || (bIsTimeTrial && DoesTrackValueExist(pGameFlow->PreRace.nLevel, "IsRallyTrack"))) && pGameFlow->nRaceState == RACE_STATE_RACING) {
-				if (GetPlayer(0)->pCar->nIsRagdolled) {
-					AwardAchievement(GetAchievement("RALLY_RAGDOLL"));
-				}
-			}
-
-			static bool bLastDriftEnded = false;
-			if (bIsDriftEvent && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
-				if (!bLastDriftEnded && GetPlayerScore<PlayerScoreArcadeRace>(1)->fScore > 50000) {
-					GetAchievement("DRIFT_RACES")->fInternalProgress += 1;
-					Save(nCurrentSaveSlot);
-				}
-			}
-			bLastDriftEnded = bIsDriftEvent && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
-
-			static bool bLastKOEnded = false;
-			if (bIsLapKnockout && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
-				if (!bLastKOEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && GetPlayerScore<PlayerScoreRace>(1)->bHasFinished) {
-					GetAchievement("KNOCKOUT_RACES")->fInternalProgress += 1;
-					Save(nCurrentSaveSlot);
-				}
-			}
-			bLastKOEnded = bIsLapKnockout && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
-
-			static bool bLastRaceEnded = false;
-			if (IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
-				if (!bLastRaceEnded && GetPlayerScore<PlayerScoreRace>(1)->nPosition == 1 && !GetPlayerScore<PlayerScoreRace>(1)->bIsDNF) {
-					auto achievement = GetAchievement("LOW_HP");
-					auto damage = GetPlayer(0)->pCar->fDamage;
-					if (damage > achievement->fInternalProgress) achievement->fInternalProgress = damage;
-					if (damage >= 0.9) {
-						AwardAchievement(GetAchievement("LOW_HP"));
-					}
-				}
-			}
-			bLastRaceEnded = IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED;
-
 			if (IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState == RACE_STATE_FINISHED && pPlayerHost->GetNumPlayers() > 1) {
 				auto ply = GetPlayerScore<PlayerScoreRace>(1);
 				if (ply->bHasFinished && ply->nPosition == 1) {
@@ -573,39 +616,6 @@ namespace Achievements {
 					}
 					if (GetPlayer(0)->nCarId == GetCarDBID(365)) {
 						AwardAchievement(GetAchievement("WIN_DERBY_TRABANT"));
-					}
-				}
-			}
-
-			if (IsRaceMode() && pGameFlow->nRaceState >= RACE_STATE_RACING) {
-				if (!bIsInMultiplayer) {
-					if (!bIsLapKnockout && !bIsTimeTrial) {
-						if (auto ply = GetPlayerScore<PlayerScoreRace>(2)) {
-							if (ply->bIsDNF) {
-								AwardAchievement(GetAchievement("JACK_WRECKED"));
-							}
-						}
-					}
-
-					if (auto ply = GetPlayerScore<PlayerScoreRace>(8)) {
-						if (ply->bHasFinished && ply->nPosition == 1) {
-							AwardAchievement(GetAchievement("FRANK_WIN_RACE"));
-						}
-					}
-				}
-			}
-
-			if (pGameFlow->nRaceState == RACE_STATE_RACING) {
-				if (auto ply = GetPlayer(0)) {
-					if (ply->pCar->GetVelocity()->length() >= 138.8) {
-						AwardAchievement(GetAchievement("HIGH_SPEED"));
-					}
-
-					if (!bIsInMultiplayer) {
-						auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", ply->nCarId).c_str());
-						if (table->DoesPropertyExist("CheatCode")) {
-							AwardAchievement(GetAchievement("CHEAT_CAR"));
-						}
 					}
 				}
 			}
@@ -669,6 +679,25 @@ namespace Achievements {
 		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4952DB, &OnHomeRunASM);
 		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x49A86E, &OnStrikeASM);
 		NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x4E2F5F, &OnRoyalFlushASM);
+
+		GetAchievement("DRIFT_RACES")->pTickFunction = OnTick_DriftRaces;
+		GetAchievement("KNOCKOUT_RACES")->pTickFunction = OnTick_KnockoutRaces;
+		GetAchievement("LOW_HP")->pTickFunction = OnTick_LowHP;
+		GetAchievement("CASH_AWARD")->pTickFunction = OnTick_CashAward;
+		GetAchievement("STONESKIPPING_FAR")->pTickFunction = OnTick_StoneSkippingFar;
+		GetAchievement("RALLY_RAGDOLL")->pTickFunction = OnTick_RallyRagdoll;
+		GetAchievement("FRAGDERBY_NO_WRECKS")->pTickFunction = OnTick_FragDerbyNoWrecks;
+		GetAchievement("HIGH_SPEED")->pTickFunction = OnTick_HighSpeed;
+		GetAchievement("CHEAT_CAR")->pTickFunction = OnTick_CheatCar;
+		GetAchievement("JACK_WRECKED")->pTickFunction = OnTick_JackWrecked;
+		GetAchievement("FRANK_WIN_RACE")->pTickFunction = OnTick_FrankWinRace;
+
+		GetAchievement("COMPLETE_CARNAGE")->fMaxInternalProgress = 36;
+		GetAchievement("COMPLETE_CARNAGE_GOLD")->fMaxInternalProgress = 36;
+		GetAchievement("COMPLETE_CARNAGE_AUTHOR")->fMaxInternalProgress = 36;
+		GetAchievement("WATER_FLOAT")->fMaxInternalProgress = 10;
+		GetAchievement("BLAST_MP")->fMaxInternalProgress = 100;
+		GetAchievement("BLAST_ALL")->fMaxInternalProgress = 1000;
 	}
 }
 
