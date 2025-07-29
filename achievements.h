@@ -544,8 +544,8 @@ namespace Achievements {
 		return pThis->sTrackString;
 	}
 	std::string OnTrack_LowHP(CAchievement* pThis) {
-		if (pGameFlow->nGameState == GAME_STATE_RACE && IsRaceMode() && !bIsTimeTrial && pGameFlow->nRaceState >= RACE_STATE_FINISHED) {
-			return std::format("Health: {:.0f}%%", 1.0 - GetPlayer(0)->pCar->fDamage);
+		if (pGameFlow->nGameState == GAME_STATE_RACE && IsRaceMode() && !bIsTimeTrial) {
+			return std::format("Health: {:.0f}%%", (1.0 - GetPlayer(0)->pCar->fDamage) * 100);
 		}
 		return "Health: N/A";
 	}

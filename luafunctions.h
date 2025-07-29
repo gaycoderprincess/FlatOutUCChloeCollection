@@ -196,7 +196,7 @@ void GenerateUnlockList() {
 			}
 		}
 
-		for (int j = 0; j < 1024; j++) {
+		for (int j = 0; j < 512; j++) {
 			if (config["main"]["car_" + std::to_string(j)].value_or(-1) == unlockCarDataID) {
 				int dbId = GetCarDBID(j);
 				if (dbId < 0) continue;
@@ -272,37 +272,6 @@ int ChloeArcade_SetLenientMultipliers(void* a1) {
 	bool use = luaL_checknumber(a1, 1) != 0.0;
 	SetArcadeRaceMultiplierPointer(use ? fArcadeRacePositionMultiplierLenient : fArcadeRacePositionMultiplier);
 	return 0;
-}
-
-int IsCarLocked(void* a1) {
-	luaL_checktype(a1, 1, 7);
-	auto ppData = (Garage**)luaL_checkudata(a1, 1, "Garage");
-	if (!ppData) {
-		luaL_typerror(a1, 1, "Garage");
-	}
-	auto pGarage = *ppData;
-
-	auto id = (int)luaL_checknumber(a1, 2);
-	if (IsCarAlwaysUnlocked(id)) {
-		lua_pushboolean(a1, false);
-		return 1;
-	}
-
-	if (id > 48) { // 46 and 47 are Bonecracker and Grinder
-		id = GetUnlockIDForCustomCar(id, true);
-	}
-	// and allow the config to change vanilla cars too if desired
-	else if (auto replacementId = GetUnlockIDForCustomCar(id, false)) {
-		id = replacementId;
-	}
-
-	if (IsCarAlwaysUnlocked(id)) {
-		lua_pushboolean(a1, false);
-		return 1;
-	}
-
-	lua_pushboolean(a1, pGarage->aCarUnlocks[id].bIsLocked != 0);
-	return 1;
 }
 
 uint32_t GetTotalArcadeScore(PlayerProfile* profile) {
@@ -1869,7 +1838,6 @@ void ApplyLUAPatches() {
 	NyaFO2Hooks::PlaceScriptHook();
 	NyaFO2Hooks::aScriptFuncs.push_back(CustomLUAFunctions);
 
-	NyaHookLib::Patch(0x715C50, &IsCarLocked);
 	NyaHookLib::Patch(0x715B0C, &GetArcadeLevelPosition);
 	NyaHookLib::Patch(0x715B24, &IsArcadeLevelLocked);
 	NyaHookLib::Patch(0x715B3C, &GetArcadeLevelScore);

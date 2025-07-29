@@ -66,6 +66,7 @@ void WriteLog(const std::string& str) {
 #include "buoyancy.h"
 #include "nonetwork.h"
 #include "ddsparser.h"
+#include "carunlocks.h"
 #include "debugmenu.h"
 
 void SetArcadeCareerCar() {
@@ -300,6 +301,7 @@ void CustomSetterThread() {
 	SetGlobalFudgeFactor();
 	SetCustomMapExtents();
 	SetCarnageRaceSmoke();
+	SetCarUnlocks();
 }
 
 auto LoadMapIconsTGA_call = (void*(__stdcall*)(void*, const char*, int, int))0x5A6F00;

@@ -844,10 +844,24 @@ void ProcessDebugMenu() {
 	}
 	if (pCupManager && DrawMenuOption("Cup State")) {
 		ChloeMenuLib::BeginMenu();
-		DrawDebugMenuViewerOption(std::format("In Cup - {}", pCupManager->nResultsValid));
+
+		if (pCupManager->sCupName.string) {
+			DrawDebugMenuViewerOption(pCupManager->sCupName.Get());
+		}
+
+		if (DrawMenuOption(std::format("Current Race - {}/{}", pCupManager->nCurrentRace, pCupManager->nNumRaces))) {
+			ChloeMenuLib::BeginMenu();
+
+			auto race = &pCupManager->aRaces[pCupManager->nCurrentRace];
+			DrawDebugMenuViewerOption(std::format("Level - {}", GetTrackName(race->nLevel)));
+			DrawDebugMenuViewerOption(std::format("Laps - {}", race->nLaps));
+			DrawDebugMenuViewerOption(std::format("Start Position - {}", race->nStartPosition));
+			
+			ChloeMenuLib::EndMenu();
+		}
 		for (int i = 0; i < 32; i++) {
 			auto ply = pCupManager->aStandings[i];
-			DrawMenuOption(std::format("{}: Player {}, {} pts", i+1, ply.nPlayerId, ply.nCupPoints));
+			DrawDebugMenuViewerOption(std::format("{}: Player {}, {} pts", i+1, ply.nPlayerId, ply.nCupPoints));
 		}
 		ChloeMenuLib::EndMenu();
 	}
