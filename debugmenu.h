@@ -527,6 +527,12 @@ void ProcessDebugMenu() {
 			gCustomSave.nRallyCupNextStage = i;
 		}
 
+		if (DrawMenuOption(std::format("Car Skin - {}", gCustomSave.nRallyCarSkinId))) {
+			int i = gCustomSave.nRallyCarSkinId;
+			ValueEditorMenu(i);
+			gCustomSave.nRallyCarSkinId = i;
+		}
+
 		ChloeMenuLib::EndMenu();
 	}
 
@@ -856,7 +862,7 @@ void ProcessDebugMenu() {
 			DrawDebugMenuViewerOption(std::format("Level - {}", GetTrackName(race->nLevel)));
 			DrawDebugMenuViewerOption(std::format("Laps - {}", race->nLaps));
 			DrawDebugMenuViewerOption(std::format("Start Position - {}", race->nStartPosition));
-			
+
 			ChloeMenuLib::EndMenu();
 		}
 		for (int i = 0; i < 32; i++) {
