@@ -453,6 +453,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			static float fZero = 0.0;
 			NyaHookLib::Patch(0x44041F + 2, &fZero); // default engine smoke position
 
+			static double fPowerupRange = 2.0;
+			NyaHookLib::Patch(0x4F022B + 2, &fPowerupRange); // frag derby powerup pickup range
+
 			srand(time(0));
 		} break;
 		default:
