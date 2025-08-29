@@ -530,33 +530,6 @@ void ProcessPlayStats() {
 			{ TRACKTYPE_DERBY, "TRACKMASTER_DERBY" },
 	};
 
-	static double fTrackCheckTimer = 3;
-	fTrackCheckTimer += gTimer.fDeltaTime;
-	if (fTrackCheckTimer > 3) {
-		for (auto& trackType : trackTypes) {
-			int numTracksWon = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
-			auto achievement = GetAchievement(trackType.achievement);
-			if (achievement->fMaxInternalProgress <= 0) {
-				achievement->fMaxInternalProgress = gCustomSave.GetNumTracksInCategory(trackType.category);
-			}
-			achievement->fInternalProgress = numTracksWon;
-
-			achievement->sTrackString = "";
-			if (!achievement->bUnlocked) {
-				for (int i = 1; i < GetNumTracks() + 1; i++) {
-					if (!gCustomSave.IsTrackValidForStat(trackType.category, i)) continue;
-					if (gCustomSave.tracksWon[i]) continue;
-
-					if (!achievement->sTrackString.empty()) achievement->sTrackString += ", ";
-					achievement->sTrackString += GetTrackName(i);
-				}
-				achievement->sTrackString = "Remaining: " + achievement->sTrackString;
-				achievement->pTrackFunction = Achievements::OnTrack_GenericString;
-			}
-		}
-		fTrackCheckTimer = 0;
-	}
-
 	// migrate playtime stats from doubles to the new int64s
 	for (int i = 0; i < NUM_PLAYTIME_TYPES_OLD; i++) {
 		if (gCustomSave.playtimeOld[i] > 0) {
@@ -704,6 +677,28 @@ void ProcessPlayStats() {
 
 	static auto lastGameState = pGameFlow->nGameState;
 	if (lastGameState == GAME_STATE_RACE && pGameFlow->nGameState == GAME_STATE_MENU) {
+		for (auto& trackType : trackTypes) {
+			int numTracksWon = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
+			auto achievement = GetAchievement(trackType.achievement);
+			if (achievement->fMaxInternalProgress <= 0) {
+				achievement->fMaxInternalProgress = gCustomSave.GetNumTracksInCategory(trackType.category);
+			}
+			achievement->fInternalProgress = numTracksWon;
+
+			achievement->sTrackString = "";
+			if (!achievement->bUnlocked) {
+				for (int i = 1; i < GetNumTracks() + 1; i++) {
+					if (!gCustomSave.IsTrackValidForStat(trackType.category, i)) continue;
+					if (gCustomSave.tracksWon[i]) continue;
+
+					if (!achievement->sTrackString.empty()) achievement->sTrackString += ", ";
+					achievement->sTrackString += GetTrackName(i);
+				}
+				achievement->sTrackString = "Remaining: " + achievement->sTrackString;
+				achievement->pTrackFunction = Achievements::OnTrack_GenericString;
+			}
+		}
+
 		gCustomSave.Save();
 	}
 	lastGameState = pGameFlow->nGameState;
