@@ -84,7 +84,7 @@ const char* aPlaytimeTypeNames[] = {
 	"Stunt Show",
 	"Time Trial",
 	"Drift",
-	"Lap Knockout",
+	"Knockout",
 	"Speedtrap",
 	"Rally Mode",
 };

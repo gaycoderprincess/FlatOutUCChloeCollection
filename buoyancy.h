@@ -145,6 +145,9 @@ void __fastcall CarBuoyancy(Car* pCar) {
 		if (pCar->pPlayer->nPlayerType == PLAYERTYPE_LOCAL) {
 			GetAchievement("WATER_FLOAT")->fInternalProgress += gTimer.Process();
 		}
+		if (!bIsInMultiplayer && pCar->pPlayer->nPlayerId == 13) {
+			Achievements::AwardAchievement(GetAchievement("NEVILLE_WATER"));
+		}
 	}
 }
 
