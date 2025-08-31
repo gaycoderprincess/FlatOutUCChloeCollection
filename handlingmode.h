@@ -45,6 +45,8 @@ int GetHandlingMode() {
 		return HANDLING_NORMAL;
 	}
 	if (bIsInMultiplayer) return nMultiplayerHandlingMode;
+	// don't allow professional for carnage mode
+	if (pGameFlow->PreRace.nMode == GM_ARCADE_CAREER && nHandlingMode == HANDLING_PROFESSIONAL) return HANDLING_NORMAL;
 	return nHandlingMode;
 }
 
@@ -89,14 +91,12 @@ void SetFO2Downforce(bool on) {
 
 void SetSlideControl() {
 	static int nLastHandling = -1;
-	static bool bLastCareerTimeTrial = false;
 
 	int nCurrentHandling = GetHandlingMode();
-	if (nLastHandling != nCurrentHandling || bLastCareerTimeTrial != CareerTimeTrial::bIsCareerTimeTrial) {
+	if (nLastHandling != nCurrentHandling) {
 		SetFO2Downforce(nCurrentHandling != HANDLING_NORMAL && nCurrentHandling != HANDLING_PROFESSIONAL && nCurrentHandling != HANDLING_NORMAL_LEGACY && !CareerTimeTrial::bIsCareerTimeTrial);
 		SetSlideControl(nCurrentHandling == HANDLING_PROFESSIONAL);
 		SetBetaHandling(nCurrentHandling == HANDLING_BETA);
 		nLastHandling = nCurrentHandling;
-		bLastCareerTimeTrial = CareerTimeTrial::bIsCareerTimeTrial;
 	}
 }
