@@ -717,12 +717,12 @@ void DrawSplitHUD() {
 				data.r = 255;
 				data.g = 0;
 				data.b = 0;
-				str = std::format("-{:.0f} KMH",diff);
+				str = std::format("-{:.0f} {}",diff, bImperialUnits ? "MPH" : "KMH");
 			} else {
 				data.r = 0;
 				data.g = 255;
 				data.b = 0;
-				str = std::format("+{:.0f} KMH",diff);
+				str = std::format("+{:.0f} {}",diff, bImperialUnits ? "MPH" : "KMH");
 			}
 
 			data.y += data.size;
@@ -825,7 +825,7 @@ void __fastcall OnSplitpoint(Player* player, int id) {
 	if (id >= pTrackAI->pTrack->nNumSplitpoints * pScoreManager->nNumLaps) return;
 
 	auto time = pGameFlow->pHost->nRaceTime;
-	auto speed = player->pCar->GetVelocity()->length() * 3.6;
+	auto speed = player->pCar->GetVelocity()->length() * (bImperialUnits ? 2.236936 : 3.6);
 	/*if (bIsTimeTrial) {
 		int lap = player->nCurrentLap;
 		if (lap > 0 && (player->nCurrentSplit % pTrackAI->pTrack->nNumSplitpoints) == 0) lap--;

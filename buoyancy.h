@@ -134,6 +134,9 @@ void __attribute__((naked)) __fastcall PropBuoyancyASM() {
 	);
 }
 
+float fBoatAccelForce = 0.2;
+float fBoatBrakeForce = 0.1;
+
 void __fastcall CarBuoyancy(Car* pCar) {
 	// no car water physics for stone skipping or you'll auto-reset
 	if (pGameFlow->nStuntType == STUNT_STONESKIPPING && pCar->nIsRagdolled) return;
@@ -148,6 +151,10 @@ void __fastcall CarBuoyancy(Car* pCar) {
 		if (!bIsInMultiplayer && pCar->pPlayer->nPlayerId == 13) {
 			Achievements::AwardAchievement(GetAchievement("NEVILLE_WATER"));
 		}
+		//if (bIsBoat) {
+		//	*pCar->GetVelocity() += pCar->GetMatrix()->z * pCar->fGasPedal * fBoatAccelForce;
+		//	*pCar->GetVelocity() -= pCar->GetMatrix()->z * pCar->fBrakePedal * fBoatBrakeForce;
+		//}
 	}
 }
 

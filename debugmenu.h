@@ -392,6 +392,14 @@ void WriteTrackListDebug() {
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
+	//if (DrawMenuOption(std::format("fBoatAccelForce - {}", fBoatAccelForce))) {
+	//	ValueEditorMenu(fBoatAccelForce);
+	//}
+	//
+	//if (DrawMenuOption(std::format("fBoatBrakeForce - {}", fBoatBrakeForce))) {
+	//	ValueEditorMenu(fBoatBrakeForce);
+	//}
+
 	if (DrawMenuOption(std::format("Force Alternate Ray Carter - {}", bForceRayAltProfile), "", false, false)) {
 		bForceRayAltProfile = !bForceRayAltProfile;
 	}
