@@ -552,7 +552,7 @@ namespace Achievements {
 	}
 	std::string OnTrack_SpeedrunCarnage(CAchievement* pThis) {
 		if (pGameFlow->nGameState == GAME_STATE_RACE && pGameFlow->PreRace.nMode == GM_ARCADE_CAREER) {
-			if (pGameFlow->nGameRules == GR_ARCADE_RACE || pGameFlow->nGameRules == GR_BEAT_THE_BOMB) {
+			if (pGameFlow->nGameRules == GR_ARCADE_RACE || pGameFlow->nGameRules == GR_BEAT_THE_BOMB || pGameFlow->nDerbyType == DERBY_FRAG) {
 				std::string timestr = GetTimeFromMilliseconds(90000 - pPlayerHost->nRaceTime, true);
 				timestr.pop_back(); // remove trailing 0, the game has a tickrate of 100fps
 				return std::format("Time Left: {}", timestr);
