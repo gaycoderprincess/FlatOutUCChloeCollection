@@ -283,6 +283,34 @@ void WriteSplitpoints() {
 	fout << "\n}";
 }
 
+void WriteVanillaSplitpoints() {
+	std::ofstream fout((std::string)GetTrackName(pGameFlow->PreRace.nLevel) + "_splitpoints.bed", std::ios::out);
+	if (!fout.is_open()) return;
+
+	fout << "Count = ";
+	fout << pEnvironment->nNumSplitpoints;
+	fout << "\n\nSplitpoints = {";
+	for (int i = 0; i < pEnvironment->nNumSplitpoints; i++) {
+		auto& data = pEnvironment->aSplitpoints[i];
+		tSplitpoint point;
+		point.left.x = data.fLeft[0];
+		point.left.y = data.fLeft[1];
+		point.left.z = data.fLeft[2];
+		point.right.x = data.fRight[0];
+		point.right.y = data.fRight[1];
+		point.right.z = data.fRight[2];
+		point.pos.x = data.fPosition[0];
+		point.pos.y = data.fPosition[1];
+		point.pos.z = data.fPosition[2];
+		fout << std::format("\n\t[{}] = {{", i + 1);
+		fout << std::format("\n\t\tPosition = {{ {}, {}, {} }},", point.pos.x, point.pos.y, point.pos.z);
+		fout << std::format("\n\t\tLeft = {{ {}, {}, {} }},", point.left.x, point.left.y, point.left.z);
+		fout << std::format("\n\t\tRight = {{ {}, {}, {} }},", point.right.x, point.right.y, point.right.z);
+		fout << "\n\n\t},";
+	}
+	fout << "\n}";
+}
+
 void WriteSpline(std::ofstream& fout, std::vector<NyaVec3>& vec, const std::string& name) {
 	if (vec.empty()) return;
 
@@ -322,6 +350,32 @@ void WriteStartpoints() {
 		}
 
 		fout << std::format("\n\t[{}] = {{", (&point - &aCustomStartpoints[0]) + 1);
+		fout << std::format("\n\t\tPosition = {{ {}, {}, {} }},", point[12], point[13], point[14]);
+		fout << "\n\t\tOrientation = {";
+		fout << std::format("\n\t\t\t[\"x\"]={{{},{},{}}},", point[0], point[1], point[2]);
+		fout << std::format("\n\t\t\t[\"y\"]={{{},{},{}}},", point[4], point[5], point[6]);
+		fout << std::format("\n\t\t\t[\"z\"]={{{},{},{}}},", point[8], point[9], point[10]);
+		fout << "\n\t\t},";
+		fout << "\n\n\t},";
+	}
+	fout << "\n}";
+}
+
+void WriteVanillaStartpoints() {
+	std::ofstream fout((std::string)GetTrackName(pGameFlow->PreRace.nLevel) + "_startpoints.bed", std::ios::out);
+	if (!fout.is_open()) return;
+
+	fout << "Count = ";
+	fout << pEnvironment->nNumStartpoints;
+	fout << "\n\nStartpoints = {";
+	for (int i = 0; i < pEnvironment->nNumStartpoints; i++) {
+		auto data = pEnvironment->aStartpoints[i];
+		NyaMat4x4 point;
+		memcpy(&point, data.fMatrix, sizeof(point));
+		point.p.x = data.fPosition[0];
+		point.p.y = data.fPosition[1];
+		point.p.z = data.fPosition[2];
+		fout << std::format("\n\t[{}] = {{", i + 1);
 		fout << std::format("\n\t\tPosition = {{ {}, {}, {} }},", point[12], point[13], point[14]);
 		fout << "\n\t\tOrientation = {";
 		fout << std::format("\n\t\t\t[\"x\"]={{{},{},{}}},", point[0], point[1], point[2]);
@@ -632,6 +686,9 @@ void ProcessDebugMenu() {
 						}
 					}
 				}
+				if (DrawMenuOption("Dump Vanilla Startpoints", "", false, false)) {
+					WriteVanillaStartpoints();
+				}
 			}
 			else {
 				DrawDebugMenuViewerOption("Not in a race");
@@ -657,6 +714,9 @@ void ProcessDebugMenu() {
 					if (DrawMenuOption("Delete All Splitpoints", "", false, false)) {
 						aCustomSplitpoints.clear();
 					}
+				}
+				if (DrawMenuOption("Dump Vanilla Splitpoints", "", false, false)) {
+					WriteVanillaSplitpoints();
 				}
 			}
 			else {
