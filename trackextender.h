@@ -174,6 +174,8 @@ void SetTrackCustomProperties() {
 		// disable local player marker
 		NyaHookLib::Patch<uint64_t>(0x4F210A, noMap ? 0x909090000000BCE9 : 0x00014024848B168B);
 
+		NyaHookLib::Patch(0x55ED63 + 1, DoesTrackValueExist(pGameFlow->PreRace.nLevel, "UseFO1Soundtrack") ? "data/global/dynamics/surfaces_fo1.bed" : "data/global/dynamics/surfaces.bed");
+
 		if (!bIsStuntMode) {
 			NyaHookLib::Patch<uint64_t>(0x4DF94E, DoesTrackValueExist(pGameFlow->PreRace.nLevel, "NoWrongWay") ? 0x0E606800000E32E9 : 0x0E606809298FD8A1);
 		}
@@ -228,7 +230,7 @@ void SetTrackCustomProperties() {
 	NyaHookLib::Patch(0x57AD6A + 2, increasedNegY2 ? &fNegYExtentsExtended2 : (increasedNegY ? &fNegYExtentsExtended : &fNegYExtents));
 }
 
-uintptr_t InitTrackASM_jmp = 0x55AAB9;
+uintptr_t InitTrackASM_jmp;
 void __attribute__((naked)) __fastcall InitTrackASM() {
 	__asm__ (
 		"pushad\n\t"
