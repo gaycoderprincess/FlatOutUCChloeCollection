@@ -769,7 +769,7 @@ void ProcessDebugMenu() {
 		if (DrawMenuOption("Sectors Creator")) {
 			ChloeMenuLib::BeginMenu();
 			if (pGameFlow->nGameState == GAME_STATE_RACE) {
-				if (DrawMenuOption(std::format("Capture Mode - {}", bSectorCapture), "Hold X to set sector speed limit")) {
+				if (DrawMenuOption(std::format("Capture Mode - {}", bSectorCapture), "Hold X to set speed limit, C to clear")) {
 					bSectorCapture = !bSectorCapture;
 				}
 				if (DrawMenuOption(std::format("Sector Speed Offset - {}", fSectorLeniency))) {
