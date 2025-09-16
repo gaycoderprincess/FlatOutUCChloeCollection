@@ -994,6 +994,14 @@ void ProcessDebugMenu() {
 		DrawDebugMenuViewerOption(std::format("Player Progress - {:.0f}%", GetLocalPlayerProgressInStage()*100));
 		DrawDebugMenuViewerOption(std::format("Player Pointer - {:X}", (uintptr_t)ply));
 		DrawDebugMenuViewerOption(std::format("Player Car Pointer - {:X}", (uintptr_t)ply->pCar));
+		//DrawDebugMenuViewerOption(std::format("Player Sector - {}", (ply->pCurrentSector - pTrackAI->aSectors) + 1));
+		DrawDebugMenuViewerOption(std::format("Player Sector Pointer - {:X}", (uintptr_t)ply->pCurrentSector));
+		if (ply->pCurrentSector) {
+			if (DrawMenuOption(std::format("Player Sector Speed Limit - {}", ply->pCurrentSector->fSpeedLimit))) {
+				ValueEditorMenu(ply->pCurrentSector->fSpeedLimit);
+			}
+		}
+		//DrawDebugMenuViewerOption(std::format("Track Sector Count - {}", pTrackAI->nNumSectors));
 
 		if (bIsDriftEvent) {
 			auto car = ply->pCar;

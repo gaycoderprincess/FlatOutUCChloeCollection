@@ -456,6 +456,12 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			static double fPowerupRange = 2.0;
 			NyaHookLib::Patch(0x4F022B + 2, &fPowerupRange); // frag derby powerup pickup range
 
+			/*std::string str;
+			for (int i = 0x4D8380; i < 0x4D8494; i++) {
+				str += std::format("0x{:X}, ", *(uint8_t*)i);
+			}
+			WriteLog(str);*/
+
 			srand(time(0));
 		} break;
 		default:
