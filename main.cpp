@@ -300,6 +300,7 @@ void CustomSetterThread() {
 	SetPlayerList();
 	SetGlobalFudgeFactor();
 	SetCustomMapExtents();
+	SetNewSectors();
 	SetCarnageRaceSmoke();
 	SetCarUnlocks();
 }

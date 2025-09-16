@@ -443,6 +443,32 @@ void WriteTrackListDebug() {
 	}
 }
 
+bool bSectorCapture = false;
+float fSectorLeniency = 0;
+void WriteSectors() {
+	std::ofstream fout(std::format("Config/Sectors/{}.ai", GetTrackName(pGameFlow->PreRace.nLevel)), std::ios::out);
+	if (!fout.is_open()) return;
+
+	fout << "SectorCount = ";
+	fout << pTrackAI->nNumSectors;
+	fout << "\n\nSectors = {";
+	for (int i = 0; i < pTrackAI->nNumSectors; i++) {
+		fout << std::format("\n\t[{}] = {{ SpeedLimit = {:.0f} }},", i + 1, pTrackAI->aSectors[i].fSpeedLimit - fSectorLeniency);
+	}
+	fout << "\n}";
+}
+
+void WriteBinarySectors() {
+	std::ofstream fout(std::format("Config/Sectors/{}.bin", GetTrackName(pGameFlow->PreRace.nLevel)), std::ios::out | std::ios::binary);
+	if (!fout.is_open()) return;
+
+	fout.write((char*)&pTrackAI->nNumSectors, sizeof(pTrackAI->nNumSectors));
+	for (int i = 0; i < pTrackAI->nNumSectors; i++) {
+		float f = pTrackAI->aSectors[i].fSpeedLimit - fSectorLeniency;
+		fout.write((char*)&f, sizeof(f));
+	}
+}
+
 void ProcessDebugMenu() {
 	ChloeMenuLib::BeginMenu();
 
@@ -740,6 +766,27 @@ void ProcessDebugMenu() {
 			}
 			ChloeMenuLib::EndMenu();
 		}
+		if (DrawMenuOption("Sectors Creator")) {
+			ChloeMenuLib::BeginMenu();
+			if (pGameFlow->nGameState == GAME_STATE_RACE) {
+				if (DrawMenuOption(std::format("Capture Mode - {}", bSectorCapture), "Hold X to set sector speed limit")) {
+					bSectorCapture = !bSectorCapture;
+				}
+				if (DrawMenuOption(std::format("Sector Speed Offset - {}", fSectorLeniency))) {
+					ValueEditorMenu(fSectorLeniency);
+				}
+				if (DrawMenuOption("Save FO1 Style Sectors", "", false, false)) {
+					WriteSectors();
+				}
+				if (DrawMenuOption("Save Chloe Collection Sectors", "", false, false)) {
+					WriteBinarySectors();
+				}
+			}
+			else {
+				DrawDebugMenuViewerOption("Not in a race");
+			}
+			ChloeMenuLib::EndMenu();
+		}
 		if (DrawMenuOption("Resetpoint Editor")) {
 			ChloeMenuLib::BeginMenu();
 			if (pGameFlow->nGameState == GAME_STATE_RACE) {
@@ -994,14 +1041,14 @@ void ProcessDebugMenu() {
 		DrawDebugMenuViewerOption(std::format("Player Progress - {:.0f}%", GetLocalPlayerProgressInStage()*100));
 		DrawDebugMenuViewerOption(std::format("Player Pointer - {:X}", (uintptr_t)ply));
 		DrawDebugMenuViewerOption(std::format("Player Car Pointer - {:X}", (uintptr_t)ply->pCar));
-		//DrawDebugMenuViewerOption(std::format("Player Sector - {}", (ply->pCurrentSector - pTrackAI->aSectors) + 1));
+		DrawDebugMenuViewerOption(std::format("Player Sector - {}", (ply->pCurrentSector - pTrackAI->aSectors) + 1));
 		DrawDebugMenuViewerOption(std::format("Player Sector Pointer - {:X}", (uintptr_t)ply->pCurrentSector));
 		if (ply->pCurrentSector) {
 			if (DrawMenuOption(std::format("Player Sector Speed Limit - {}", ply->pCurrentSector->fSpeedLimit))) {
 				ValueEditorMenu(ply->pCurrentSector->fSpeedLimit);
 			}
 		}
-		//DrawDebugMenuViewerOption(std::format("Track Sector Count - {}", pTrackAI->nNumSectors));
+		DrawDebugMenuViewerOption(std::format("Track Sector Count - {}", pTrackAI->nNumSectors));
 
 		if (bIsDriftEvent) {
 			auto car = ply->pCar;
@@ -1026,6 +1073,36 @@ void ProcessDebugMenu() {
 	}
 
 	ChloeMenuLib::EndMenu();
+}
+
+void DebugLoop() {
+	if (!bSectorCapture) return;
+	if (pLoadingScreen) return;
+	if (pGameFlow->nGameState != GAME_STATE_RACE) return;
+	auto ply = GetPlayer(0);
+	if (!ply) return;
+	if (!ply->pCurrentSector) return;
+
+	tNyaStringData data;
+	data.x = 0.5;
+	data.y = 0.9;
+	data.size = 0.03;
+	data.XCenterAlign = true;
+	DrawString(data, std::format("Sector {}/{}", ply->pCurrentSector - pTrackAI->aSectors, pTrackAI->nNumSectors));
+	data.y += data.size;
+	DrawString(data, std::format("{} KM/H", ply->pCurrentSector->fSpeedLimit));
+
+	// clear sector
+	if (IsKeyPressed('C')) {
+		ply->pCurrentSector->fSpeedLimit = -1;
+		return;
+	}
+
+	// set speed limit
+	if (IsKeyPressed('X')) {
+		auto speed = ply->pCar->GetVelocity()->length() * 3.6;
+		if (speed > ply->pCurrentSector->fSpeedLimit) ply->pCurrentSector->fSpeedLimit = speed;
+	}
 }
 
 void ApplyDebugMenuPatches() {

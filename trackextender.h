@@ -472,6 +472,34 @@ void SetCustomMapExtents() {
 	}
 }
 
+void SetNewSectors() {
+	static bool bMapSet = false;
+
+	if (pGameFlow->nGameState != GAME_STATE_RACE) {
+		bMapSet = false;
+		return;
+	}
+	if (pLoadingScreen) return;
+	if (!pTrackAI) return;
+
+	if (bMapSet) return;
+	bMapSet = true;
+
+	auto path = std::format("Config/Sectors/{}.bin", GetTrackName(pGameFlow->PreRace.nLevel));
+	if (!std::filesystem::exists(path)) return;
+
+	std::ifstream fin(path, std::ios::in | std::ios::binary);
+	if (!fin.is_open()) return;
+
+	int count = 0;
+	fin.read((char*)&count, sizeof(count));
+	for (int i = 0; i < count; i++) {
+		float f;
+		fin.read((char*)&f, sizeof(f));
+		pTrackAI->aSectors[i].fSpeedLimit = f;
+	}
+}
+
 void ApplyTrackExtenderPatches() {
 	InitTrackASM_jmp = NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x55E775, &InitTrackASM);
 	//NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55EF38, &ForceWaterPlaneASM);

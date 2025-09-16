@@ -1,3 +1,5 @@
+void DebugLoop();
+
 void HookLoop() {
 	*(float*)0x716034 = 480.1f; // hack to fix font scale
 	ProcessCustomInputWindow();
@@ -12,6 +14,7 @@ void HookLoop() {
 	DriftMode::OnTick();
 	LapKnockoutMode::OnTick();
 	Achievements::OnTick();
+	DebugLoop();
 	CommonMain();
 	*(float*)0x716034 = 480.0f;
 }
