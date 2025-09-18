@@ -797,6 +797,14 @@ void ProcessDebugMenu() {
 					point.split = ply->nCurrentSplit % pEnvironment->nNumSplitpoints;
 					aNewResetPoints.push_back(point);
 				}
+				if (DrawMenuOption("Add Startpoints as Resets")) {
+					for (int i = 0; i < pEnvironment->nNumStartpoints; i++) {
+						tResetpoint reset;
+						memcpy(&reset.matrix, pEnvironment->aStartpoints[i].fMatrix, sizeof(reset.matrix));
+						reset.split = -1;
+						aNewResetPoints.push_back(reset);
+					}
+				}
 				if (!aNewResetPoints.empty()) {
 					if (DrawMenuOption(std::format("Edit Resetpoints ({})", aNewResetPoints.size()))) {
 						ChloeMenuLib::BeginMenu();
