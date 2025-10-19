@@ -44,10 +44,6 @@ std::string GetTimeString(double time_in_sec) {
 	return std::format("{}:{:02}:{:02}", h, m, s);
 }
 
-bool PacenoteComp(tPacenoteSpeech* a, tPacenoteSpeech* b) {
-	return a->speechName < b->speechName;
-}
-
 void PacenoteTypeEditor(int& out) {
 	static bool bHidePlaceholders = false;
 	static bool bHideMissing = false;
@@ -81,8 +77,8 @@ void PacenoteTypeEditor(int& out) {
 			tmpSpeeches.push_back(&speech);
 		}
 	}
-	std::sort(tmpSpeeches.begin(),tmpSpeeches.end(),PacenoteComp);
-	std::sort(tmpSpeechesLR.begin(),tmpSpeechesLR.end(),PacenoteComp);
+	std::sort(tmpSpeeches.begin(),tmpSpeeches.end(),[] (tPacenoteSpeech* a, tPacenoteSpeech* b) { return a->speechName < b->speechName; });
+	std::sort(tmpSpeechesLR.begin(),tmpSpeechesLR.end(),[] (tPacenoteSpeech* a, tPacenoteSpeech* b) { return a->speechName < b->speechName; });
 
 	// sort left/right first for convenience, then everything else, then distance
 	for (auto& note : tmpSpeechesLR) {

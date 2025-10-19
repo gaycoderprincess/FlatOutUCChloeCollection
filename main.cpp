@@ -340,6 +340,8 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 		case DLL_PROCESS_ATTACH: {
 			DoFlatOutVersionCheck(FO2Version::FOUC_GFWL);
 
+			srand(time(0));
+
 			// after race finish, autopilot starts being read:
 			// 00481EAB
 			// 00478EBB
@@ -462,8 +464,6 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 				str += std::format("0x{:X}, ", *(uint8_t*)i);
 			}
 			WriteLog(str);*/
-
-			srand(time(0));
 		} break;
 		default:
 			break;
