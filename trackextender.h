@@ -24,7 +24,8 @@ struct tResetpoint {
 std::vector<tResetpoint> aNewResetPoints;
 void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
 	*car->GetMatrix() = pos;
-	bool isReversed = pGameFlow->PreRace.nReversed;
+	//bool isReversed = pGameFlow->PreRace.nReversed;
+	bool isReversed = false;
 	if (pGameFlow->nGameRules == GR_PONGRACE && car->pPlayer->nCurrentLap % 2 == 1) {
 		isReversed = !isReversed;
 	}
@@ -43,7 +44,7 @@ void ResetCarAt(Car* car, const NyaMat4x4& pos, float speed) {
 }
 
 std::string GetResetPointFilename(bool withSplits) {
-	return (std::string)"Config/Resets/" + GetTrackName(pGameFlow->PreRace.nLevel) + (withSplits ? ".rst2" : ".rst");
+	return (std::string)"Config/Resets/" + GetTrackName(pGameFlow->PreRace.nLevel) + (pGameFlow->PreRace.nReversed ? " REVERSED" : "") + (withSplits ? ".rst2" : ".rst");
 }
 
 void SaveResetPoints(const std::string& filename, bool withSplits) {
