@@ -1881,3 +1881,8 @@ void ApplyLUAPatches() {
 	NyaHookLib::Patch(0x715B54, &GetArcadeTotalScore);
 	//NyaHookLib::Patch(0x462615 + 1, &DebugConsolePrint);
 }
+
+int nPlayerTeamColor = -1;
+extern "C" __declspec(dllexport) void __cdecl ChloeCollection_SetUseTeamColor(int color) {
+	nPlayerTeamColor = color;
+}

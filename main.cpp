@@ -130,14 +130,18 @@ void SetPlayerColor() {
 	}
 
 	static int nLastPlayerColor = -1;
-	if (nLastPlayerColor != nPlayerColor) {
-		int colorId = nPlayerColor;
+	int playerColor = nPlayerColor;
+	if (nPlayerTeamColor >= 0) {
+		playerColor = nPlayerTeamColor;
+	}
+	if (nLastPlayerColor != playerColor) {
+		int colorId = playerColor;
 		if (colorId < 0) colorId = 0;
 		NyaHookLib::Patch(0x469835, colorId + 100);
 		NyaHookLib::Patch(0x46983B, &gPalette[colorId + 100]);
 		NyaHookLib::Patch(0x469875, colorId + 100);
 		NyaHookLib::Patch(0x46987B, &gPalette[colorId + 100]);
-		nLastPlayerColor = nPlayerColor;
+		nLastPlayerColor = playerColor;
 	}
 }
 
