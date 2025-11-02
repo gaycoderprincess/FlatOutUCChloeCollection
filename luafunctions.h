@@ -654,31 +654,44 @@ int ChloePacenotes_GetNumVisualTypes(void* a1) {
 	return 1;
 }
 
-bool DoesCheatMatchAnyCarOrTrack(const std::string& str) {
-	if (str == "temp350") {
-		bPropCarsUnlocked = !bPropCarsUnlocked;
-		return true;
-	}
-
+std::vector<std::string> GetCarsUnlockedByCheat(const std::string& str) {
+	std::vector<std::string> unlocks;
 	for (int i = 0; i < GetNumCars(); i++) {
 		auto table = GetLiteDB()->GetTable(std::format("FlatOut2.Cars.Car[{}]", i).c_str());
 		if (table->DoesPropertyExist("CheatCode")) {
 			auto cheat = (std::string)table->GetPropertyAsString("CheatCode");
 			std::transform(cheat.begin(), cheat.end(), cheat.begin(), [](unsigned char c){ return std::tolower(c); });
 			if (cheat == str) {
-				return true;
+				unlocks.push_back(GetCarName(i));
 			}
 		}
 	}
+	return unlocks;
+}
+
+std::vector<std::string> GetTracksUnlockedByCheat(const std::string& str) {
+	std::vector<std::string> unlocks;
 	for (int i = 1; i < GetNumTracks() + 1; i++) {
 		if (!DoesTrackExist(i)) continue;
 		if (!DoesTrackValueExist(i, "CheatCode")) continue;
 		auto cheat = (std::string)GetTrackValueString(i, "CheatCode");
 		std::transform(cheat.begin(), cheat.end(), cheat.begin(), [](unsigned char c){ return std::tolower(c); });
 		if (cheat == str) {
-			return true;
+			if (DoesTrackValueExist(i, "NoAI")) unlocks.push_back(std::format("{} (Time trial only)", GetTrackName(i)));
+			else unlocks.push_back(GetTrackName(i));
 		}
 	}
+	return unlocks;
+}
+
+bool DoesCheatMatchAnyCarOrTrack(const std::string& str) {
+	if (str == "temp350") {
+		bPropCarsUnlocked = !bPropCarsUnlocked;
+		return true;
+	}
+
+	if (!GetCarsUnlockedByCheat(str).empty()) return true;
+	if (!GetTracksUnlockedByCheat(str).empty()) return true;
 	return false;
 }
 
@@ -690,24 +703,48 @@ int ChloeCollection_CheckCheatCode(void* a1) {
 		for (auto& cheat : aCarCheatsEntered) {
 			if (cheat == str) {
 				isEntered = true;
+				PushOnScreenMessage("Cheat already active");
 				break;
 			}
 		}
-		if (!isEntered) {
+		if (str == "temp350") {
+			PushOnScreenMessage(bPropCarsUnlocked ? "Cheat activated" : "Cheat deactivated");
+			PushOnScreenMessage(bPropCarsUnlocked ? "Special cars unlocked" : "Special cars hidden");
+		}
+		else if (!isEntered) {
 			aCarCheatsEntered.push_back(str);
 			gCustomSave.Save();
+
+			PushOnScreenMessage("Cheat activated");
+
+			auto cars = GetCarsUnlockedByCheat(str);
+			auto tracks = GetTracksUnlockedByCheat(str);
+			for (auto& car : cars) {
+				PushOnScreenMessage(std::format("Car unlocked: {}", car));
+			}
+			for (auto& track : tracks) {
+				PushOnScreenMessage(std::format("Track unlocked: {}", track));
+			}
 		}
 		lua_pushboolean(a1, true);
 	}
 	else if (str == "pressplay") {
 		bUnlockAllArcadeEvents = !bUnlockAllArcadeEvents;
 		lua_pushboolean(a1, true);
+		PushOnScreenMessage(bUnlockAllArcadeEvents ? "Cheat activated" : "Cheat deactivated");
+		if (bUnlockAllArcadeEvents) PushOnScreenMessage("All arcade events unlocked");
 	}
 	else if (str == "fuckmyphysicsupfam") {
 		bNoDownforceCheat = !bNoDownforceCheat;
+		PushOnScreenMessage(bNoDownforceCheat ? "Cheat activated" : "Cheat deactivated");
+		PushOnScreenMessage(bNoDownforceCheat ? "Downforce removed" : "Downforce re-enabled");
 		lua_pushboolean(a1, true);
 	}
 	else lua_pushboolean(a1, false);
+
+	if (str == "insertcoin" || str == "housemarque" || str == "gameover" || str == "ghosthunter") {
+		PushOnScreenMessage("Cheat activated");
+	}
 
 	// if prop cars got locked by this entry, remove temp350 from the savefile
 	if (!bPropCarsUnlocked) {

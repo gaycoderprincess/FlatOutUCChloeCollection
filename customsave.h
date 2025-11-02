@@ -22,6 +22,7 @@ std::vector<std::string> aCarCheatsEnteredInSavegame;
 int nArcadePlatinumTargets[nNumArcadeRacesX][nNumArcadeRacesY];
 bool bPropCarsUnlocked = false;
 bool bUnlockAllArcadeEvents = false;
+void UpdateTrackmasterAchievements();
 
 struct tCarTuning {
 	bool initialized = false;
@@ -272,6 +273,7 @@ struct tCustomSaveStructure {
 			}
 		}
 		Achievements::Load(nSaveSlot);
+		UpdateTrackmasterAchievements();
 	}
 	void ReadPlayerSettings() {
 		imperialUnits = bImperialUnits;
@@ -503,13 +505,7 @@ void InitCustomSave() {
 	NyaHookLib::Patch(0x48767E + 1, &gCustomSave.playerName);
 }
 
-void ProcessPlayStats() {
-	static CNyaTimer gTimer;
-	gTimer.Process();
-
-	if (!pGameFlow) return;
-	if (pLoadingScreen) return;
-
+void UpdateTrackmasterAchievements() {
 	struct tTrackTypeAssoc {
 		int category;
 		const char* achievement;
@@ -529,6 +525,36 @@ void ProcessPlayStats() {
 			{ TRACKTYPE_EVENT, "TRACKMASTER_EVENT" },
 			{ TRACKTYPE_DERBY, "TRACKMASTER_DERBY" },
 	};
+
+	for (auto& trackType : trackTypes) {
+		int numTracksWon = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
+		auto achievement = GetAchievement(trackType.achievement);
+		if (achievement->fMaxInternalProgress <= 0) {
+			achievement->fMaxInternalProgress = gCustomSave.GetNumTracksInCategory(trackType.category);
+		}
+		achievement->fInternalProgress = numTracksWon;
+
+		achievement->sTrackString = "";
+		if (!achievement->bUnlocked) {
+			for (int i = 1; i < GetNumTracks() + 1; i++) {
+				if (!gCustomSave.IsTrackValidForStat(trackType.category, i)) continue;
+				if (gCustomSave.tracksWon[i]) continue;
+
+				if (!achievement->sTrackString.empty()) achievement->sTrackString += ", ";
+				achievement->sTrackString += GetTrackName(i);
+			}
+			achievement->sTrackString = "Remaining: " + achievement->sTrackString;
+			achievement->pTrackFunction = Achievements::OnTrack_GenericString;
+		}
+	}
+}
+
+void ProcessPlayStats() {
+	static CNyaTimer gTimer;
+	gTimer.Process();
+
+	if (!pGameFlow) return;
+	if (pLoadingScreen) return;
 
 	// migrate playtime stats from doubles to the new int64s
 	for (int i = 0; i < NUM_PLAYTIME_TYPES_OLD; i++) {
@@ -667,38 +693,14 @@ void ProcessPlayStats() {
 		}
 
 		if (changed) {
+			UpdateTrackmasterAchievements();
 			gCustomSave.Save();
-
-			for (auto& trackType : trackTypes) {
-				GetAchievement(trackType.achievement)->fInternalProgress = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
-			}
 		}
 	}
 
 	static auto lastGameState = pGameFlow->nGameState;
 	if (lastGameState == GAME_STATE_RACE && pGameFlow->nGameState == GAME_STATE_MENU) {
-		for (auto& trackType : trackTypes) {
-			int numTracksWon = gCustomSave.GetNumTracksWonOfCategory(trackType.category);
-			auto achievement = GetAchievement(trackType.achievement);
-			if (achievement->fMaxInternalProgress <= 0) {
-				achievement->fMaxInternalProgress = gCustomSave.GetNumTracksInCategory(trackType.category);
-			}
-			achievement->fInternalProgress = numTracksWon;
-
-			achievement->sTrackString = "";
-			if (!achievement->bUnlocked) {
-				for (int i = 1; i < GetNumTracks() + 1; i++) {
-					if (!gCustomSave.IsTrackValidForStat(trackType.category, i)) continue;
-					if (gCustomSave.tracksWon[i]) continue;
-
-					if (!achievement->sTrackString.empty()) achievement->sTrackString += ", ";
-					achievement->sTrackString += GetTrackName(i);
-				}
-				achievement->sTrackString = "Remaining: " + achievement->sTrackString;
-				achievement->pTrackFunction = Achievements::OnTrack_GenericString;
-			}
-		}
-
+		UpdateTrackmasterAchievements();
 		gCustomSave.Save();
 	}
 	lastGameState = pGameFlow->nGameState;

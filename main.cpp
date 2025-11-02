@@ -47,6 +47,7 @@ void WriteLog(const std::string& str) {
 #include "aiextender.h"
 #include "pacenotes.h"
 #include "handlingmode.h"
+#include "messagewindow.h"
 #include "luafunctions.h"
 #include "soundtweaks.h"
 #include "aifudge.h"

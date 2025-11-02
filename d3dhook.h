@@ -14,6 +14,7 @@ void HookLoop() {
 	DriftMode::OnTick();
 	LapKnockoutMode::OnTick();
 	Achievements::OnTick();
+	ProcessMessageWindow();
 	DebugLoop();
 	CommonMain();
 	*(float*)0x716034 = 480.0f;
