@@ -340,6 +340,36 @@ float __fastcall MenuCameraRotation(void* a1) {
 	return value;
 }
 
+auto visibleObjectsArrayNew = new uint32_t[32767];
+
+uintptr_t VisibleObjectsExtenderASM1_jmp = 0x5AFA65;
+void __attribute__((naked)) __fastcall VisibleObjectsExtenderASM1() {
+	__asm__ (
+		"push ebp\n\t"
+		"mov ebp, %1\n\t"
+		"mov [ebp+eax*4], ecx\n\t"
+		"pop ebp\n\t"
+		"add eax, 1\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (VisibleObjectsExtenderASM1_jmp), "m" (visibleObjectsArrayNew)
+	);
+}
+
+uintptr_t VisibleObjectsExtenderASM2_jmp = 0x5AFB5A;
+void __attribute__((naked)) __fastcall VisibleObjectsExtenderASM2() {
+	__asm__ (
+		"push ebp\n\t"
+		"mov ebp, %1\n\t"
+		"mov ebx, [ebp+eax*4]\n\t"
+		"pop ebp\n\t"
+		"add eax, 1\n\t"
+		"jmp %0\n\t"
+			:
+			: "m" (VisibleObjectsExtenderASM2_jmp), "m" (visibleObjectsArrayNew)
+	);
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -356,6 +386,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			// set by game->0x2820->0x34
 			// which is set at 00481F96 when race ends
 			NyaHookLib::Fill(0x464CC2, 0x90, 0x464CCA - 0x464CC2); // disable autopilot
+
+			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5AFA5B, &VisibleObjectsExtenderASM1);
+			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x5AFB50, &VisibleObjectsExtenderASM2);
 
 			// Event is read from game+0x4C4
 			// CarSkin is read from game+0x4DC
