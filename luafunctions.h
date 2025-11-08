@@ -662,7 +662,9 @@ std::vector<std::string> GetCarsUnlockedByCheat(const std::string& str) {
 			auto cheat = (std::string)table->GetPropertyAsString("CheatCode");
 			std::transform(cheat.begin(), cheat.end(), cheat.begin(), [](unsigned char c){ return std::tolower(c); });
 			if (cheat == str) {
-				unlocks.push_back(GetCarName(i));
+				std::string name = GetCarName(i);
+				std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::toupper(c); });
+				unlocks.push_back(name);
 			}
 		}
 	}
