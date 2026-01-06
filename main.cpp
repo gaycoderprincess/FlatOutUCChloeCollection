@@ -370,6 +370,27 @@ void __attribute__((naked)) __fastcall VisibleObjectsExtenderASM2() {
 	);
 }
 
+auto ReadNumBytesFromBfs = (void(__thiscall*)(void*, int*, int, int))0x5A5980;
+void __fastcall TrackLoadHook(void* pThis) {
+	int out = 0;
+	ReadNumBytesFromBfs(pThis, &out, 4, 0);
+	for (int i = 0; i < out - 1; i++) {
+		int tmp = 0;
+		ReadNumBytesFromBfs(pThis, &tmp, 4, 0);
+	}
+}
+
+void __fastcall CarLoadHook(void* pThis, void*, int* out, int size, int unk) {
+	ReadNumBytesFromBfs(pThis, out, size, unk);
+	if (*out < 25 && *out > 1) {
+		for (int i = 0; i < *out - 1; i++) {
+			int tmp = 0;
+			ReadNumBytesFromBfs(pThis, &tmp, 4, 0);
+		}
+		*out = 0x20000;
+	}
+}
+
 BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 	switch( fdwReason ) {
 		case DLL_PROCESS_ATTACH: {
@@ -450,6 +471,9 @@ BOOL WINAPI DllMain(HINSTANCE, DWORD fdwReason, LPVOID) {
 			NyaHookLib::Patch(0x70E224, 8192);
 
 			NyaHookLib::PatchRelative(NyaHookLib::JMP, 0x55AAB4, &NoDebugQuitASM);
+
+			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x58035D, &CarLoadHook);
+			NyaHookLib::PatchRelative(NyaHookLib::CALL, 0x58C6D0, &TrackLoadHook);
 
 			// road king gives out of bounds when reading the Car[%d] db
 			// value is set to 255 by 00487953 (profile reset) and is then read as 255 by 4C7EB7
