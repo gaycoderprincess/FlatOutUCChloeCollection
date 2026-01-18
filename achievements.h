@@ -110,7 +110,7 @@ namespace Achievements {
 		new CAchievement("CHEAT_CAR", "Hidden Assets", "Drive a secret car", CAT_HIDDEN, true),
 		new CAchievement("WIN_NFS3", "Hot Pursuit", "Win a race on Atlantica with the Retro Diablo SV", CAT_HIDDEN, true),
 		new CAchievement("WIN_REVOLT", "Re-Volter", "Win a race on Toys in the Hood with the Toyeca", CAT_HIDDEN, true),
-		new CAchievement("WIN_NFSU2", "URL Racing", "Win a race on Bayview Speedway with the 350Z", CAT_HIDDEN, true),
+		new CAchievement("WIN_NFSU2", "URL Racing", "Win a race on Bayview Speedway with the Retro 350Z", CAT_HIDDEN, true),
 		new CAchievement("WIN_GT3", "Real Racing Simulator", "Win a race on Laguna Seca with the Evo V", CAT_HIDDEN, true),
 		new CAchievement("NEVILLE_WATER", "Out of Soda", "Knock Neville into water", CAT_SINGLEPLAYER),
 	};
